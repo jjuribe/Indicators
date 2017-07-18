@@ -78,6 +78,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public 	double	profitFactor	{ get; set; }
 		public 	double	pctWin			{ get; set; }
 		public 	double	largestLoss		{ get; set; }
+		public 	double	cost			{ get; set; }
+		public 	double	roi			{ get; set; }
 		public 	string	report 			{ get; set; }
 		public 	string	reportSimple	{ get; set; }
 		
@@ -85,10 +87,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 	
 	public class MooreTechSwing01 : Indicator
 	{
-		private Swing Swing1;
-		private Brush upColor = Brushes.Green;
-		private Brush downColor	= Brushes.Red;
-		private Brush textColor	= Brushes.Red;
+		private Swing 	Swing1;
+		private Brush 	upColor 	= Brushes.Green;
+		private Brush 	downColor	= Brushes.Red;
+		private Brush 	textColor	= Brushes.Red;
+		private int		shares		= 100;
 		
 		private SwingData swingData = new SwingData
 		{
@@ -162,6 +165,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			int 	dncount 		= edgeCount(up:false, plot: false );
 			int 	MinSwing 		= 70;
 			
+			
 			findNewHighs(upCount: upcount, minSwing: MinSwing );
 			findNewLows(dnCount: dncount, minSwing: MinSwing );
 			
@@ -171,15 +175,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 			drawLongEntryLine(inLongTrade: entry.inLongTrade);
 			drawShortEntryLine(inShortTrade: entry.inShortTrade);
 			
-			setHardStop(pct: 3, shares: 100);
+			setHardStop(pct: 3, shares: shares);
 
 			setPivotStop(swingSize: 5, pivotSlop: 0.2);
 			
-			recordTrades(printChart: true, printLog: false, hiLow: true, space: 120, simple: true);
-			///[ ] show exit when gap past next entry
+			recordTrades(printChart: false, printLog: true, hiLow: true, space: 120, simple: true);
+			
 			gapPastEntry();
+			/// calc open profit
+			/// calc largest open drawdown
+			/// since I added setPiveStop, performace dropped WHy?
+			///  not finding and gap entrues
+			///  adjust space as aproduc of ATR
+			///  how is min swing set and can it be dynamically adjusted
 			///  output to excel
 			///  show portfolio of SPY USO EURO
+			///  plot on 150 tick chart
 			}
 
 		///******************************************************************************************************************************
@@ -188,14 +199,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 
 		/// ****************************************************************************************************************************
 		public void gapPastEntry() {
-			
-//			longEntryPrice 	
-//			longEntryBarnum	
-//			shortEntryPrice 
-//			shortEntryBarnum 
-
-				
-			
 			bool gapDown, gapUp; 
 			double gapHigh, gapLow;
 			
@@ -210,7 +213,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			if (gapDown) {
 				//Print(Time[0].ToString() + "  gapDown");	
-				Draw.Dot(this, "gapDown"+CurrentBar, true, 0, Open[0], Brushes.DarkRed);
+				//Draw.Dot(this, "gapDown"+CurrentBar, true, 0, Open[0], Brushes.DarkRed);
 			}
 			
 			if ( Open[0] - High[1]  > 0.10 ) {
@@ -224,7 +227,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			if (gapUp) {
 				//Print(Time[0].ToString() + "  gapUp");	
-				Draw.Dot(this, "gapUp"+CurrentBar, true, 0, Open[0], Brushes.DarkGreen);
+				//Draw.Dot(this, "gapUp"+CurrentBar, true, 0, Open[0], Brushes.DarkGreen);
 			}
 			
 			if ( gapDown || gapUp ){
@@ -239,8 +242,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 					Draw.Dot(this, "sGap"+CurrentBar, true, 0, entry.shortEntryPrice, Brushes.LimeGreen);
 				}
 			}
-					
 		}
+		
 		///******************************************************************************************************************************
 		/// 
 		/// 										set Pivot Stop
@@ -454,6 +457,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			tradeData.pctWin = (tradeData.numWins / tradeData.tradeNum) * 100;
 			tradeData.profitFactor = (tradeData.winTotal / tradeData.lossTotal) * -1;
+			tradeData.cost = (SMA(100)[0] * (double)shares ) / 3;
+			tradeData.roi = ( ( tradeData.totalProfit * (double)shares ) / tradeData.cost ) * 100;
 		}
 		
 		/// modify objuect with full report and simple
@@ -465,6 +470,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				allStats = "#" + tradeData.tradeNum.ToString() + " " + tradeData.signalName + "  $" + tradeData.tradeProfit.ToString("0.00");
 				allStats = allStats + "\n" + tradeData.totalProfit.ToString("0.00") + " pts" + " " + tradeData.pctWin.ToString("0.0") + "%";
 				allStats = allStats + "\n" + tradeData.profitFactor.ToString("0.00") + "Pf  LL " + tradeData.largestLoss.ToString("0.00");
+				allStats = allStats + "\n$" + tradeData.cost.ToString("0") + " Cost " + tradeData.roi.ToString("0.0") + "% Roi"; 
 				tradeData.signalName = "*";
 				tradeData.report = allStats;
 		}
