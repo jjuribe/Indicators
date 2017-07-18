@@ -87,7 +87,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	{
 		private Swing Swing1;
 		private Brush upColor = Brushes.Green;
-		private Brush downColor	= Brushes.DarkRed;
+		private Brush downColor	= Brushes.Red;
 		private Brush textColor	= Brushes.Red;
 		
 		private SwingData swingData = new SwingData
@@ -122,7 +122,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (State == State.SetDefaults)
 			{
 				Description									= @"Enter the description for your new custom Indicator here.";
-				Name										= "MooreTech Swing 01";
+				Name										= "_MooreTech Swing 01";
 				Calculate									= Calculate.OnBarClose;
 				IsOverlay									= true;
 				DisplayInDataBox							= true;
@@ -160,7 +160,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			int 	upcount 		= edgeCount(up: true, plot: false );
 			int 	dncount 		= edgeCount(up:false, plot: false );
-			int MinSwing 			= 70;
+			int 	MinSwing 		= 70;
 			
 			findNewHighs(upCount: upcount, minSwing: MinSwing );
 			findNewLows(dnCount: dncount, minSwing: MinSwing );
@@ -175,13 +175,72 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			setPivotStop(swingSize: 5, pivotSlop: 0.2);
 			
-			recordTrades(printChart: true, printLog: true, hiLow: true, space: 120, simple: true);
+			recordTrades(printChart: true, printLog: false, hiLow: true, space: 120, simple: true);
 			///[ ] show exit when gap past next entry
+			gapPastEntry();
 			///  output to excel
 			///  show portfolio of SPY USO EURO
-			
 			}
-		
+
+		///******************************************************************************************************************************
+		/// 
+		/// 										gap paast entry
+		/// 
+		/// ****************************************************************************************************************************
+		public void gapPastEntry() {
+			
+//			longEntryPrice 	
+//			longEntryBarnum	
+//			shortEntryPrice 
+//			shortEntryBarnum 
+
+				
+			
+			bool gapDown, gapUp; 
+			double gapHigh, gapLow;
+			
+			if ( Low[1] - Open[0] > 0.10 ) {
+				gapDown = true;
+				gapHigh = Low[1];
+				gapLow = Open[0];
+			} else { 
+				gapDown = false; 
+				gapLow = 0;
+				gapHigh = 0;
+			}
+			if (gapDown) {
+				//Print(Time[0].ToString() + "  gapDown");	
+				Draw.Dot(this, "gapDown"+CurrentBar, true, 0, Open[0], Brushes.DarkRed);
+			}
+			
+			if ( Open[0] - High[1]  > 0.10 ) {
+				gapUp = true;
+				gapHigh = Open[1];
+				gapLow = High[1];
+			} else { 
+				gapUp = false; 
+				gapLow = 0;
+				gapHigh = 0;
+			}
+			if (gapUp) {
+				//Print(Time[0].ToString() + "  gapUp");	
+				Draw.Dot(this, "gapUp"+CurrentBar, true, 0, Open[0], Brushes.DarkGreen);
+			}
+			
+			if ( gapDown || gapUp ){
+				/// look for long in gap 
+				if( !entry.inLongTrade && gapHigh > entry.longEntryPrice && gapLow < entry.longEntryPrice ) {
+					Print(Time[0].ToString() + "----> Long Inside Gap");	
+					Draw.Dot(this, "lGap"+CurrentBar, true, 0, entry.longEntryPrice, Brushes.LimeGreen);
+				}
+				/// look for short in gap 
+				if( !entry.inShortTrade && gapHigh > entry.shortEntryPrice && gapLow < entry.shortEntryPrice ) {
+					Print(Time[0].ToString() + "----> Short Inside Gap");	
+					Draw.Dot(this, "sGap"+CurrentBar, true, 0, entry.shortEntryPrice, Brushes.LimeGreen);
+				}
+			}
+					
+		}
 		///******************************************************************************************************************************
 		/// 
 		/// 										set Pivot Stop
@@ -400,7 +459,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// modify objuect with full report and simple
 		public void concatStats(){
 				string allStats = "#" + tradeData.tradeNum.ToString() + " " + tradeData.signalName + "  $" + tradeData.tradeProfit.ToString("0.00");
-				allStats = allStats + "\n" + tradeData.totalProfit.ToString("0.00") + " pts" + " " + tradeData.pctWin.ToString("0.0") + "%";
+				//allStats = allStats + "\n" + tradeData.totalProfit.ToString("0.00") + " pts" + " " + tradeData.pctWin.ToString("0.0") + "%";
 				tradeData.reportSimple = allStats;
 			
 				allStats = "#" + tradeData.tradeNum.ToString() + " " + tradeData.signalName + "  $" + tradeData.tradeProfit.ToString("0.00");
