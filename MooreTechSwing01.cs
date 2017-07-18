@@ -79,7 +79,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public 	double	pctWin			{ get; set; }
 		public 	double	largestLoss		{ get; set; }
 		public 	double	cost			{ get; set; }
-		public 	double	roi			{ get; set; }
+		public 	double	roi				{ get; set; }
+		public 	double	openProfit		{ get; set; }
+		public 	double	largestOpenDraw	{ get; set; }
 		public 	string	report 			{ get; set; }
 		public 	string	reportSimple	{ get; set; }
 		
@@ -183,6 +185,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			gapPastEntry();
 			/// calc open profit
+			OpenProfitLockedIn();
 			/// calc largest open drawdown
 			/// since I added setPiveStop, performace dropped WHy?
 			///  not finding and gap entrues
@@ -192,6 +195,23 @@ namespace NinjaTrader.NinjaScript.Indicators
 			///  show portfolio of SPY USO EURO
 			///  plot on 150 tick chart
 			}
+		
+		public void OpenProfitLockedIn(){
+			/// get current bar
+			if (Count - 2 == CurrentBar)
+			  {
+				  string upDate = "Long Open Profit of ";
+				  if( entry.inLongTrade ) {
+					  tradeData.openProfit = Close[0] -  entry.longEntryActual;
+					}
+				  if( entry.inShortTrade ) {
+					  tradeData.openProfit = entry.shortEntryActual  - Close[0];
+					  upDate = "Short Open Profit of " ;
+				  }
+				  double openGain = tradeData.openProfit * shares;
+				  Print(upDate + tradeData.openProfit.ToString("0.00")+ "pts or $" + openGain.ToString("0.0")); 
+			  }
+		}
 
 		///******************************************************************************************************************************
 		/// 
