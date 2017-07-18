@@ -159,18 +159,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 				resetStruct(doIt: false);
 				return;
 			}
-			/// resetBarsSinceEntry
-			if ( entry.inShortTrade == true) { entry.barsSinceEntry = CurrentBar - entry.shortEntryBarnum; }
-			else if ( entry.inLongTrade == true) { entry.barsSinceEntry = CurrentBar - entry.longEntryBarnum; }
-			else { entry.barsSinceEntry = 0;}
 			
-			int 	upcount 		= edgeCount(up: true, plot: false );
-			int 	dncount 		= edgeCount(up:false, plot: false );
-			int 	MinSwing 		= 70;
+			resetBarsSinceEntry();
+			mySpace = ATR(14)[0];
+			int 	MinBarsToLastSwing 		= 70;	// defaullt is 70
+			int 	upcount 		= edgeCount(up: true, plot: true );
+			int 	dncount 		= edgeCount(up:false, plot: true );
 			
-			
-			findNewHighs(upCount: upcount, minSwing: MinSwing );
-			findNewLows(dnCount: dncount, minSwing: MinSwing );
+			findNewHighs(upCount: upcount, minSwing: MinBarsToLastSwing );
+			findNewLows(dnCount: dncount, minSwing: MinBarsToLastSwing );
 			
 			findShortEntry();
 			findLongeEntry();
@@ -182,19 +179,24 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			setPivotStop(swingSize: 5, pivotSlop: 0.2);
 			
-			mySpace = ATR(14)[0];
-			
 			recordTrades(printChart: true, printLog: true, hiLow: true, space: 120, simple: true);
 			
 			gapPastEntry();
 			OpenProfitLockedIn();
-			///  since I added setPiveStop, performace dropped WHy?
+			///  since I added setPiveStop, performace dropped Why?
 			///  not finding and gap entries
-			///  how is min swing set and can it be dynamically adjusted
+			///  can MinBarsToLastSwing be dynamically adjusted?
+			///  why doesnt this work on oil?
 			///  output to excel
 			///  show portfolio of SPY USO EURO
 			///  plot on 150 tick chart
 			}
+		
+		public void resetBarsSinceEntry() {
+			if ( entry.inShortTrade == true) { entry.barsSinceEntry = CurrentBar - entry.shortEntryBarnum; }
+			else if ( entry.inLongTrade == true) { entry.barsSinceEntry = CurrentBar - entry.longEntryBarnum; }
+			else { entry.barsSinceEntry = 0;}
+		}
 		
 		public void OpenProfitLockedIn(){
 			/// get current bar
