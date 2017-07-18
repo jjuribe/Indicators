@@ -78,12 +78,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public 	double	profitFactor	{ get; set; }
 		public 	double	pctWin			{ get; set; }
 		public 	double	largestLoss		{ get; set; }
+		public 	string	report 		{ get; set; }
 		
 	}
 	
 	public class MooreTechSwing01 : Indicator
 	{
 		private Swing Swing1;
+		private Brush upColor = Brushes.Green;
+		private Brush downColor	= Brushes.DarkRed;
+		private Brush textColor	= Brushes.Red;
 		
 		private SwingData swingData = new SwingData
 		{
@@ -136,9 +140,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 			    ClearOutputWindow();     
 				  Swing1				= Swing(5);
 			  } 
-		  
 		}
-
+		///******************************************************************************************************************************
+		/// 
+		/// 										on bar update
+		/// 
+		/// ****************************************************************************************************************************
 		protected override void OnBarUpdate()
 		{
 			if ( CurrentBar < 20 ) {
@@ -154,7 +161,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			int 	dncount 		= edgeCount(up:false, plot: false );
 			int MinSwing 			= 70;
 			
-			
 			findNewHighs(upCount: upcount, minSwing: MinSwing );
 			findNewLows(dnCount: dncount, minSwing: MinSwing );
 			
@@ -168,11 +174,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			setPivotStop(swingSize: 5, pivotSlop: 0.2);
 			
-			recordTrades(printChart: true, printLog: true);
+			recordTrades(printChart: true, printLog: true, hiLow: true, space: 120);
 			///[ ] show exit when gap past next entry
+			///  output to excel
+			///  show portfolio of SPY USO EURO
 			
 			}
-		
 		
 		///******************************************************************************************************************************
 		/// 
@@ -234,29 +241,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 				entry.barsSinceEntry = 0;
 			}
 		}
-		
+		///******************************************************************************************************************************
+		/// 
+		/// 										set Hard Stop
+		/// 
+		/// ****************************************************************************************************************************
 		public void setHardStop(double pct, int shares) {
-		
 			/// find long entry price /// calc trade cost
 			if (CurrentBar == entry.longEntryBarnum ) {
-//				double tradeCost = entry.longEntryPrice * shares;
-//				/// calc 3%
-//				double risk = tradeCost * (pct * 0.01);
-//				/// convert 3% to points
-//				double riskAsPoints = risk / shares;
-//				entry.hardStopLine = entry.longEntryPrice - riskAsPoints;
 				double pctPrice = pct * 0.01;
 				entry.hardStopLine = Close[0]  - ( Close[0] * pctPrice);
 				}
-			
 			/// find short entry price /// calc trade cost
 			if (CurrentBar == entry.shortEntryBarnum ) {
-				double tradeCost = entry.shortEntryPrice * shares;
-				/// calc 3%
-				double risk = tradeCost * (pct * 0.01);
-				/// convert 3% to points
-				double riskAsPoints = risk / shares;
-				entry.hardStopLine = entry.shortEntryPrice + riskAsPoints;
+				double pctPrice = pct * 0.01;
+				entry.hardStopLine = Close[0]  + ( Close[0] * pctPrice);
 			}
 			/// draw hard stop line
 			drawHardStops();
@@ -289,7 +288,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 				lineLength = entry.barsSinceEntry; 
 				lineName = "hardStopLong";
 			}
-
 			if ( entry.inShortTrade ) { 
 				lineLength = CurrentBar - entry.shortEntryBarnum; 
 				lineName = "hardStopShort";
@@ -304,7 +302,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 										RECORD TRADES
 		/// 
 		/// ****************************************************************************************************************************
-		public void recordTrades(bool printChart, bool printLog){
+		public void recordTrades(bool printChart, bool printLog, bool hiLow, int space){
 			
 		    /// calc short profit at long entry
 			if (CurrentBar == entry.longEntryBarnum ) {
@@ -312,11 +310,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if(checkForFirstEntry()) { 
 					tradeData.tradeProfit = 0;
 					tradeData.lastLong = entry.longEntryPrice;
-					calcAndShowOnChart(printChart: printChart, printLog: printLog);
+					calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 					return; }
 				tradeData.tradeProfit =  entry.shortEntryActual - entry.longEntryActual;
 			 	tradeData.lastLong = entry.longEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 			} else
 			/// calc long profit at short entry
 			if (CurrentBar == entry.shortEntryBarnum ) {
@@ -324,25 +322,25 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if(checkForFirstEntry()) { 
 					tradeData.tradeProfit =  0;
 			 		tradeData.lastShort = entry.shortEntryPrice;
-					calcAndShowOnChart(printChart: printChart, printLog: printLog);
+					calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 					return; }
 			  	tradeData.tradeProfit =  entry.shortEntryActual - entry.longEntryActual; //entry.shortEntryPrice - tradeData.lastLong;
 			 	tradeData.lastShort = entry.shortEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 			 } else
 			/// calc loss from short hard stop hit
 			if ( CurrentBar == entry.shortHardStopBarnum  ) {
 				tradeData.tradeNum++;
 			    tradeData.tradeProfit = entry.shortEntryPrice -  entry.hardStopLine;
 			 	tradeData.lastShort = entry.shortEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 			} else
 			/// calc loss from long hard stop hit
 			if ( CurrentBar == entry.longHardStopBarnum || CurrentBar == entry.longPivStopBarnum  ) {	
 				tradeData.tradeNum++;
 			  	tradeData.tradeProfit = entry.hardStopLine - entry.longEntryPrice;
 			 	tradeData.lastLong = entry.longEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 			} else
 			/// calc loss from short piv stop hit
 			if (  CurrentBar == entry.shortPivStopBarnum ) {
@@ -350,7 +348,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tradeData.tradeNum++;
 			  	tradeData.tradeProfit = entry.shortEntryActual -  Close[0];
 			 	tradeData.lastShort = entry.shortEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 			} 
 			/// calc loss from long piv stop hit
 			if (  CurrentBar == entry.longPivStopBarnum ) {
@@ -358,7 +356,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tradeData.tradeNum++;
 			  	tradeData.tradeProfit = entry.longEntryActual -  Close[0];
 			 	tradeData.lastLong = entry.longEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space);
 			} 
 		}
 		
@@ -373,14 +371,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		/// report results
-		public void calcAndShowOnChart(bool printChart, bool printLog) {
-	
+		public void calcAndShowOnChart(bool printChart, bool printLog, bool hiLow, int space) {
 			calcTradeStats();
-			string report = concatStats();
-			if( printChart )
-				Draw.Text(this, "report"+CurrentBar, report, 0, Low[0] - (TickSize * 60)); 
+			tradeData.report = concatStats();
+			if( printChart ) { customDrawTrades(show: hiLow, space: space);}
+			
 			if ( printLog )
-				Print("\n"+Time[0].ToString() +" "+report);
+				Print("\n"+Time[0].ToString() +" "+ tradeData.report);
 		}
 		
 		public void calcTradeStats() {
@@ -407,21 +404,26 @@ namespace NinjaTrader.NinjaScript.Indicators
 			return allStats;
 		}
 		
-		public void customDrawTrades() {
-			string report = concatStats();
+		public void customDrawTrades(bool show, int space) {
+			// set color
+			if( tradeData.tradeProfit >= 0 ) { textColor = upColor;
+			} else { textColor = downColor;}
+			if(show) {
 			if (CurrentBar == entry.longEntryBarnum ) {
-				Draw.Text(this, "LE"+CurrentBar, report, 0, entry.longEntryPrice - (TickSize * 40)); }
+				Draw.Text(this, "LE"+CurrentBar, tradeData.report, 0, entry.longEntryPrice - (TickSize * space), textColor); }
 			if (CurrentBar == entry.shortEntryBarnum ) {
-				Draw.Text(this, "SE"+CurrentBar, report, 0, entry.shortEntryPrice + (TickSize * 40)); }
+				Draw.Text(this, "SE"+CurrentBar, tradeData.report, 0, entry.shortEntryPrice + (TickSize * space), textColor); }
 			if (CurrentBar == entry.shortHardStopBarnum ) {
-				Draw.Text(this, "SXh"+CurrentBar, report, 0, High[0] + (TickSize * 40)); }
+				Draw.Text(this, "SXh"+CurrentBar, tradeData.report, 0, High[0] + (TickSize * space), textColor); }
 			if (CurrentBar == entry.longHardStopBarnum ) {
-				Draw.Text(this, "LXh"+CurrentBar, report, 0, Low[0] - (TickSize * 40)); }
+				Draw.Text(this, "LXh"+CurrentBar, tradeData.report, 0, Low[0] - (TickSize * space), textColor); }
 			if (CurrentBar == entry.shortPivStopBarnum ) {
-				Draw.Text(this, "SXp"+CurrentBar, report, 0, High[0] + (TickSize * 40)); }
+				Draw.Text(this, "SXp"+CurrentBar, tradeData.report, 0, High[0] + (TickSize * space), textColor); }
 			if (CurrentBar == entry.longPivStopBarnum ) {
-				Draw.Text(this, "LXp"+CurrentBar, report, 0, Low[0] - (TickSize * 40)); }
-			Draw.Dot(this, "Swingh"+ CurrentBar.ToString(), true, 0, High[0], Brushes.Yellow);
+				Draw.Text(this, "LXp"+CurrentBar, tradeData.report, 0, Low[0] - (TickSize * space), textColor); }
+			} else {
+				Draw.Text(this, "report"+CurrentBar, tradeData.report, 0, Low[0] - (TickSize * space));
+			}
 		}
  
 		/// <summary>
@@ -514,7 +516,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 				entry.barsSinceEntry = 0;
 			}
 		}
-
+		///******************************************************************************************************************************
+		/// 
+		/// 										find edges
+		/// 
+		/// ****************************************************************************************************************************
 		/// Show the number of confirmations of an edge
 		public int edgeCount(bool up, bool plot){
 
