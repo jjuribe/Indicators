@@ -94,6 +94,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Brush 	downColor	= Brushes.Red;
 		private Brush 	textColor	= Brushes.Red;
 		private int		shares		= 100;
+		private double mySpace ;
 		
 		private SwingData swingData = new SwingData
 		{
@@ -181,15 +182,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			setPivotStop(swingSize: 5, pivotSlop: 0.2);
 			
-			recordTrades(printChart: false, printLog: true, hiLow: true, space: 120, simple: true);
+			mySpace = ATR(14)[0];
+			
+			recordTrades(printChart: true, printLog: true, hiLow: true, space: 120, simple: true);
 			
 			gapPastEntry();
-			/// calc open profit
 			OpenProfitLockedIn();
-			/// calc largest open drawdown
-			/// since I added setPiveStop, performace dropped WHy?
-			///  not finding and gap entrues
-			///  adjust space as aproduc of ATR
+			///  since I added setPiveStop, performace dropped WHy?
+			///  not finding and gap entries
 			///  how is min swing set and can it be dynamically adjusted
 			///  output to excel
 			///  show portfolio of SPY USO EURO
@@ -504,19 +504,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if(simple) { reportData = tradeData.reportSimple;}
 			if(show) {
 			if (CurrentBar == entry.longEntryBarnum ) {
-				Draw.Text(this, "LE"+CurrentBar, reportData, 0, entry.longEntryPrice - (TickSize * space), textColor); }
+				Draw.Text(this, "LE"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace, textColor); }
 			if (CurrentBar == entry.shortEntryBarnum ) {
-				Draw.Text(this, "SE"+CurrentBar, reportData, 0, entry.shortEntryPrice + (TickSize * space), textColor); }
+				Draw.Text(this, "SE"+CurrentBar, reportData, 0, MAX(High, 20)[0] + mySpace, textColor); }
 			if (CurrentBar == entry.shortHardStopBarnum ) {
-				Draw.Text(this, "SXh"+CurrentBar, reportData, 0, High[0] + (TickSize * space), textColor); }
+				Draw.Text(this, "SXh"+CurrentBar, reportData, 0, MAX(High, 20)[0] + mySpace, textColor); }
 			if (CurrentBar == entry.longHardStopBarnum ) {
-				Draw.Text(this, "LXh"+CurrentBar, reportData, 0, Low[0] - (TickSize * space), textColor); }
+				Draw.Text(this, "LXh"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace, textColor); }
 			if (CurrentBar == entry.shortPivStopBarnum ) {
-				Draw.Text(this, "SXp"+CurrentBar, reportData, 0, High[0] + (TickSize * space), textColor); }
+				Draw.Text(this, "SXp"+CurrentBar, reportData, 0, MAX(High, 20)[0] + mySpace, textColor); }
 			if (CurrentBar == entry.longPivStopBarnum ) {
-				Draw.Text(this, "LXp"+CurrentBar, reportData, 0, Low[0] - (TickSize * space), textColor); }
+				Draw.Text(this, "LXp"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace, textColor); }
 			} else {
-				Draw.Text(this, "report"+CurrentBar, reportData, 0, Low[0] - (TickSize * space));
+				Draw.Text(this, "report"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace);
 			}
 		}
  
