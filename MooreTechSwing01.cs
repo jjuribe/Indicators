@@ -25,6 +25,11 @@ using System.IO;
 //This namespace holds Indicators in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.Indicators
 {
+	/// <summary>
+	/// Adaptation of Morretech Swing system intended for 15min bars and longer
+	/// Developed by Warren Hansen at TradeStrat on 7/20/2017
+	/// whansen1@mac.com
+	/// </summary>
 	public struct SwingData
 	{
 		public  double 	lastHigh 		{ get; set; }
@@ -98,6 +103,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Brush 	upColor 	= Brushes.Green;
 		private Brush 	downColor	= Brushes.Red;
 		private Brush 	textColor	= Brushes.Red;
+		
+		///  signal 
+		private Series<int> signal;
+		
 		
 		private SwingData swingData = new SwingData
 		{
@@ -199,25 +208,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			//	OpenProfitLockedIn();
 			
 			
-			///  Good Spy, Gush, QQQ, Not good Uso, Eur, Fx
-			/// 
-			///  make strat to show max open draw down
-			///  make sinal data series 
-			/// 	LE 1 SE -2 LX 2 SX -2
-			/// inputs 
-			/// 	int		shares			= 100;
-			///		double  swingPct		= 0.005;
-			/// 	int MinBarsToLastSwing 	= 70;
-			/// 
-			/// 	bool setHardStop = true, int pctHardStop 3, 
-			/// 	bool setPivotStop = true, int pivotStopSwingSize = 5, double pivotStopPivotSlop = 0.2
-			/// 
-			/// plots
-			/// 	bool ShowUpCount 			= false;
-			/// 	bool show hard stops 		= false;
-			/// 	bool printtradesOn Chart	= false
-			/// 	bool printTradesSimple 		= false
-			/// 	bool printTradesTolog 		= true;
+			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
+			///  write strat to show max open draw down
 			/// 
 			///  show portfolio of SPY GUSH EURO
 			///  enable errors sent to text, especially data disconnect
@@ -828,7 +820,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		
 		#region Properies
-
+		/// <summary>
+		///  signal
+		/// </summary>
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<int> Signal
+		{
+			get { return signal; }
+		}
+		
 		///  inputs
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
