@@ -99,7 +99,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Brush 	downColor	= Brushes.Red;
 		private Brush 	textColor	= Brushes.Red;
 		private int		shares		= 100;
-		private double mySpace ;
 		private double  swingPct	= 0.005;
 		
 		private SwingData swingData = new SwingData
@@ -189,18 +188,37 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			recordTrades(printChart: false, printLog: true, hiLow: true, space: 120, simple: true);
 			
-			gapPastEntry();
-			OpenProfitLockedIn();
+			//	gapPastEntry();
+			//	OpenProfitLockedIn();
 			
-			///  not finding and gap entries
+			
 			///  Good Spy, Gush, QQQ, Not good Uso, Eur, Fx
 			/// 
-			///  put indicators in  stste.dataloaded
 			///  make strat to show max open draw down
+			///  make sinal data series 
+			/// 	LE 1 SE -2 LX 2 SX -2
+			/// inputs 
+			/// 	int		shares			= 100;
+			///		double  swingPct		= 0.005;
+			/// 	int MinBarsToLastSwing 	= 70;
+			/// 
+			/// 	bool setHardStop = true, int pctHardStop 3, 
+			/// 	bool setPivotStop = true, int pivotStopSwingSize = 5, double pivotStopPivotSlop = 0.2
+			/// 
+			/// plots
+			/// 	bool ShowUpCount 			= false;
+			/// 	bool show hard stops 		= false;
+			/// 	bool printtradesOn Chart	= false
+			/// 	bool printTradesSimple 		= false
+			/// 	bool printTradesTolog 		= true;
+			/// 
 			///  show portfolio of SPY GUSH EURO
-			///  emable errors sen to text, especiallt data disconnect
+			///  enable errors sent to text, especially data disconnect
 			///  start auto trading
+			///  make FOMC look for neg afffects
 			///  use dx graphica
+			///  not finding any gap entries use playback to confirm
+			///  clac position size from 1. account size, 2. number of strategies
 			///  plot on 1500 tick chart
 			}
 		
@@ -547,19 +565,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if(simple) { reportData = tradeData.reportSimple;}
 			if(show) {
 			if (CurrentBar == entry.longEntryBarnum ) {
-				Draw.Text(this, "LE"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace, textColor); }
+				Draw.Text(this, "LE"+CurrentBar, reportData, 0, MIN(Low, 20)[0], textColor); }
 			if (CurrentBar == entry.shortEntryBarnum ) {
-				Draw.Text(this, "SE"+CurrentBar, reportData, 0, MAX(High, 20)[0] + mySpace, textColor); }
+				Draw.Text(this, "SE"+CurrentBar, reportData, 0, MAX(High, 20)[0], textColor); }
 			if (CurrentBar == entry.shortHardStopBarnum ) {
-				Draw.Text(this, "SXh"+CurrentBar, reportData, 0, MAX(High, 20)[0] + mySpace, textColor); }
+				Draw.Text(this, "SXh"+CurrentBar, reportData, 0, MAX(High, 20)[0], textColor); }
 			if (CurrentBar == entry.longHardStopBarnum ) {
-				Draw.Text(this, "LXh"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace, textColor); }
+				Draw.Text(this, "LXh"+CurrentBar, reportData, 0, MIN(Low, 20)[0], textColor); }
 			if (CurrentBar == entry.shortPivStopBarnum ) {
-				Draw.Text(this, "SXp"+CurrentBar, reportData, 0, MAX(High, 20)[0] + mySpace, textColor); }
+				Draw.Text(this, "SXp"+CurrentBar, reportData, 0, MAX(High, 20)[0], textColor); }
 			if (CurrentBar == entry.longPivStopBarnum ) {
-				Draw.Text(this, "LXp"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace, textColor); }
+				Draw.Text(this, "LXp"+CurrentBar, reportData, 0, MIN(Low, 20)[0], textColor); }
 			} else {
-				Draw.Text(this, "report"+CurrentBar, reportData, 0, MIN(Low, 20)[0]- mySpace);
+				Draw.Text(this, "report"+CurrentBar, reportData, 0, MIN(Low, 20)[0]);
 			}
 		}
  
