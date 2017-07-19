@@ -97,6 +97,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Brush 	textColor	= Brushes.Red;
 		private int		shares		= 100;
 		private double mySpace ;
+		private double  swingPct	= 0.005;
 		
 		private SwingData swingData = new SwingData
 		{
@@ -189,7 +190,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 			///  not finding and gap entries
 			///  can MinBarsToLastSwing be dynamically adjusted do USO or Forex works?
 			/// 
+			/// find new highs has hard coded range of 1.5 226 1.5 / 226 = 0.00663 && 226 * 0.00663 = 1.49
+			/// find min swing as pct of close, old hard coded value is 1.5
+			/// 226 * 0.00663 = 1.49
+			/// swingPct 0.005 = .9 - 1.2 and much better
+			/// Good Spy, Gush, QQQ, Not good Uso, Eur, Fx
+			/// 
+			/// put indicators in  stste.dataloaded
+			///  make strat to show max open draw down
 			///  show portfolio of SPY GUSH EURO
+			///  emable errors sen to text, especiallt data disconnect
+			///  start auto trading
 			///  plot on 1500 tick chart
 			}
 		
@@ -484,7 +495,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			tradeData.roi = ( ( tradeData.totalProfit * (double)shares ) / tradeData.cost ) * 100;
 		}
 		
-		/// modify objuect with full report and simple
+		///  full report and simple
 		public void concatStats(){
 				string allStats = "#" + tradeData.tradeNum.ToString() + " " + tradeData.signalName + "  $" + tradeData.tradeProfit.ToString("0.00");
 				//allStats = allStats + "\n" + tradeData.totalProfit.ToString("0.00") + " pts" + " " + tradeData.pctWin.ToString("0.0") + "%";
@@ -682,8 +693,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		/// find new highs 
 		public void findNewHighs(int upCount, double minSwing){
+			/// find min swing as pct of close, old hard coded value is 1.5
+			/// 226 * 0.00663 = 1.49
+			/// swingPct 0.005 = .9 - 1.2 and much better
+			double minPriceSwing = Close[0] * swingPct;
+			//Print(minPriceSwing);
 
-			if ( upCount!= 0 && High[0] - swingData.lastLow > 1.5 ) {
+			if ( upCount!= 0 && High[0] - swingData.lastLow > minPriceSwing ) {
 				swingData.prevHigh = swingData.lastHigh;
 				swingData.prevHighBarnum = swingData.lastHighBarnum;
 				swingData.lastHigh = High[0];
@@ -699,8 +715,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		/// find new lows
 		public void findNewLows(int dnCount, double minSwing){
-			
-			if ( dnCount!= 0 && swingData.lastHigh - Low[0] > 1.5 ) {
+			double minPriceSwing = Close[0] * swingPct;
+			if ( dnCount!= 0 && swingData.lastHigh - Low[0] > minPriceSwing ) {
 				swingData.prevLow = swingData.lastLow;
 				swingData.prevLowBarnum = swingData.lastLowBarnum;
 				swingData.lastLow = Low[0];
