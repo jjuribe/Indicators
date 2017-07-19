@@ -94,12 +94,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Swing 		Swing1;
 		private RSI			Rsi1;
 		private	Bollinger	Bollinger1;		
-		
+		/// colors
 		private Brush 	upColor 	= Brushes.Green;
 		private Brush 	downColor	= Brushes.Red;
 		private Brush 	textColor	= Brushes.Red;
-		private int		shares		= 100;
-		private double  swingPct	= 0.005;
 		
 		private SwingData swingData = new SwingData
 		{
@@ -143,6 +141,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 				PaintPriceMarkers							= true;
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
 				IsSuspendedWhileInactive					= true;
+				/// inputs 
+				shares				= 100;			/// 	int		shares			= 100;
+				swingPct			= 0.005;		///		double  swingPct		= 0.005;
+				minBarsToLastSwing 	= 70;			/// 	int MinBarsToLastSwing 	= 70;
+				enableHardStop 		= true;			/// 	bool setHardStop = true, int pctHardStop 3, 
+				pctHardStop  		= 3;
+				enablePivotStop 	= true;			/// 	bool setPivotStop = true, int pivotStopSwingSize = 5, 
+				pivotStopSwingSize 	= 5;
+				pivotStopPivotRange = 0.2;			///		double pivotStopPivotSlop = 0.2
+				/// swow plots
+				showUpCount 			= false;		/// 	bool ShowUpCount 			= false;
+				showHardStops 			= false;		/// 	bool show hard stops 		= false;
+				printTradesOnChart		= false;		/// 	bool printtradesOn Chart	= false
+				printTradesSimple 		= false;		/// 	bool printTradesSimple 		= false
+				printTradesTolog 		= true;			/// 	bool printTradesTolog 		= true;
 			}
 			else if (State == State.Configure)
 			{
@@ -162,19 +175,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// ****************************************************************************************************************************
 		protected override void OnBarUpdate()
 		{
-			if ( CurrentBar < 20 ) {
-				resetStruct(doIt: false);
-				return;
-			}
+			if ( CurrentBar < 20 ) { resetStruct(doIt: false); return; }
 			
 			resetBarsSinceEntry();
+			int 	upcount 		= edgeCount(up: true, plot: showUpCount );
+			int 	dncount 		= edgeCount(up:false, plot: showUpCount );
 			
-			int 	MinBarsToLastSwing 		= 70;	// defaullt is 70
-			int 	upcount 		= edgeCount(up: true, plot: false );
-			int 	dncount 		= edgeCount(up:false, plot: false );
-			
-			findNewHighs(upCount: upcount, minSwing: MinBarsToLastSwing );
-			findNewLows(dnCount: dncount, minSwing: MinBarsToLastSwing );
+			findNewHighs(upCount: upcount, minSwing: minBarsToLastSwing );
+			findNewLows(dnCount: dncount, minSwing: minBarsToLastSwing );
 			
 			findShortEntry();
 			findLongeEntry();
@@ -182,11 +190,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			drawLongEntryLine(inLongTrade: entry.inLongTrade);
 			drawShortEntryLine(inShortTrade: entry.inShortTrade);
 			
-			setHardStop(pct: 3, shares: shares, plot: false);
-
-			setPivotStop(swingSize: 5, pivotSlop: 0.2);
+			if( enableHardStop ) { setHardStop(pct: pctHardStop, shares: shares, plot: showHardStops);}
+			if ( enablePivotStop ) { setPivotStop(swingSize: pivotStopSwingSize, pivotSlop: pivotStopPivotRange); }
 			
-			recordTrades(printChart: false, printLog: true, hiLow: true, space: 120, simple: true);
+			recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
 			
 			//	gapPastEntry();
 			//	OpenProfitLockedIn();
@@ -222,6 +229,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			///  plot on 1500 tick chart
 			}
 		
+		
+		
 		public void resetBarsSinceEntry() {
 			if ( entry.inShortTrade == true) { entry.barsSinceEntry = CurrentBar - entry.shortEntryBarnum; }
 			else if ( entry.inLongTrade == true) { entry.barsSinceEntry = CurrentBar - entry.longEntryBarnum; }
@@ -241,7 +250,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					  upDate = "Short Open Profit of " ;
 				  }
 				  double openGain = tradeData.openProfit * shares;
-				  Print("\n"+upDate + tradeData.openProfit.ToString("0.00")+ "pts or $" + openGain.ToString("0.0")); 
+				 // Print("\n"+upDate + tradeData.openProfit.ToString("0.00")+ "pts or $" + openGain.ToString("0.0")); 
 			  }
 		}
 
@@ -420,7 +429,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 										RECORD TRADES
 		/// 
 		/// ****************************************************************************************************************************
-		public void recordTrades(bool printChart, bool printLog, bool hiLow, int space, bool simple){
+		public void recordTrades(bool printChart, bool printLog, bool hiLow, bool simple){
 			
 		    /// calc short profit at long entry
 			if (CurrentBar == entry.longEntryBarnum ) {
@@ -428,11 +437,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if(checkForFirstEntry()) { 
 					tradeData.tradeProfit = 0;
 					tradeData.lastLong = entry.longEntryPrice;
-					calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+					calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 					return; }
 				tradeData.tradeProfit =  entry.shortEntryActual - entry.longEntryActual;
 			 	tradeData.lastLong = entry.longEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 			} else
 			/// calc long profit at short entry
 			if (CurrentBar == entry.shortEntryBarnum ) {
@@ -440,25 +449,25 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if(checkForFirstEntry()) { 
 					tradeData.tradeProfit =  0;
 			 		tradeData.lastShort = entry.shortEntryPrice;
-					calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+					calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 					return; }
 			  	tradeData.tradeProfit =  entry.shortEntryActual - entry.longEntryActual; //entry.shortEntryPrice - tradeData.lastLong;
 			 	tradeData.lastShort = entry.shortEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 			 } else
 			/// calc loss from short hard stop hit
 			if ( CurrentBar == entry.shortHardStopBarnum  ) {
 				tradeData.tradeNum++;
 			    tradeData.tradeProfit = entry.shortEntryPrice -  entry.hardStopLine;
 			 	tradeData.lastShort = entry.shortEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 			} else
 			/// calc loss from long hard stop hit
 			if ( CurrentBar == entry.longHardStopBarnum || CurrentBar == entry.longPivStopBarnum  ) {	
 				tradeData.tradeNum++;
 			  	tradeData.tradeProfit = entry.hardStopLine - entry.longEntryPrice;
 			 	tradeData.lastLong = entry.longEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 			} else
 			/// calc loss from short piv stop hit
 			if (  CurrentBar == entry.shortPivStopBarnum ) {
@@ -466,7 +475,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tradeData.tradeNum++;
 			  	tradeData.tradeProfit = entry.shortEntryActual -  Close[0];
 			 	tradeData.lastShort = entry.shortEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 			} 
 			/// calc loss from long piv stop hit
 			if (  CurrentBar == entry.longPivStopBarnum ) {
@@ -474,7 +483,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tradeData.tradeNum++;
 			  	tradeData.tradeProfit = entry.longEntryActual -  Close[0];
 			 	tradeData.lastLong = entry.longEntryPrice;
-				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, space: space, simple: simple);
+				calcAndShowOnChart(printChart: printChart, printLog: printLog, hiLow: hiLow, simple: simple);
 			} 
 		}
 		
@@ -489,10 +498,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		/// report results
-		public void calcAndShowOnChart(bool printChart, bool printLog, bool hiLow, int space, bool simple) {
+		public void calcAndShowOnChart(bool printChart, bool printLog, bool hiLow, bool simple) {
 			calcTradeStats();
 			concatStats();
-			if( printChart ) { customDrawTrades(show: hiLow, space: space, simple: simple);}
+			if( printChart ) { customDrawTrades(show: hiLow, simple: simple);}
 			
 			if ( printLog )
 				Print("\n"+Time[0].ToString() +" "+ tradeData.report );
@@ -531,32 +540,32 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tradeData.report = allStats;
 		}
 		
-			public void writeToCsv() {
-				string thisDate = "_"+DateTime.Now.ToString("yyyy-M-dd");
-				
-				var	filePath = @"C:\Users\MBPtrader\Documents\NT_CSV\" + Instrument.MasterInstrument.Name + thisDate+".csv" ;
-				//before your loop
-			    var csv = new StringBuilder();
+		public void writeToCsv() {
+			string thisDate = "_"+DateTime.Now.ToString("yyyy-M-dd");
+			
+			var	filePath = @"C:\Users\MBPtrader\Documents\NT_CSV\" + Instrument.MasterInstrument.Name + thisDate+".csv" ;
+			//before your loop
+		    var csv = new StringBuilder();
 
-				string titleRow = "Trade"+","+"Date"+","+"Signal"+","+"Profit"+","+"Sum Profit"+","+"Pct Win"+","+"PF"+","+"LL"+","+"Cost"+","+"ROI";
-				string allStats = tradeData.tradeNum.ToString() + "," +Time[0].ToString("M-dd-yyyy")+","+ tradeData.signalName + "," + tradeData.tradeProfit.ToString("0.00");
-				allStats = allStats + "," + tradeData.totalProfit.ToString("0.00") + "," +  tradeData.pctWin.ToString("0.0");
-				allStats = allStats + "," + tradeData.profitFactor.ToString("0.00") + "," + tradeData.largestLoss.ToString("0.00");
-				allStats = allStats + "," + tradeData.cost.ToString("0") + "," + tradeData.roi.ToString("0.0"); 
-	
-				// create the file 
-				if ( tradeData.tradeNum == 1 ) {
-			    	csv.AppendLine(titleRow);
-					csv.AppendLine(allStats); 
-					File.WriteAllText(filePath, csv.ToString());
-				} else if (allStats != tradeData.csvFile ) {
-			    	csv.AppendLine(allStats);  
-					File.AppendAllText(filePath, csv.ToString());
-				}
-				tradeData.csvFile = allStats;
+			string titleRow = "Trade"+","+"Date"+","+"Signal"+","+"Profit"+","+"Sum Profit"+","+"Pct Win"+","+"PF"+","+"LL"+","+"Cost"+","+"ROI";
+			string allStats = tradeData.tradeNum.ToString() + "," +Time[0].ToString("M-dd-yyyy")+","+ tradeData.signalName + "," + tradeData.tradeProfit.ToString("0.00");
+			allStats = allStats + "," + tradeData.totalProfit.ToString("0.00") + "," +  tradeData.pctWin.ToString("0.0");
+			allStats = allStats + "," + tradeData.profitFactor.ToString("0.00") + "," + tradeData.largestLoss.ToString("0.00");
+			allStats = allStats + "," + tradeData.cost.ToString("0") + "," + tradeData.roi.ToString("0.0"); 
+
+			// create the file 
+			if ( tradeData.tradeNum == 1 ) {
+		    	csv.AppendLine(titleRow);
+				csv.AppendLine(allStats); 
+				File.WriteAllText(filePath, csv.ToString());
+			} else if (allStats != tradeData.csvFile ) {
+		    	csv.AppendLine(allStats);  
+				File.AppendAllText(filePath, csv.ToString());
+			}
+			tradeData.csvFile = allStats;
 		}
 		
-		public void customDrawTrades(bool show, int space, bool simple) {
+		public void customDrawTrades(bool show, bool simple) {
 			// set color
 			if( tradeData.tradeProfit >= 0 ) { textColor = upColor;
 			} else { textColor = downColor;}
@@ -816,9 +825,83 @@ namespace NinjaTrader.NinjaScript.Indicators
 				swingData.prevLow  		= Low[0];
 				swingData.prevLowBarnum 	= 0;	
 		}
-	}
-}
+		
+		
+		#region Properies
 
+		///  inputs
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="Shares", Order=1, GroupName="Parameters")]
+		public int shares
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="Swing Pct", Order=2, GroupName="Parameters")]
+		public double swingPct
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="Min Bars To Last Swing", Order=3, GroupName="Parameters")]
+		public int minBarsToLastSwing
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(Name="Enable Hard Stop", Order=4, GroupName="Parameters")]
+		public bool enableHardStop
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="Pct Hard Stop", Order=5, GroupName="Parameters")]
+		public int pctHardStop
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(Name="Enable Pivot Stop", Order=6, GroupName="Parameters")]
+		public bool enablePivotStop
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="Pivot Stop Swing Size", Order=7, GroupName="Parameters")]
+		public int pivotStopSwingSize
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="Pivot Stop Range", Order=8, GroupName="Parameters")]
+		public double pivotStopPivotRange
+		{ get; set; }
+		
+		/// Statistics
+		[NinjaScriptProperty]
+		[Display(Name="Show Up Count", Order=1, GroupName="Statistics")]
+		public bool showUpCount
+		{ get; set; }
+		[NinjaScriptProperty]
+		[Display(Name="Show Hard Stops", Order=2, GroupName="Statistics")]
+		public bool showHardStops
+		{ get; set; }
+		[NinjaScriptProperty]
+		[Display(Name="Show Trades On Chart", Order=3, GroupName="Statistics")]
+		public bool printTradesOnChart
+		{ get; set; }
+		[NinjaScriptProperty]
+		[Display(Name="Show Trades Simple", Order=4, GroupName="Statistics")]
+		public bool printTradesSimple
+		{ get; set; }
+		[NinjaScriptProperty]
+		[Display(Name="Send Trades To log", Order=5, GroupName="Statistics")]
+		public bool printTradesTolog
+		{ get; set; }
+		
+		#endregion
+		
+	}	
+}
 
 
 
@@ -829,18 +912,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private MooreTechSwing01[] cacheMooreTechSwing01;
-		public MooreTechSwing01 MooreTechSwing01()
+		public MooreTechSwing01 MooreTechSwing01(int shares, double swingPct, int minBarsToLastSwing, bool enableHardStop, int pctHardStop, bool enablePivotStop, int pivotStopSwingSize, double pivotStopPivotRange, bool showUpCount, bool showHardStops, bool printTradesOnChart, bool printTradesSimple, bool printTradesTolog)
 		{
-			return MooreTechSwing01(Input);
+			return MooreTechSwing01(Input, shares, swingPct, minBarsToLastSwing, enableHardStop, pctHardStop, enablePivotStop, pivotStopSwingSize, pivotStopPivotRange, showUpCount, showHardStops, printTradesOnChart, printTradesSimple, printTradesTolog);
 		}
 
-		public MooreTechSwing01 MooreTechSwing01(ISeries<double> input)
+		public MooreTechSwing01 MooreTechSwing01(ISeries<double> input, int shares, double swingPct, int minBarsToLastSwing, bool enableHardStop, int pctHardStop, bool enablePivotStop, int pivotStopSwingSize, double pivotStopPivotRange, bool showUpCount, bool showHardStops, bool printTradesOnChart, bool printTradesSimple, bool printTradesTolog)
 		{
 			if (cacheMooreTechSwing01 != null)
 				for (int idx = 0; idx < cacheMooreTechSwing01.Length; idx++)
-					if (cacheMooreTechSwing01[idx] != null &&  cacheMooreTechSwing01[idx].EqualsInput(input))
+					if (cacheMooreTechSwing01[idx] != null && cacheMooreTechSwing01[idx].shares == shares && cacheMooreTechSwing01[idx].swingPct == swingPct && cacheMooreTechSwing01[idx].minBarsToLastSwing == minBarsToLastSwing && cacheMooreTechSwing01[idx].enableHardStop == enableHardStop && cacheMooreTechSwing01[idx].pctHardStop == pctHardStop && cacheMooreTechSwing01[idx].enablePivotStop == enablePivotStop && cacheMooreTechSwing01[idx].pivotStopSwingSize == pivotStopSwingSize && cacheMooreTechSwing01[idx].pivotStopPivotRange == pivotStopPivotRange && cacheMooreTechSwing01[idx].showUpCount == showUpCount && cacheMooreTechSwing01[idx].showHardStops == showHardStops && cacheMooreTechSwing01[idx].printTradesOnChart == printTradesOnChart && cacheMooreTechSwing01[idx].printTradesSimple == printTradesSimple && cacheMooreTechSwing01[idx].printTradesTolog == printTradesTolog && cacheMooreTechSwing01[idx].EqualsInput(input))
 						return cacheMooreTechSwing01[idx];
-			return CacheIndicator<MooreTechSwing01>(new MooreTechSwing01(), input, ref cacheMooreTechSwing01);
+			return CacheIndicator<MooreTechSwing01>(new MooreTechSwing01(){ shares = shares, swingPct = swingPct, minBarsToLastSwing = minBarsToLastSwing, enableHardStop = enableHardStop, pctHardStop = pctHardStop, enablePivotStop = enablePivotStop, pivotStopSwingSize = pivotStopSwingSize, pivotStopPivotRange = pivotStopPivotRange, showUpCount = showUpCount, showHardStops = showHardStops, printTradesOnChart = printTradesOnChart, printTradesSimple = printTradesSimple, printTradesTolog = printTradesTolog }, input, ref cacheMooreTechSwing01);
 		}
 	}
 }
@@ -849,14 +932,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.MooreTechSwing01 MooreTechSwing01()
+		public Indicators.MooreTechSwing01 MooreTechSwing01(int shares, double swingPct, int minBarsToLastSwing, bool enableHardStop, int pctHardStop, bool enablePivotStop, int pivotStopSwingSize, double pivotStopPivotRange, bool showUpCount, bool showHardStops, bool printTradesOnChart, bool printTradesSimple, bool printTradesTolog)
 		{
-			return indicator.MooreTechSwing01(Input);
+			return indicator.MooreTechSwing01(Input, shares, swingPct, minBarsToLastSwing, enableHardStop, pctHardStop, enablePivotStop, pivotStopSwingSize, pivotStopPivotRange, showUpCount, showHardStops, printTradesOnChart, printTradesSimple, printTradesTolog);
 		}
 
-		public Indicators.MooreTechSwing01 MooreTechSwing01(ISeries<double> input )
+		public Indicators.MooreTechSwing01 MooreTechSwing01(ISeries<double> input , int shares, double swingPct, int minBarsToLastSwing, bool enableHardStop, int pctHardStop, bool enablePivotStop, int pivotStopSwingSize, double pivotStopPivotRange, bool showUpCount, bool showHardStops, bool printTradesOnChart, bool printTradesSimple, bool printTradesTolog)
 		{
-			return indicator.MooreTechSwing01(input);
+			return indicator.MooreTechSwing01(input, shares, swingPct, minBarsToLastSwing, enableHardStop, pctHardStop, enablePivotStop, pivotStopSwingSize, pivotStopPivotRange, showUpCount, showHardStops, printTradesOnChart, printTradesSimple, printTradesTolog);
 		}
 	}
 }
@@ -865,14 +948,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.MooreTechSwing01 MooreTechSwing01()
+		public Indicators.MooreTechSwing01 MooreTechSwing01(int shares, double swingPct, int minBarsToLastSwing, bool enableHardStop, int pctHardStop, bool enablePivotStop, int pivotStopSwingSize, double pivotStopPivotRange, bool showUpCount, bool showHardStops, bool printTradesOnChart, bool printTradesSimple, bool printTradesTolog)
 		{
-			return indicator.MooreTechSwing01(Input);
+			return indicator.MooreTechSwing01(Input, shares, swingPct, minBarsToLastSwing, enableHardStop, pctHardStop, enablePivotStop, pivotStopSwingSize, pivotStopPivotRange, showUpCount, showHardStops, printTradesOnChart, printTradesSimple, printTradesTolog);
 		}
 
-		public Indicators.MooreTechSwing01 MooreTechSwing01(ISeries<double> input )
+		public Indicators.MooreTechSwing01 MooreTechSwing01(ISeries<double> input , int shares, double swingPct, int minBarsToLastSwing, bool enableHardStop, int pctHardStop, bool enablePivotStop, int pivotStopSwingSize, double pivotStopPivotRange, bool showUpCount, bool showHardStops, bool printTradesOnChart, bool printTradesSimple, bool printTradesTolog)
 		{
-			return indicator.MooreTechSwing01(input);
+			return indicator.MooreTechSwing01(input, shares, swingPct, minBarsToLastSwing, enableHardStop, pctHardStop, enablePivotStop, pivotStopSwingSize, pivotStopPivotRange, showUpCount, showHardStops, printTradesOnChart, printTradesSimple, printTradesTolog);
 		}
 	}
 }
