@@ -19,6 +19,7 @@ using NinjaTrader.Data;
 using NinjaTrader.NinjaScript;
 using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
+using System.IO;
 #endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it. 
@@ -84,6 +85,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public 	double	largestOpenDraw	{ get; set; }
 		public 	string	report 			{ get; set; }
 		public 	string	reportSimple	{ get; set; }
+		public 	string	csvFile			{ get; set; }
 		
 	}
 	
@@ -163,8 +165,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			resetBarsSinceEntry();
 			mySpace = ATR(14)[0];
 			int 	MinBarsToLastSwing 		= 70;	// defaullt is 70
-			int 	upcount 		= edgeCount(up: true, plot: true );
-			int 	dncount 		= edgeCount(up:false, plot: true );
+			int 	upcount 		= edgeCount(up: true, plot: false );
+			int 	dncount 		= edgeCount(up:false, plot: false );
 			
 			findNewHighs(upCount: upcount, minSwing: MinBarsToLastSwing );
 			findNewLows(dnCount: dncount, minSwing: MinBarsToLastSwing );
@@ -185,11 +187,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			OpenProfitLockedIn();
 			///  since I added setPiveStop, performace dropped Why?
 			///  not finding and gap entries
-			///  can MinBarsToLastSwing be dynamically adjusted?
-			///  why doesnt this work on oil?
-			///  output to excel
-			///  show portfolio of SPY USO EURO
-			///  plot on 150 tick chart
+			///  can MinBarsToLastSwing be dynamically adjusted do USO or Forex works?
+			/// 
+			///  show portfolio of SPY GUSH EURO
+			///  plot on 1500 tick chart
 			}
 		
 		public void resetBarsSinceEntry() {
@@ -493,8 +494,34 @@ namespace NinjaTrader.NinjaScript.Indicators
 				allStats = allStats + "\n" + tradeData.totalProfit.ToString("0.00") + " pts" + " " + tradeData.pctWin.ToString("0.0") + "%";
 				allStats = allStats + "\n" + tradeData.profitFactor.ToString("0.00") + "Pf  LL " + tradeData.largestLoss.ToString("0.00");
 				allStats = allStats + "\n$" + tradeData.cost.ToString("0") + " Cost " + tradeData.roi.ToString("0.0") + "% Roi"; 
-				tradeData.signalName = "*";
+				writeToCsv();
+				//tradeData.signalName = "*";
 				tradeData.report = allStats;
+		}
+		
+			public void writeToCsv() {
+				string thisDate = "_"+DateTime.Now.ToString("yyyy-M-dd");
+				
+				var	filePath = @"C:\Users\MBPtrader\Documents\NT_CSV\" + Instrument.MasterInstrument.Name + thisDate+".csv" ;
+				//before your loop
+			    var csv = new StringBuilder();
+
+				string titleRow = "Trade"+","+"Date"+","+"Signal"+","+"Profit"+","+"Sum Profit"+","+"Pct Win"+","+"PF"+","+"LL"+","+"Cost"+","+"ROI";
+				string allStats = tradeData.tradeNum.ToString() + "," +Time[0].ToString("M-dd-yyyy")+","+ tradeData.signalName + "," + tradeData.tradeProfit.ToString("0.00");
+				allStats = allStats + "," + tradeData.totalProfit.ToString("0.00") + "," +  tradeData.pctWin.ToString("0.0");
+				allStats = allStats + "," + tradeData.profitFactor.ToString("0.00") + "," + tradeData.largestLoss.ToString("0.00");
+				allStats = allStats + "," + tradeData.cost.ToString("0") + "," + tradeData.roi.ToString("0.0"); 
+	
+				// create the file 
+				if ( tradeData.tradeNum == 1 ) {
+			    	csv.AppendLine(titleRow);
+					csv.AppendLine(allStats); 
+					File.WriteAllText(filePath, csv.ToString());
+				} else if (allStats != tradeData.csvFile ) {
+			    	csv.AppendLine(allStats);  
+					File.AppendAllText(filePath, csv.ToString());
+				}
+				tradeData.csvFile = allStats;
 		}
 		
 		public void customDrawTrades(bool show, int space, bool simple) {
