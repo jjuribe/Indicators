@@ -91,7 +91,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 	
 	public class MooreTechSwing01 : Indicator
 	{
-		private Swing 	Swing1;
+		private Swing 		Swing1;
+		private RSI			Rsi1;
+		private	Bollinger	Bollinger1;		
+		
 		private Brush 	upColor 	= Brushes.Green;
 		private Brush 	downColor	= Brushes.Red;
 		private Brush 	textColor	= Brushes.Red;
@@ -148,7 +151,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if(State == State.DataLoaded)
 			  {
 			    ClearOutputWindow();     
-				  Swing1				= Swing(5);
+				  Swing1				= Swing(5);	// for piv stops
+				  Rsi1					= RSI(14, 1);
+				  Bollinger1			= Bollinger(2, 20);				  
 			  } 
 		}
 		///******************************************************************************************************************************
@@ -164,7 +169,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			
 			resetBarsSinceEntry();
-			mySpace = ATR(14)[0];
+			
 			int 	MinBarsToLastSwing 		= 70;	// defaullt is 70
 			int 	upcount 		= edgeCount(up: true, plot: false );
 			int 	dncount 		= edgeCount(up:false, plot: false );
@@ -178,29 +183,24 @@ namespace NinjaTrader.NinjaScript.Indicators
 			drawLongEntryLine(inLongTrade: entry.inLongTrade);
 			drawShortEntryLine(inShortTrade: entry.inShortTrade);
 			
-			setHardStop(pct: 3, shares: shares);
+			setHardStop(pct: 3, shares: shares, plot: false);
 
 			setPivotStop(swingSize: 5, pivotSlop: 0.2);
 			
-			recordTrades(printChart: true, printLog: true, hiLow: true, space: 120, simple: true);
+			recordTrades(printChart: false, printLog: true, hiLow: true, space: 120, simple: true);
 			
 			gapPastEntry();
 			OpenProfitLockedIn();
-			///  since I added setPiveStop, performace dropped Why?
+			
 			///  not finding and gap entries
-			///  can MinBarsToLastSwing be dynamically adjusted do USO or Forex works?
+			///  Good Spy, Gush, QQQ, Not good Uso, Eur, Fx
 			/// 
-			/// find new highs has hard coded range of 1.5 226 1.5 / 226 = 0.00663 && 226 * 0.00663 = 1.49
-			/// find min swing as pct of close, old hard coded value is 1.5
-			/// 226 * 0.00663 = 1.49
-			/// swingPct 0.005 = .9 - 1.2 and much better
-			/// Good Spy, Gush, QQQ, Not good Uso, Eur, Fx
-			/// 
-			/// put indicators in  stste.dataloaded
+			///  put indicators in  stste.dataloaded
 			///  make strat to show max open draw down
 			///  show portfolio of SPY GUSH EURO
 			///  emable errors sen to text, especiallt data disconnect
 			///  start auto trading
+			///  use dx graphica
 			///  plot on 1500 tick chart
 			}
 		
@@ -223,7 +223,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					  upDate = "Short Open Profit of " ;
 				  }
 				  double openGain = tradeData.openProfit * shares;
-				  Print(upDate + tradeData.openProfit.ToString("0.00")+ "pts or $" + openGain.ToString("0.0")); 
+				  Print("\n"+upDate + tradeData.openProfit.ToString("0.00")+ "pts or $" + openGain.ToString("0.0")); 
 			  }
 		}
 
@@ -343,7 +343,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 										set Hard Stop
 		/// 
 		/// ****************************************************************************************************************************
-		public void setHardStop(double pct, int shares) {
+		public void setHardStop(double pct, int shares, bool plot) {
 			/// find long entry price /// calc trade cost
 			if (CurrentBar == entry.longEntryBarnum ) {
 				double pctPrice = pct * 0.01;
@@ -355,7 +355,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				entry.hardStopLine = Close[0]  + ( Close[0] * pctPrice);
 			}
 			/// draw hard stop line
-			drawHardStops();
+			drawHardStops(plot: plot);
 			/// exit at hard stop
 			exitFromStop();
 		}
@@ -377,7 +377,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
 		
-		public void drawHardStops() {
+		public void drawHardStops(bool plot) {
+			if( !plot ) {
+				return;
+			}
 			/// draw hard stop line 
 			int lineLength = 0;
 			string lineName = "";
@@ -663,12 +666,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 			int result = 0;
 			
 			/// rsi section
-			if ( RSI(14, 1)[0] > 70 ) { upCount ++;}		
-			if ( RSI(14, 1)[0] < 30 ) {	dnCount ++;} 
+			if ( Rsi1[0]> 70 ) { upCount ++;}		
+			if ( Rsi1[0] < 30 ) {	dnCount ++;} 
 
 			/// bollinger section			
-			if ( High[0] > Bollinger(2, 20).Upper[0]) {	upCount ++; }	
-			if ( Low[0] < Bollinger(2, 20).Lower[0]) {	dnCount ++; }
+			if ( High[0] > Bollinger1.Upper[0] ) {	upCount ++; }	
+			if ( Low[0] <  Bollinger1.Lower[0] ) {	dnCount ++; }
 				
 			/// highest high section
 			if (High[0] >= MAX(High, 20)[1] ) { upCount ++;}
