@@ -211,7 +211,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
 			///  write strat to show max open draw down
 			/// 
-			///  task: add commission
 			///  task: add strategy inputs
 			///  show portfolio of SPY GUSH EURO
 			///  enable errors sent to text, especially data disconnect
@@ -840,7 +839,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		[NinjaScriptProperty]
 		[Range(0, double.MaxValue)]
-//		[Display(Name="Swing Pct", Order=2, GroupName="Parameters")]
+		[Display(Name="Swing Pct", Order=2, GroupName="Parameters")]
 		public double swingPct
 		{ get; set; }
 		
