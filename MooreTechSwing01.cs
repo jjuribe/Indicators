@@ -66,8 +66,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public	int 	shortPivStopBarnum	{ get; set; }
 		public	int 	pivStopCounter	{ get; set; }
 		public	double 	lastPivotValue 	{ get; set; }
-		public	int 	pivLineLength	{ get; set; }
-
+		public	int 	pivLineLength	{ get; set; }  
 	}
 	
 	public struct TradeData
@@ -105,7 +104,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Brush 	textColor	= Brushes.Red;
 		
 		///  signal 
-		private Series<int> signal;
+		private Series<int> signals;
 		
 		
 		private SwingData swingData = new SwingData
@@ -168,13 +167,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Configure)
 			{
-			}
+                signals = new Series<int>(this, MaximumBarsLookBack.Infinite); // for starategy integration
+            }
 			else if(State == State.DataLoaded)
 			  {
 			    ClearOutputWindow();     
 				  Swing1				= Swing(5);	// for piv stops
 				  Rsi1					= RSI(14, 1);
-				  Bollinger1			= Bollinger(2, 20);				  
+				  Bollinger1			= Bollinger(2, 20);	
 			  } 
 		}
 		///******************************************************************************************************************************
@@ -202,7 +202,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if( enableHardStop ) { setHardStop(pct: pctHardStop, shares: shares, plot: showHardStops);}
 			if ( enablePivotStop ) { setPivotStop(swingSize: pivotStopSwingSize, pivotSlop: pivotStopPivotRange); }
 			
-			recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
+			//recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
 			
 			//	gapPastEntry();
 			//	OpenProfitLockedIn();
@@ -211,6 +211,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
 			///  write strat to show max open draw down
 			/// 
+			///  task: add commission
+			///  task: add strategy inputs
 			///  show portfolio of SPY GUSH EURO
 			///  enable errors sent to text, especially data disconnect
 			///  start auto trading
@@ -219,6 +221,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			///  not finding any gap entries use playback to confirm
 			///  clac position size from 1. account size, 2. number of strategies
 			///  plot on 1500 tick chart
+			/// 
 			}
 		
 		
@@ -242,7 +245,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 					  upDate = "Short Open Profit of " ;
 				  }
 				  double openGain = tradeData.openProfit * shares;
-				 // Print("\n"+upDate + tradeData.openProfit.ToString("0.00")+ "pts or $" + openGain.ToString("0.0")); 
 			  }
 		}
 
@@ -337,8 +339,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			if (CurrentBar > entry.longEntryBarnum &&  entry.pivStopCounter >= 2 && entry.inLongTrade && Low[0] <= entry.lastPivotValue ) {
 				Draw.Dot(this, "testDot"+CurrentBar, true, 0, entry.lastPivotValue, Brushes.Magenta);
-				/// need short trades to debug this no long stops hit
 				entry.inLongTrade = false;
+                signals[0]  = 2;
 				entry.longPivStopBarnum = CurrentBar;
 				tradeData.signalName = "LX - PS";
 				entry.pivLineLength = 0;
@@ -348,8 +350,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			if (CurrentBar > entry.shortEntryBarnum &&  entry.pivStopCounter >= 2 && entry.inShortTrade && High[0] >= entry.lastPivotValue ) {
 				Draw.Dot(this, "testDot"+CurrentBar, true, 0, entry.lastPivotValue, Brushes.Magenta);
-				/// need short trades to debug this no long stops hit
 				entry.inShortTrade = false;
+                signals[0] = -2;	
 				entry.shortPivStopBarnum = CurrentBar;
 				tradeData.signalName = "SX - PS";
 				entry.pivLineLength = 0;
@@ -384,12 +386,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if ( entry.inLongTrade && Low[0] <= entry.hardStopLine ) {
 				/// need short trades to debug this no long stops hit
 				entry.inLongTrade = false;
+                signals[0] = 2;
 				entry.longHardStopBarnum	= CurrentBar;
 				tradeData.signalName = "LX - HS";
 				entry.barsSinceEntry = 0;
 			} else if ( entry.inShortTrade && High[0] >= entry.hardStopLine ) {
 				/// need short trades to debug this no long stops hit
 				entry.inShortTrade = false;
+                signals[0] = -2;
 				entry.shortHardStopBarnum	= CurrentBar;
 				tradeData.signalName = "SX - HS";
 				entry.barsSinceEntry = 0;
@@ -582,9 +586,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
  
-		/// <summary>
 		/// Long Entry Logic
-		/// </summary>
 		public void drawLongEntryLine(bool inLongTrade){
 			if ( inLongTrade ) { 
 				return;
@@ -614,8 +616,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if ( High[0] > entry.longEntryPrice && Low[0] < entry.longEntryPrice ) {
 				
 				ArrowUp myArrowUp = Draw.ArrowUp(this, "LEmade"+ CurrentBar.ToString(), true, 0, entry.longEntryPrice - (TickSize * 5), Brushes.LimeGreen);
-				myArrowUp.OutlineBrush = Brushes.LimeGreen;
+				//myArrowUp.OutlineBrush = Brushes.LimeGreen;
 				entry.inLongTrade = true;
+                //signals[0] = 1;
+                signals[0] = 1;
 				tradeData.signalName = "LE";
 				entry.inShortTrade = false;
 				entry.longEntryBarnum = CurrentBar;
@@ -638,7 +642,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			entry.shortLineLength++ ;
 			
 			if ( entry.shortEntryPrice != 0 ) {
-				//Draw.Text(this, "SE"+CurrentBar, "*", 0, entry.shortEntryPrice);
 				RemoveDrawObject("SeLine"+ (CurrentBar - 1));
 				Draw.Line(this, "SeLine"+CurrentBar.ToString(), false, entry.shortLineLength, entry.shortEntryPrice, 0, 
 					entry.shortEntryPrice, Brushes.Red, DashStyleHelper.Solid, 4);
@@ -659,9 +662,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			if ( High[0] > entry.shortEntryPrice && Low[0] < entry.shortEntryPrice ) {
 				ArrowDown myArrowDn = Draw.ArrowDown(this, "SEmade"+ CurrentBar.ToString(), true, 0, entry.shortEntryPrice + (TickSize * 5), Brushes.Red);
-				myArrowDn.OutlineBrush = Brushes.Red;
+				//myArrowDn.OutlineBrush = Brushes.Red;
 				entry.inLongTrade = false;
 				entry.inShortTrade = true;
+                //signals[0] = -1;
+                signals[0] = -1;
 				tradeData.signalName = "SE";
 				entry.shortEntryBarnum = CurrentBar;
 				/// reset pivot data
@@ -717,9 +722,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public void findNewHighs(int upCount, double minSwing){
 			/// find min swing as pct of close, old hard coded value is 1.5
 			/// 226 * 0.00663 = 1.49
-			/// swingPct 0.005 = .9 - 1.2 and much better
-			double minPriceSwing = Close[0] * swingPct;
-			//Print(minPriceSwing);
+			/// swingPct 0.005 = .9 - 1.2 and much better results
+			double minPriceSwing = Close[0] * swingPct;;
 
 			if ( upCount!= 0 && High[0] - swingData.lastLow > minPriceSwing ) {
 				swingData.prevHigh = swingData.lastHigh;
@@ -753,8 +757,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		/// looking short
-		/// </summary>
-		/// <param name="upCount"></param>
 		public void findShortEntry() {
 			if ( swingData.lastHighBarnum > swingData.lastLowBarnum ) {
 				int distanceToLow = CurrentBar - swingData.lastLowBarnum;
@@ -800,7 +802,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				/// show swing low height
 				double swingProfit = (dnSwingDistance * 0.236) * 100;				
 			}	else {
-				// disable long entry
+				/// disable long entry
 				entry.longEntryPrice = 0;
 				entry.longLineLength = 0;
 			}
@@ -820,14 +822,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		
 		#region Properies
-		/// <summary>
 		///  signal
-		/// </summary>
+		
 		[Browsable(false)]
 		[XmlIgnore]
-		public Series<int> Signal
+		public Series<int> Signals
 		{
-			get { return signal; }
+			get { return signals; }
 		}
 		
 		///  inputs
@@ -839,7 +840,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		[NinjaScriptProperty]
 		[Range(0, double.MaxValue)]
-		[Display(Name="Swing Pct", Order=2, GroupName="Parameters")]
+//		[Display(Name="Swing Pct", Order=2, GroupName="Parameters")]
 		public double swingPct
 		{ get; set; }
 		
