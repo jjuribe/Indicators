@@ -202,18 +202,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if( enableHardStop ) { setHardStop(pct: pctHardStop, shares: shares, plot: showHardStops);}
 			if ( enablePivotStop ) { setPivotStop(swingSize: pivotStopSwingSize, pivotSlop: pivotStopPivotRange); }
 			
-			//recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
-			
+			///	these functions under developement and disabled
+			//  recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
 			//	gapPastEntry();
 			//	OpenProfitLockedIn();
 			
 			
 			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
-			///  write strat to show max open draw down
 			/// 
-			///  task: add strategy inputs
-			///  show portfolio of SPY GUSH EURO
-			///  enable errors sent to text, especially data disconnect
+			///  enable data disconnect share
+			///  task: market open, close, trade stats share
+			/// 
 			///  start auto trading
 			///  make FOMC look for neg afffects
 			///  use dx graphica

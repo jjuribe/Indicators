@@ -61,12 +61,32 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
+			if( SendMailOn ) {
+				string messageBody = "On " + Time[0].ToShortDateString() + " at " + Time[0].ToShortTimeString() + " A Long Entry on " + Instrument.MasterInstrument.Name + " was generated at " + Close[0];
+				string messageTitle = "Long Entry On " + Instrument.MasterInstrument.Name;
+				
+				// in order to send mail and SMS, you must delay each call
+				if (IsFirstTickOfBar && State == State.Realtime)
+				  {
+				    // Instead of Thread.Sleep for, create a timer that runs at the desired interval
+				    System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer {Interval = 5000};
+				 
+				    // queue the "after" logic to run when the timer elapses
+				    timer.Tick += delegate
+				    {
+				        timer.Stop(); // make sure to stop the timer to only fire ones (if desired)
+				        Print("Run SMS after: " + DateTime.Now);
+						Share("EcoMail", messageBody, new object[]{ "3103824522@tmomail.net", messageTitle });
+				        timer.Dispose(); // make sure to dispose of the timer
+				    };
+	 
+				    Print("Run Mail before: " + DateTime.Now);
+				 	Share("EcoMail", messageBody, new object[]{ "whansen1@mac.com", messageTitle });
+				    timer.Start(); // start the timer immediately following the "before" logic
+	  			}
+			}
 			
-			string messageBody = "On " + Time[0].ToShortDateString() + " at " + Time[0].ToShortTimeString() + " A Long Entry on " + Instrument.MasterInstrument.Name + " was generated at " + Close[0];
 			
-			string messageTitle = "Long Entry On " + Instrument.MasterInstrument.Name;
-
-			Share("Hotmail", messageBody, new object[]{ "whansen1@mac.com", messageTitle, @"C:\Users\MBPtrader\Pictures\EURUSD_Opt_6_27.PNG"});
 			
 			
 			/*
