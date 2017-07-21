@@ -74,22 +74,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if(connectionStatusUpdate.Status == ConnectionStatus.Connected)
 			  {
-				string message = ComputerName+ " Connected at " + DateTime.Now;
-				messageToDisplay = message;
-			    Print(message);
+				messageToDisplay = ComputerName+ " Connected at " + DateTime.Now;
+			    Print(messageToDisplay);
 				signal = 1;
 				sendMessage(message: messageToDisplay);
-				appendConnectionFile(message: messageToDisplay);
+				//appendConnectionFile(message: messageToDisplay);
 			  }
 			  
 			  else if(connectionStatusUpdate.Status == ConnectionStatus.ConnectionLost)
 			  {
-				string message = ComputerName+" Connection lost at: " + DateTime.Now;
-				messageToDisplay = message;
-				Print(message);
+				messageToDisplay = ComputerName+" Connection lost at: " + DateTime.Now;
+				Print(messageToDisplay);
 				signal = -1;
 				sendMessage(message: messageToDisplay);
-				appendConnectionFile(message: messageToDisplay);
+				//appendConnectionFile(message: messageToDisplay);
 			  }
 		}
 
@@ -100,38 +98,57 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		public void appendConnectionFile(string message) {
-			// write connection to a file
-			sw = File.AppendText(Path);  // Open the path for writing
-			sw.WriteLine( Instrument.MasterInstrument.Name +", "+ Time[0] + ", " + Open[0] + ", " + High[0] + ", " + Low[0] + ", " + Close[0] + ", " + signal ); // Append a new line to the file
-			sw.WriteLine(message);
-			sw.Close(); // Close the file to allow future calls to access the file again
+			try {
+				// write connection to a file
+				sw = File.AppendText(Path);  // Open the path for writing
+				sw.WriteLine( Instrument.MasterInstrument.Name +", "+ Time[0] + ", " + Open[0] + ", " + High[0] + ", " + Low[0] + ", " + Close[0] + ", " + signal ); // Append a new line to the file
+				sw.WriteLine(message);
+				sw.Close(); // Close the file to allow future calls to access the file again
+			}
+			catch(IOException e) {
+						Print(
+				        "{0}: The write operation could not " +
+				        "be performed because the specified " +
+				        "part of the file is locked." + 
+				        e.GetType().Name);
+					}
 		}
 		
 		public void sendMessage(string message) {
 			string messageBody =  message;
 			string messageTitle = message;
 				
-				// in order to send mail and SMS, you must delay each call
-				if (IsFirstTickOfBar &&  State == State.Realtime)
-				  {
-				    // Instead of Thread.Sleep for, create a timer that runs at the desired interval
-				    System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer {Interval = 5000};
-				 
-				    // queue the "after" logic to run when the timer elapses
-				    timer.Tick += delegate
-				    {
-				        timer.Stop(); // make sure to stop the timer to only fire ones (if desired)
-				        Print("Run SMS after: " + DateTime.Now);
-						if( SendSMS )
-							Share("EcoMail", messageBody, new object[]{ "3103824522@tmomail.net", messageTitle });
-				        timer.Dispose(); // make sure to dispose of the timer
-				    };
-	 
-				    Print("Run Mail before: " + DateTime.Now);
-					if( SendMail )
-				 		Share("EcoMail", messageBody, new object[]{ "whansen1@mac.com", messageTitle });
-				    timer.Start(); // start the timer immediately following the "before" logic
-	  			}
+			try {
+					// in order to send mail and SMS, you must delay each call
+					if (IsFirstTickOfBar &&  State == State.Realtime)
+					  {
+					    // Instead of Thread.Sleep for, create a timer that runs at the desired interval
+					    System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer {Interval = 5000};
+					 
+					    // queue the "after" logic to run when the timer elapses
+					    timer.Tick += delegate
+					    {
+					        timer.Stop(); // make sure to stop the timer to only fire ones (if desired)
+					        Print("Run SMS after: " + DateTime.Now);
+							if( SendSMS )
+								Share("EcoMail", messageBody, new object[]{ "3103824522@tmomail.net", messageTitle });
+					        timer.Dispose(); // make sure to dispose of the timer
+					    };
+		 
+					    Print("Run Mail before: " + DateTime.Now);
+						if( SendMail )
+					 		Share("EcoMail", messageBody, new object[]{ "whansen1@mac.com", messageTitle });
+					    timer.Start(); // start the timer immediately following the "before" logic
+		  			}
+					}
+					catch(IOException e) {
+						Print(
+				        "{0}: The write Mail could not " +
+				        "be performed because the specified " +
+				        "part of the file is locked." + 
+				        e.GetType().Name);
+					}
+				
 		}
 
 		#region Properties
