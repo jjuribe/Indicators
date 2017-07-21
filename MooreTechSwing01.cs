@@ -210,16 +210,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
 			/// 
-			///  enable data disconnect, order rejected share
-			/// 
-			///  deploy to VPS + start auto trading
-			///  confirm message settings on platform
-			///  make FOMC look for neg afffects
+			///  how do I sychonisze a strat that is always in?
+			/// 	1. read up on this. does wait till flat sell at next signal?
+			/// 	2. manually sell at the next swing and select immediately submit, synchonize account?
+			///  enable data disconnect, order rejected share - may need to write C# that sista on platform
+			
 			///  use dx graphica
 			///  not finding any gap entries use playback to confirm
 			///  clac position size from 1. account size, 2. number of strategies
 			///  plot on 1500 tick chart
-			/// 
+			///  make FOMC look for neg afffects
 			}
 		
 		
