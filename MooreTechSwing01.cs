@@ -210,12 +210,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
 			/// 
-			///  how do I sychonisze a strat that is always in?
-			/// 	1. read up on this. does wait till flat sell at next signal?
-			/// 	2. manually sell at the next swing and select immediately submit, synchonize account?
-			///  enable data disconnect, order rejected share - may need to write C# that sista on platform
+			/// unhandled exception, must be within the bounds
+			/// how do I synchronize a strat that is always in the market?
+			/// 1. read up on this. do I wait till rev sell at next signal?
+			/// 2. manually sell at the next swing and select immediately submit + synchronize account?
+			/// enable data disconnect warning, order rejected share - may need to write C# that sits on platform
+		
 			
-			///  use dx graphica
+			///  use dx graphics and follow all best practices
 			///  not finding any gap entries use playback to confirm
 			///  clac position size from 1. account size, 2. number of strategies
 			///  plot on 1500 tick chart

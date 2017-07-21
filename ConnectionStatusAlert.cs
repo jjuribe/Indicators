@@ -19,6 +19,7 @@ using NinjaTrader.Data;
 using NinjaTrader.NinjaScript;
 using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
+using System.IO;
 #endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it. 
@@ -28,6 +29,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 	{
 		string messageToDisplay = "no message yet";
 		int signal = 0;
+		/// a variable for the StreamWriter that will be used 
+		private StreamWriter sw; 
+		
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -47,10 +51,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive					= true;
 				SendMail									= true;
 				SendSMS										= true;
+				ComputerName								= "MBP";
+				Path	=	@"C:\Users\MBPtrader\Documents\NT_CSV\connected.csv";
 				AddPlot(Brushes.Red, "ConnetionUp");
 			}
 			else if (State == State.Configure)
 			{
+			} 
+			// Necessary to call in order to clean up resources used by the StreamWriter object
+			else if(State == State.Terminated)
+			{
+				if (sw != null)
+				{
+					sw.Close();
+					sw.Dispose();
+					sw = null;
+				}
 			}
 		}
 
@@ -58,27 +74,37 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if(connectionStatusUpdate.Status == ConnectionStatus.Connected)
 			  {
-				string message = " Connected at " + DateTime.Now;
+				string message = ComputerName+ " Connected at " + DateTime.Now;
 				messageToDisplay = message;
 			    Print(message);
 				signal = 1;
 				sendMessage(message: messageToDisplay);
+				appendConnectionFile(message: messageToDisplay);
 			  }
 			  
 			  else if(connectionStatusUpdate.Status == ConnectionStatus.ConnectionLost)
 			  {
-				string message = " Connection lost at: " + DateTime.Now;
+				string message = ComputerName+" Connection lost at: " + DateTime.Now;
 				messageToDisplay = message;
 				Print(message);
 				signal = -1;
 				sendMessage(message: messageToDisplay);
+				appendConnectionFile(message: messageToDisplay);
 			  }
 		}
 
 		protected override void OnBarUpdate()
 		{
-			Draw.TextFixed(this, "tag1", messageToDisplay, TextPosition.TopRight);
+			Draw.TextFixed(this, "tag1", messageToDisplay, TextPosition.BottomRight);
 			ConnetionUp[0] = signal;
+		}
+		
+		public void appendConnectionFile(string message) {
+			// write connection to a file
+			sw = File.AppendText(Path);  // Open the path for writing
+			sw.WriteLine( Instrument.MasterInstrument.Name +", "+ Time[0] + ", " + Open[0] + ", " + High[0] + ", " + Low[0] + ", " + Close[0] + ", " + signal ); // Append a new line to the file
+			sw.WriteLine(message);
+			sw.Close(); // Close the file to allow future calls to access the file again
 		}
 		
 		public void sendMessage(string message) {
@@ -118,6 +144,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(Name="SendSMS", Order=2, GroupName="Parameters")]
 		public bool SendSMS
 		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(Name="Computer Name", Order=3, GroupName="Parameters")]
+		public string ComputerName
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(Name="File Path", Order=4, GroupName="Parameters")]
+		public string Path
+		{ get; set; }
 
 		[Browsable(false)]
 		[XmlIgnore]
@@ -137,18 +173,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private ConnectionStatusAlert[] cacheConnectionStatusAlert;
-		public ConnectionStatusAlert ConnectionStatusAlert(bool sendMail, bool sendSMS)
+		public ConnectionStatusAlert ConnectionStatusAlert(bool sendMail, bool sendSMS, string computerName, string path)
 		{
-			return ConnectionStatusAlert(Input, sendMail, sendSMS);
+			return ConnectionStatusAlert(Input, sendMail, sendSMS, computerName, path);
 		}
 
-		public ConnectionStatusAlert ConnectionStatusAlert(ISeries<double> input, bool sendMail, bool sendSMS)
+		public ConnectionStatusAlert ConnectionStatusAlert(ISeries<double> input, bool sendMail, bool sendSMS, string computerName, string path)
 		{
 			if (cacheConnectionStatusAlert != null)
 				for (int idx = 0; idx < cacheConnectionStatusAlert.Length; idx++)
-					if (cacheConnectionStatusAlert[idx] != null && cacheConnectionStatusAlert[idx].SendMail == sendMail && cacheConnectionStatusAlert[idx].SendSMS == sendSMS && cacheConnectionStatusAlert[idx].EqualsInput(input))
+					if (cacheConnectionStatusAlert[idx] != null && cacheConnectionStatusAlert[idx].SendMail == sendMail && cacheConnectionStatusAlert[idx].SendSMS == sendSMS && cacheConnectionStatusAlert[idx].ComputerName == computerName && cacheConnectionStatusAlert[idx].Path == path && cacheConnectionStatusAlert[idx].EqualsInput(input))
 						return cacheConnectionStatusAlert[idx];
-			return CacheIndicator<ConnectionStatusAlert>(new ConnectionStatusAlert(){ SendMail = sendMail, SendSMS = sendSMS }, input, ref cacheConnectionStatusAlert);
+			return CacheIndicator<ConnectionStatusAlert>(new ConnectionStatusAlert(){ SendMail = sendMail, SendSMS = sendSMS, ComputerName = computerName, Path = path }, input, ref cacheConnectionStatusAlert);
 		}
 	}
 }
@@ -157,14 +193,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(bool sendMail, bool sendSMS)
+		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(bool sendMail, bool sendSMS, string computerName, string path)
 		{
-			return indicator.ConnectionStatusAlert(Input, sendMail, sendSMS);
+			return indicator.ConnectionStatusAlert(Input, sendMail, sendSMS, computerName, path);
 		}
 
-		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(ISeries<double> input , bool sendMail, bool sendSMS)
+		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(ISeries<double> input , bool sendMail, bool sendSMS, string computerName, string path)
 		{
-			return indicator.ConnectionStatusAlert(input, sendMail, sendSMS);
+			return indicator.ConnectionStatusAlert(input, sendMail, sendSMS, computerName, path);
 		}
 	}
 }
@@ -173,14 +209,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(bool sendMail, bool sendSMS)
+		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(bool sendMail, bool sendSMS, string computerName, string path)
 		{
-			return indicator.ConnectionStatusAlert(Input, sendMail, sendSMS);
+			return indicator.ConnectionStatusAlert(Input, sendMail, sendSMS, computerName, path);
 		}
 
-		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(ISeries<double> input , bool sendMail, bool sendSMS)
+		public Indicators.ConnectionStatusAlert ConnectionStatusAlert(ISeries<double> input , bool sendMail, bool sendSMS, string computerName, string path)
 		{
-			return indicator.ConnectionStatusAlert(input, sendMail, sendSMS);
+			return indicator.ConnectionStatusAlert(input, sendMail, sendSMS, computerName, path);
 		}
 	}
 }
