@@ -210,10 +210,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
 			/// 
-			///  enable data disconnect share
-			///  task: market open, close, trade stats share
+			///  enable data disconnect, order rejected share
 			/// 
-			///  start auto trading
+			///  deploy to VPS + start auto trading
+			///  confirm message settings on platform
 			///  make FOMC look for neg afffects
 			///  use dx graphica
 			///  not finding any gap entries use playback to confirm
