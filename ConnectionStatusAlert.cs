@@ -50,6 +50,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive					= true;
 				ComputerName								= "MBP";
 				Path	=	@"C:\Users\MBPtrader\Documents\NT_CSV\connected.csv";
+				// for VPN --  Path = @"C:\Users\Administrator\Documents\connected.csv"";
+       
 			}
 			else if (State == State.Configure)
 			{
@@ -89,6 +91,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				appendConnectionFile(message: messageToDisplay);
 			  }
 		}
+		
 
 		protected override void OnBarUpdate()
 		{
@@ -110,6 +113,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 				        e.GetType().Name);
 					}
 		}
+		
+		
+
 
 		#region Properties
 		
