@@ -184,7 +184,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// ****************************************************************************************************************************
 		protected override void OnBarUpdate()
 		{
-			if ( CurrentBar < 20 ) { resetStruct(doIt: false); return; }
+			if ( CurrentBar < 20 ) { resetStruct(doIt: true); return; }
 			
 			resetBarsSinceEntry();
 			int 	upcount 		= edgeCount(up: true, plot: showUpCount );
@@ -199,8 +199,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			drawLongEntryLine(inLongTrade: entry.inLongTrade);
 			drawShortEntryLine(inShortTrade: entry.inShortTrade);
 			
+			showEntryDelay();
+			
 			if( enableHardStop ) { setHardStop(pct: pctHardStop, shares: shares, plot: showHardStops);}
 			if ( enablePivotStop ) { setPivotStop(swingSize: pivotStopSwingSize, pivotSlop: pivotStopPivotRange); }
+			
 			
 			///	these functions under developement and disabled
 			//  recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
@@ -617,30 +620,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if ( High[0] > entry.longEntryPrice && Low[0] < entry.longEntryPrice ) {
 				
 				ArrowUp myArrowUp = Draw.ArrowUp(this, "LEmade"+ CurrentBar.ToString(), true, 0, entry.longEntryPrice - (TickSize * 5), Brushes.LimeGreen);
-				//myArrowUp.OutlineBrush = Brushes.LimeGreen;
-				entry.inLongTrade = true;
                 signals[0] = 1;
-				tradeData.signalName = "LE";
-				entry.inShortTrade = false;
-				entry.longEntryBarnum = CurrentBar;
-				/// reset pivot data
-				entry.pivStopCounter = 0;
-				entry.lastPivotValue = swingData.lastLow ;
-				entry.longEntryActual = entry.longEntryPrice;
-				entry.pivLineLength = 0;
-				entry.barsSinceEntry = 0;
 			}
 		}
 		
-		/// <summary>
-		///  long entry marked and rcorded next bar for pullback
-		/// </summary>
-		/// <param name="inShortTrade"></param>
-		public void showEntryDelay() {
-			
-		}
-		
-
 		public void drawShortEntryLine(bool inShortTrade){
 		
 			if ( inShortTrade ) {
@@ -659,7 +642,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		///******************************************************************************************************************************
 		/// 
-		/// 										Short Entry
+		/// 										Short Entry triggered
 		/// 	
 		/// ****************************************************************************************************************************		
 		public void showShortEntryArrow(bool inShortTrade) {
@@ -670,18 +653,80 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			if ( High[0] > entry.shortEntryPrice && Low[0] < entry.shortEntryPrice ) {
 				ArrowDown myArrowDn = Draw.ArrowDown(this, "SEmade"+ CurrentBar.ToString(), true, 0, entry.shortEntryPrice + (TickSize * 5), Brushes.Red);
-				//myArrowDn.OutlineBrush = Brushes.Red;
+				signals[0] = -1;
+			}
+		}
+		///  entry marked and rcorded next bar for pullback benifit
+		public void showEntryDelay() {
+			/// Long Signal Found 1 bar ago
+			if ( signals[1] == 1 ) {
+				
+				/// if short or flat
+				if (entry.inShortTrade || ( !entry.inShortTrade && ! entry.inLongTrade )) {
+					/// if long entry benificial or still over entry line go long else exit
+					if (Close[0] <= Close[1] || Close[0] <= Low[1] || ( High[0] > entry.longEntryPrice && Low[0] < entry.longEntryPrice )) {
+						entry.inLongTrade = true;
+						entry.inShortTrade = false;
+						tradeData.signalName = "LE";
+						entry.longEntryBarnum = CurrentBar;
+						/// reset pivot data
+						entry.pivStopCounter = 0;
+						entry.lastPivotValue = swingData.lastLow ;
+						entry.longEntryActual = Close[0];
+						entry.pivLineLength = 0;
+						entry.barsSinceEntry = 0;
+						Draw.Dot(this, "actualLE"+CurrentBar, true, 0, Open[0], Brushes.LimeGreen);
+					} else {
+						exitFromGap();
+						Draw.Dot(this, "SXGapDot"+CurrentBar, true, 0, Close[0], Brushes.Yellow);
+						Draw.Text(this, "SXGap"+CurrentBar, "SX-Gap", 0, Open[0], Brushes.Yellow);
+					}	
+				}
+			}
+			/// Short signal found
+			if ( signals[1] == -1 ) {
+				//entry.inShortTrade = true;
+				/// if long or flat and missed signal was short, go short
+				if (entry.inLongTrade || ( !entry.inShortTrade && ! entry.inLongTrade )) {
+					/// if short entry benificial or still over entry line go short else exit
+					if (Close[0] >= Close[1] || Close[0] > Low[1] || ( High[0] > entry.shortEntryPrice && Low[0] < entry.shortEntryPrice ) ) {
+						/// normal trade entry
+						entry.inLongTrade = false;
+						entry.inShortTrade = true;
+						tradeData.signalName = "SE";
+						entry.shortEntryBarnum = CurrentBar;
+						/// reset pivot data
+						entry.pivStopCounter = 0;
+						entry.lastPivotValue =  swingData.lastHigh;
+						entry.shortEntryActual = entry.shortEntryPrice;
+						entry.pivLineLength = 0;
+						entry.barsSinceEntry = 0;
+						Draw.Dot(this, "actualSE"+CurrentBar, true, 0, Open[0], Brushes.Crimson);
+						
+					} else {
+						exitFromGap();
+						Draw.Dot(this, "LXGapDot"+CurrentBar, true, 0, Open[0], Brushes.Yellow);
+						Draw.Text(this, "LXGap"+CurrentBar, "LX-Gap", 0, High[0], Brushes.Yellow);
+					}
+				}
+			}
+		}
+		
+		/// exit from adversarial gap
+		public void exitFromGap() {
+			if ( entry.inLongTrade  ) {
+				/// need short trades to debug this no long stops hit
 				entry.inLongTrade = false;
-				entry.inShortTrade = true;
-                //signals[0] = -1;
-                signals[0] = -1;
-				tradeData.signalName = "SE";
-				entry.shortEntryBarnum = CurrentBar;
-				/// reset pivot data
-				entry.pivStopCounter = 0;
-				entry.lastPivotValue =  swingData.lastHigh;
-				entry.shortEntryActual = entry.shortEntryPrice;
-				entry.pivLineLength = 0;
+                signals[0] = 2;
+				entry.longHardStopBarnum	= CurrentBar;
+				tradeData.signalName = "LX - Gap";
+				entry.barsSinceEntry = 0;
+			} else if ( entry.inShortTrade  ) {
+				/// need short trades to debug this no long stops hit
+				entry.inShortTrade = false;
+                signals[0] = -2;
+				entry.shortHardStopBarnum	= CurrentBar;
+				tradeData.signalName = "SX - HS";
 				entry.barsSinceEntry = 0;
 			}
 		}
@@ -827,6 +872,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				swingData.prevHighBarnum  = 0;
 				swingData.prevLow  		= Low[0];
 				swingData.prevLowBarnum 	= 0;	
+			entry.inShortTrade = true;
+			entry.inLongTrade = true;
 		}
 		
 		
