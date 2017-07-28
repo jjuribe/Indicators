@@ -98,41 +98,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Swing 		Swing1;
 		private RSI			Rsi1;
 		private	Bollinger	Bollinger1;		
-		/// colors
-		private Brush 	upColor 	= Brushes.Green;
-		private Brush 	downColor	= Brushes.Red;
-		private Brush 	textColor	= Brushes.Red;
 		
-		///  signal 
+		private Brush 	upColor; 
+		private Brush 	downColor;
+		private Brush 	textColor;
+		
 		private Series<int> signals;
-		
-		
-		private SwingData swingData = new SwingData
-		{
-			lastHigh 		= 0.00,
-			lastHighBarnum  = 0,
-			lastLow  		= 0.00,
-			lastLowBarnum  	= 0,
-			prevHigh  		= 0.00,
-			prevHighBarnum  = 0,
-			prevLow  		= 0.00,
-			prevLowBarnum 	= 0
-		};
-		
-		private EntryData entry = new EntryData
-		{
-			/// <summary>
-			///  TODO: initialize struct
-			/// </summary>
-		};
-		
-		private TradeData tradeData = new TradeData
-		{
-			/// <summary>
-			///  TODO: initialize struct
-			/// </summary>
-		};
-		
+		private SwingData swingData = new SwingData{};
+		private EntryData entry = new EntryData{};
+		private TradeData tradeData = new TradeData{};
 		
 		protected override void OnStateChange()
 		{
@@ -150,14 +124,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
 				IsSuspendedWhileInactive					= true;
 				/// inputs 
-				shares				= 100;			/// 	int		shares			= 100;
-				swingPct			= 0.005;		///		double  swingPct		= 0.005;
-				minBarsToLastSwing 	= 70;			/// 	int MinBarsToLastSwing 	= 70;
-				enableHardStop 		= true;			/// 	bool setHardStop = true, int pctHardStop 3, 
+				shares				= 100;				/// 	int		shares			= 100;
+				swingPct			= 0.005;			///		double  swingPct		= 0.005;
+				minBarsToLastSwing 	= 70;				/// 	int MinBarsToLastSwing 	= 70;
+				enableHardStop 		= true;				/// 	bool setHardStop = true, int pctHardStop 3, 
 				pctHardStop  		= 3;
-				enablePivotStop 	= true;			/// 	bool setPivotStop = true, int pivotStopSwingSize = 5, 
+				enablePivotStop 	= true;				/// 	bool setPivotStop = true, int pivotStopSwingSize = 5, 
 				pivotStopSwingSize 	= 5;
-				pivotStopPivotRange = 0.2;			///		double pivotStopPivotSlop = 0.2
+				pivotStopPivotRange = 0.2;				///		double pivotStopPivotSlop = 0.2
 				/// swow plots
 				showUpCount 			= false;		/// 	bool ShowUpCount 			= false;
 				showHardStops 			= false;		/// 	bool show hard stops 		= false;
@@ -168,6 +142,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if (State == State.Configure)
 			{
                 signals = new Series<int>(this, MaximumBarsLookBack.Infinite); // for starategy integration
+				upColor 	= Brushes.Green;
+				downColor	= Brushes.Red;
+				textColor	= Brushes.Red;
             }
 			else if(State == State.DataLoaded)
 			  {
