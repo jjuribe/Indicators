@@ -61,6 +61,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
+			
 			if( SendMailOn ) {
 				string messageBody = "On " + Time[0].ToShortDateString() + " at " + Time[0].ToShortTimeString() + " A Long Entry on " + Instrument.MasterInstrument.Name + " was generated at " + Close[0];
 				string messageTitle = "Long Entry On " + Instrument.MasterInstrument.Name;

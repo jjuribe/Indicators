@@ -208,20 +208,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 			//	OpenProfitLockedIn();
 			
 			
-			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx
-			/// 
-			/// unhandled exception, must be within the bounds
-			/// how do I synchronize a strat that is always in the market?
-			/// 1. read up on this. do I wait till rev sell at next signal?
-			/// 2. manually sell at the next swing and select immediately submit + synchronize account?
-			/// enable data disconnect warning, order rejected share - may need to write C# that sits on platform
-		
+			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx	
 			
+			///  Indicator is 1 bar earlier than strat
+			///  This causes errors Move the intrade logic I bar later?
+			///  Add rules for entry if gap? compare the results to saved test
+			///  If good runs 5 year test 
+			///  Solve playback
+			///  should Massive Gap Cause no Entry?
 			///  use dx graphics and follow all best practices
 			///  not finding any gap entries use playback to confirm
 			///  clac position size from 1. account size, 2. number of strategies
-			///  plot on 1500 tick chart
 			///  make FOMC look for neg afffects
+			///  should Massive Gap Cause no Entry?
+			///  read book on unit testing
+			
 			}
 		
 		
@@ -586,7 +587,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
  
-		/// Long Entry Logic
+		/// Long Entry Linr
 		public void drawLongEntryLine(bool inLongTrade){
 			if ( inLongTrade ) { 
 				return;
@@ -604,7 +605,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				
 		///******************************************************************************************************************************
 		/// 
-		/// 										long entry
+		/// 										long entry Triggered
 		/// 
 		/// ****************************************************************************************************************************
 		public void showLongEntryArrow(bool inLongTrade){
@@ -618,7 +619,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ArrowUp myArrowUp = Draw.ArrowUp(this, "LEmade"+ CurrentBar.ToString(), true, 0, entry.longEntryPrice - (TickSize * 5), Brushes.LimeGreen);
 				//myArrowUp.OutlineBrush = Brushes.LimeGreen;
 				entry.inLongTrade = true;
-                //signals[0] = 1;
                 signals[0] = 1;
 				tradeData.signalName = "LE";
 				entry.inShortTrade = false;
@@ -630,6 +630,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 				entry.pivLineLength = 0;
 				entry.barsSinceEntry = 0;
 			}
+		}
+		
+		/// <summary>
+		///  long entry marked and rcorded next bar for pullback
+		/// </summary>
+		/// <param name="inShortTrade"></param>
+		public void showEntryDelay() {
+			
 		}
 		
 
@@ -794,6 +802,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				/// draw down swing in green
 				RemoveDrawObject("dnline"+lastBar);
 				Draw.Line(this, "dnline"+CurrentBar.ToString(), false, distanceToHigh, swingData.lastHigh, distanceToLow, swingData.lastLow, Brushes.DarkGreen, DashStyleHelper.Dash, 2);
+				
 				
 				/// draw entry line
 				RemoveDrawObject("longEntry"+lastBar);
