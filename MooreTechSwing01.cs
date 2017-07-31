@@ -141,19 +141,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Configure)
 			{
-                signals = new Series<int>(this, MaximumBarsLookBack.Infinite); // for starategy integration
 				upColor 	= Brushes.Green;
 				downColor	= Brushes.Red;
 				textColor	= Brushes.Red;
             }
 			else if(State == State.DataLoaded)
 			  {
-			    ClearOutputWindow();     
+				  ClearOutputWindow();     
 				  Swing1				= Swing(5);	// for piv stops
 				  Rsi1					= RSI(14, 1);
 				  Bollinger1			= Bollinger(2, 20);	
+				  signals = new Series<int>(this, MaximumBarsLookBack.Infinite); // for starategy integration
 			  } 
 		}
+		
 		///******************************************************************************************************************************
 		/// 
 		/// 										on bar update
@@ -161,7 +162,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// ****************************************************************************************************************************
 		protected override void OnBarUpdate()
 		{
-			if ( CurrentBar < 20 ) { resetStruct(doIt: true); return; }
+			if ( CurrentBar < 20 ) { resetStruct(doIt: false); return; }
 			
 			resetBarsSinceEntry();
 			int 	upcount 		= edgeCount(up: true, plot: showUpCount );
@@ -182,21 +183,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if ( enablePivotStop ) { setPivotStop(swingSize: pivotStopSwingSize, pivotSlop: pivotStopPivotRange); }
 			
 			
+			
 			///	these functions under developement and disabled
 			//  recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
-			//	gapPastEntry();
-			//	OpenProfitLockedIn();
-			
 			
 			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx	
-			
 			///  Indicator is 1 bar earlier than strat
 			///  This causes errors Move the intrade logic I bar later?
 			///  Add rules for entry if gap? compare the results to saved test
-			///  If good runs 5 year test 
+			///  use dx graphics and follow all best practices
+			///  Math.Abs(
+			/// 
+			///	 fuck the draw optimizations  - no examples
+			/// 	
+			///  If good runs 5 year test 1 yr at a time
 			///  Solve playback
 			///  should Massive Gap Cause no Entry?
-			///  use dx graphics and follow all best practices
 			///  not finding any gap entries use playback to confirm
 			///  clac position size from 1. account size, 2. number of strategies
 			///  make FOMC look for neg afffects
@@ -229,56 +231,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			  }
 		}
 
-		///******************************************************************************************************************************
-		/// 
-		/// 										gap paast entry
-		/// 
-		/// ****************************************************************************************************************************
-		public void gapPastEntry() {
-			bool gapDown, gapUp; 
-			double gapHigh, gapLow;
-			
-			if ( Low[1] - Open[0] > 0.10 ) {
-				gapDown = true;
-				gapHigh = Low[1];
-				gapLow = Open[0];
-			} else { 
-				gapDown = false; 
-				gapLow = 0;
-				gapHigh = 0;
-			}
-			if (gapDown) {
-				//Print(Time[0].ToString() + "  gapDown");	
-				//Draw.Dot(this, "gapDown"+CurrentBar, true, 0, Open[0], Brushes.DarkRed);
-			}
-			
-			if ( Open[0] - High[1]  > 0.10 ) {
-				gapUp = true;
-				gapHigh = Open[1];
-				gapLow = High[1];
-			} else { 
-				gapUp = false; 
-				gapLow = 0;
-				gapHigh = 0;
-			}
-			if (gapUp) {
-				//Print(Time[0].ToString() + "  gapUp");	
-				//Draw.Dot(this, "gapUp"+CurrentBar, true, 0, Open[0], Brushes.DarkGreen);
-			}
-			
-			if ( gapDown || gapUp ){
-				/// look for long in gap 
-				if( !entry.inLongTrade && gapHigh > entry.longEntryPrice && gapLow < entry.longEntryPrice ) {
-					Print(Time[0].ToString() + "----> Long Inside Gap");	
-					Draw.Dot(this, "lGap"+CurrentBar, true, 0, entry.longEntryPrice, Brushes.LimeGreen);
-				}
-				/// look for short in gap 
-				if( !entry.inShortTrade && gapHigh > entry.shortEntryPrice && gapLow < entry.shortEntryPrice ) {
-					Print(Time[0].ToString() + "----> Short Inside Gap");	
-					Draw.Dot(this, "sGap"+CurrentBar, true, 0, entry.shortEntryPrice, Brushes.LimeGreen);
-				}
-			}
-		}
 		
 		///******************************************************************************************************************************
 		/// 
@@ -299,7 +251,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			 /// short pivots, count pivots above entry for 2nd piv stop if  short /// close > entryswing 
 			 if ( entry.inShortTrade && ( lastSwingHigh - pivotSlop )  > entry.lastPivotValue && entry.barsSinceEntry > 8 ) {
 				 entry.pivStopCounter++;
-				 Draw.Text(this, "HighSwingtxt"+ CurrentBar.ToString(), entry.pivStopCounter.ToString(), swingSize, High[swingSize] + (TickSize * 10));
+				 Text myText = Draw.Text(this, "HighSwingtxt"+ CurrentBar.ToString(), entry.pivStopCounter.ToString(), swingSize, High[swingSize] + (TickSize * 10));
 				 entry.lastPivotValue = lastSwingHigh;
 			 }
 			 /// draw the 2nd piv stop line //drawPivStops();
@@ -349,12 +301,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// find long entry price /// calc trade cost
 			if (CurrentBar == entry.longEntryBarnum ) {
 				double pctPrice = pct * 0.01;
-				entry.hardStopLine = Close[0]  - ( Close[0] * pctPrice);
+				entry.hardStopLine = Math.Abs(Close[0]  - ( Close[0] * pctPrice));
 				}
 			/// find short entry price /// calc trade cost
 			if (CurrentBar == entry.shortEntryBarnum ) {
 				double pctPrice = pct * 0.01;
-				entry.hardStopLine = Close[0]  + ( Close[0] * pctPrice);
+				entry.hardStopLine = Math.Abs(Close[0]  + ( Close[0] * pctPrice));
 			}
 			/// draw hard stop line
 			drawHardStops(plot: plot);
@@ -518,6 +470,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		public void writeToCsv() {
+			/*
+			// example of object instantiated which need to be disposed
+			StreamWriter writer = new StreamWriter("some_file.txt");
+			 
+			// use the object
+			writer.WriteLine("Some text");
+			 
+			// implements IDisposbile, make sure to call .Dispose() when finished
+			writer.Dispose();
+			*/
 			string thisDate = "_"+DateTime.Now.ToString("yyyy-M-dd");
 			
 			var	filePath = @"C:\Users\MBPtrader\Documents\NT_CSV\" + Instrument.MasterInstrument.Name + thisDate+".csv" ;
@@ -566,9 +528,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Draw.Text(this, "report"+CurrentBar, reportData, 0, MIN(Low, 20)[0]);
 			}
 		}
- 
+		
 		/// Long Entry Linr
-		public void drawLongEntryLine(bool inLongTrade){
+public void drawLongEntryLine(bool inLongTrade){
 			if ( inLongTrade ) { 
 				return;
 			}
@@ -601,7 +563,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
 		
-		public void drawShortEntryLine(bool inShortTrade){
+public void drawShortEntryLine(bool inShortTrade){
 		
 			if ( inShortTrade ) {
 				return;
@@ -753,7 +715,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// find min swing as pct of close, old hard coded value is 1.5
 			/// 226 * 0.00663 = 1.49
 			/// swingPct 0.005 = .9 - 1.2 and much better results
-			double minPriceSwing = Close[0] * swingPct;;
+			double minPriceSwing = Math.Abs(Close[0] * swingPct);
 
 			if ( upCount!= 0 && High[0] - swingData.lastLow > minPriceSwing ) {
 				swingData.prevHigh = swingData.lastHigh;
@@ -771,7 +733,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		/// find new lows
 		public void findNewLows(int dnCount, double minSwing){
-			double minPriceSwing = Close[0] * swingPct;
+			double minPriceSwing = Math.Abs( Close[0] * swingPct );
 			if ( dnCount!= 0 && swingData.lastHigh - Low[0] > minPriceSwing ) {
 				swingData.prevLow = swingData.lastLow;
 				swingData.prevLowBarnum = swingData.lastLowBarnum;
@@ -786,24 +748,25 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
 		
-		/// looking short
+/// looking short
 		public void findShortEntry() {
 			if ( swingData.lastHighBarnum > swingData.lastLowBarnum ) {
 				int distanceToLow = CurrentBar - swingData.lastLowBarnum;
 				int distanceToHigh = CurrentBar - swingData.lastHighBarnum;
 				int lastBar = CurrentBar -1;
-				double upSwingDistance = swingData.lastHigh - swingData.lastLow;
-				double upSwingEntry = upSwingDistance * 0.382;
-				entry.shortEntryPrice = swingData.lastHigh - upSwingEntry;
+				double upSwingDistance = Math.Abs(swingData.lastHigh - swingData.lastLow);
+				double upSwingEntry = Math.Abs(upSwingDistance * 0.382);
+				entry.shortEntryPrice = Math.Abs(swingData.lastHigh - upSwingEntry);
+				
 				/// draw upswing in red
 				RemoveDrawObject("upline"+lastBar);
 				Draw.Line(this, "upline"+CurrentBar.ToString(), false, distanceToLow, swingData.lastLow, distanceToHigh, swingData.lastHigh, Brushes.DarkRed, DashStyleHelper.Dash, 2);
-			
 				/// draw entry line
 				RemoveDrawObject("shortEntry"+lastBar);
 				Draw.Line(this, "shortEntry"+CurrentBar.ToString(), false, distanceToLow, entry.shortEntryPrice , distanceToHigh, entry.shortEntryPrice , Brushes.Red, DashStyleHelper.Dash, 2);
 				/// show swing high height
-				double swingProfit = (upSwingDistance * 0.236) * 100;
+				
+				double swingProfit = Math.Abs((upSwingDistance * 0.236) * 100);
 			} else {
 				// disable short entry
 				entry.shortEntryPrice = 0;
@@ -811,27 +774,25 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
 		
-		/// looking long
+/// looking long
 		public void findLongeEntry() {
 			if ( swingData.lastHighBarnum < swingData.lastLowBarnum ) {
 				int distanceToHigh = CurrentBar - swingData.lastHighBarnum;
 				int distanceToLow = CurrentBar - swingData.lastLowBarnum;
 				int lastBar = CurrentBar -1;
-				double dnSwingDistance = ( swingData.lastLow - swingData.lastHigh ) * -1;
-				double dnSwingEntry = dnSwingDistance * 0.382;
-				entry.longEntryPrice = swingData.lastLow + dnSwingEntry;
-				
+				double dnSwingDistance = Math.Abs(( swingData.lastLow - swingData.lastHigh ) * -1);
+				double dnSwingEntry = Math.Abs(dnSwingDistance * 0.382);
+				entry.longEntryPrice = Math.Abs( swingData.lastLow + dnSwingEntry);
+		
 				/// draw down swing in green
 				RemoveDrawObject("dnline"+lastBar);
 				Draw.Line(this, "dnline"+CurrentBar.ToString(), false, distanceToHigh, swingData.lastHigh, distanceToLow, swingData.lastLow, Brushes.DarkGreen, DashStyleHelper.Dash, 2);
-				
-				
 				/// draw entry line
 				RemoveDrawObject("longEntry"+lastBar);
 				Draw.Line(this, "longEntry"+CurrentBar.ToString(), false, distanceToHigh, entry.longEntryPrice, distanceToLow, entry.longEntryPrice, Brushes.LimeGreen, DashStyleHelper.Dash, 2);
 				
 				/// show swing low height
-				double swingProfit = (dnSwingDistance * 0.236) * 100;				
+				double swingProfit = Math.Abs((dnSwingDistance * 0.236) * 100);				
 			}	else {
 				/// disable long entry
 				entry.longEntryPrice = 0;
