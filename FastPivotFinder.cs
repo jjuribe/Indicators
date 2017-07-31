@@ -45,8 +45,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private	Bollinger	Bollinger1;
 		private double swingPct			= 0.005;	
 		
-		private double exposedVariable;
-		
+		private int lastHighBarnum;
+		private int lastLowBarnum;
+		private int prevHighBarnum;
+		private int prevLowBarnum;
+		private double prevHigh;
+		private double prevLow;
 		
 		protected override void OnStateChange()
 		{
@@ -65,10 +69,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
 				IsSuspendedWhileInactive	= true;
+				
 				PlotCount					= true;
 				ColorBars					= true;
 				MinBarsToLastSwing			= 70;
 				SwingPct					= 0.005;
+				MinPlotCount				= 1;
 				
 				AddPlot(new Stroke(Brushes.Red, 2), PlotStyle.Dot, "LastHigh");
 				AddPlot(new Stroke (Brushes.DodgerBlue, 2), PlotStyle.Dot,  "LastLow");
@@ -88,9 +94,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if ( CurrentBar < 20 ) {return; }
 			
-			//int minBarsToLastSwing 	= 70;
-			//double swingPct			= 0.005;
-			
 			findNewHighs(upCount: edgeCount(up: true, plot: PlotCount ), minSwing: MinBarsToLastSwing );
 			findNewLows(dnCount: edgeCount(up:false, plot: PlotCount ), minSwing: MinBarsToLastSwing );
 			
@@ -99,12 +102,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if( swingData.lastLow != 0)
 				Values[1][0] = swingData.lastLow;
 			
-			if( swingData.lastHighBarnum > swingData.lastLowBarnum ) {
-				exposedVariable = swingData.lastHighBarnum;
-			} else {
-				exposedVariable = swingData.lastLowBarnum;
-			}
-			
+			lastHighBarnum = swingData.lastHighBarnum;
+			lastLowBarnum = swingData.lastLowBarnum;
+			prevHighBarnum = swingData.prevHighBarnum;
+			prevLowBarnum = swingData.prevLowBarnum;
+			prevHigh = swingData.prevHigh;
+			prevLow = swingData.prevLow;
 		}
 		
 		public int edgeCount(bool up, bool plot){
@@ -124,18 +127,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// highest high section
 			if (High[0] >= MAX(High, 20)[1] ) { upCount ++;}
 			if (Low[0] <= MIN(Low, 20)[1] ) { dnCount ++; }
+			
+			/// TODO: use min plot count to fiter active swings
 				
 			/// plot the count
 			if (up) {
 				result = upCount;
-				if (upCount > 0 && plot ) {
+				if (upCount >= MinPlotCount && plot ) {
 					Draw.Text(this, "upCount"+CurrentBar, upCount.ToString(), 0, High[0] + (TickSize * 10));
 				}
 			} 
 			
 			if ( up == false ) {
 				result = dnCount;
-				if (dnCount > 0 && !up && plot ) {
+				if (dnCount >= MinPlotCount && !up && plot ) {
 					Draw.Text(this, "dnCount"+CurrentBar, dnCount.ToString(), 0, Low[0] - (TickSize * 10));
 				}
 			}
@@ -145,7 +150,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		public void colorSignalStrength( int upCount, int dnCount ) {
 			/// color bars when plot count > N
-			if ( ColorBars ) {
+			if ( ColorBars && ( upCount >= MinPlotCount || dnCount >= MinPlotCount )) {
 				switch (upCount) {
 					case 1:
 						BarBrush = Brushes.Goldenrod;
@@ -191,7 +196,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// swingPct 0.005 = .9 - 1.2 and much better results
 			double minPriceSwing = Math.Abs(Close[0] * swingPct);
 
-			if ( upCount!= 0 && High[0] - swingData.lastLow > minPriceSwing ) {
+			if ( upCount >= MinPlotCount && High[0] - swingData.lastLow > minPriceSwing ) {
 				swingData.prevHigh = swingData.lastHigh;
 				swingData.prevHighBarnum = swingData.lastHighBarnum;
 				swingData.lastHigh = High[0];
@@ -208,7 +213,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// find new lows
 		public void findNewLows(int dnCount, double minSwing){
 			double minPriceSwing = Math.Abs( Close[0] * SwingPct );
-			if ( dnCount!= 0 && swingData.lastHigh - Low[0] > minPriceSwing ) {
+			if ( dnCount >= MinPlotCount  && swingData.lastHigh - Low[0] > minPriceSwing ) {
 				swingData.prevLow = swingData.lastLow;
 				swingData.prevLowBarnum = swingData.lastLowBarnum;
 				swingData.lastLow = Low[0];
@@ -239,12 +244,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public int MinBarsToLastSwing
 		{ get; set; }
 		
+		
 		[NinjaScriptProperty]
 		[Range(0, double.MaxValue)]
 		[Display(Name="Swing Pct", Order=4, GroupName="Parameters")]
 		public double SwingPct
 		{ get; set; }
 		
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="Min Filter Count", Order=5, GroupName="Parameters")]
+		public int MinPlotCount
+		{ get; set; }
 
 		[Browsable(false)]
 		[XmlIgnore]
@@ -259,11 +270,44 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[1]; }
 		}
-		public double ExposedVariable
+		
+		public int LastHighBarnum
         {
 			// We need to call the Update() method to ensure our exposed variable is in up-to-date.
-            get { Update(); return exposedVariable; }
+            get { Update(); return lastHighBarnum; }
         }
+		
+		public int LastLowBarnum
+        {
+			// We need to call the Update() method to ensure our exposed variable is in up-to-date.
+            get { Update(); return lastLowBarnum; }
+        }
+		
+		public int PrevHighBarnum
+        {
+			// We need to call the Update() method to ensure our exposed variable is in up-to-date.
+            get { Update(); return prevHighBarnum; }
+        }
+		
+		public int PrevLowBarnum
+        {
+			// We need to call the Update() method to ensure our exposed variable is in up-to-date.
+            get { Update(); return prevLowBarnum; }
+        }
+		
+		
+		public double PrevHigh
+        {
+			// We need to call the Update() method to ensure our exposed variable is in up-to-date.
+            get { Update(); return prevHigh; }
+        }
+		
+		public double PrevLow
+        {
+			// We need to call the Update() method to ensure our exposed variable is in up-to-date.
+            get { Update(); return prevLow; }
+        }
+		
 		#endregion
 
 	}
@@ -276,18 +320,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private FastPivotFinder[] cacheFastPivotFinder;
-		public FastPivotFinder FastPivotFinder(bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct)
+		public FastPivotFinder FastPivotFinder(bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct, int minPlotCount)
 		{
-			return FastPivotFinder(Input, plotCount, colorBars, minBarsToLastSwing, swingPct);
+			return FastPivotFinder(Input, plotCount, colorBars, minBarsToLastSwing, swingPct, minPlotCount);
 		}
 
-		public FastPivotFinder FastPivotFinder(ISeries<double> input, bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct)
+		public FastPivotFinder FastPivotFinder(ISeries<double> input, bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct, int minPlotCount)
 		{
 			if (cacheFastPivotFinder != null)
 				for (int idx = 0; idx < cacheFastPivotFinder.Length; idx++)
-					if (cacheFastPivotFinder[idx] != null && cacheFastPivotFinder[idx].PlotCount == plotCount && cacheFastPivotFinder[idx].ColorBars == colorBars && cacheFastPivotFinder[idx].MinBarsToLastSwing == minBarsToLastSwing && cacheFastPivotFinder[idx].SwingPct == swingPct && cacheFastPivotFinder[idx].EqualsInput(input))
+					if (cacheFastPivotFinder[idx] != null && cacheFastPivotFinder[idx].PlotCount == plotCount && cacheFastPivotFinder[idx].ColorBars == colorBars && cacheFastPivotFinder[idx].MinBarsToLastSwing == minBarsToLastSwing && cacheFastPivotFinder[idx].SwingPct == swingPct && cacheFastPivotFinder[idx].MinPlotCount == minPlotCount && cacheFastPivotFinder[idx].EqualsInput(input))
 						return cacheFastPivotFinder[idx];
-			return CacheIndicator<FastPivotFinder>(new FastPivotFinder(){ PlotCount = plotCount, ColorBars = colorBars, MinBarsToLastSwing = minBarsToLastSwing, SwingPct = swingPct }, input, ref cacheFastPivotFinder);
+			return CacheIndicator<FastPivotFinder>(new FastPivotFinder(){ PlotCount = plotCount, ColorBars = colorBars, MinBarsToLastSwing = minBarsToLastSwing, SwingPct = swingPct, MinPlotCount = minPlotCount }, input, ref cacheFastPivotFinder);
 		}
 	}
 }
@@ -296,14 +340,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.FastPivotFinder FastPivotFinder(bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct)
+		public Indicators.FastPivotFinder FastPivotFinder(bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct, int minPlotCount)
 		{
-			return indicator.FastPivotFinder(Input, plotCount, colorBars, minBarsToLastSwing, swingPct);
+			return indicator.FastPivotFinder(Input, plotCount, colorBars, minBarsToLastSwing, swingPct, minPlotCount);
 		}
 
-		public Indicators.FastPivotFinder FastPivotFinder(ISeries<double> input , bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct)
+		public Indicators.FastPivotFinder FastPivotFinder(ISeries<double> input , bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct, int minPlotCount)
 		{
-			return indicator.FastPivotFinder(input, plotCount, colorBars, minBarsToLastSwing, swingPct);
+			return indicator.FastPivotFinder(input, plotCount, colorBars, minBarsToLastSwing, swingPct, minPlotCount);
 		}
 	}
 }
@@ -312,14 +356,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.FastPivotFinder FastPivotFinder(bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct)
+		public Indicators.FastPivotFinder FastPivotFinder(bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct, int minPlotCount)
 		{
-			return indicator.FastPivotFinder(Input, plotCount, colorBars, minBarsToLastSwing, swingPct);
+			return indicator.FastPivotFinder(Input, plotCount, colorBars, minBarsToLastSwing, swingPct, minPlotCount);
 		}
 
-		public Indicators.FastPivotFinder FastPivotFinder(ISeries<double> input , bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct)
+		public Indicators.FastPivotFinder FastPivotFinder(ISeries<double> input , bool plotCount, bool colorBars, int minBarsToLastSwing, double swingPct, int minPlotCount)
 		{
-			return indicator.FastPivotFinder(input, plotCount, colorBars, minBarsToLastSwing, swingPct);
+			return indicator.FastPivotFinder(input, plotCount, colorBars, minBarsToLastSwing, swingPct, minPlotCount);
 		}
 	}
 }
