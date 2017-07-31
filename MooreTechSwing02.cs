@@ -97,7 +97,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		private Swing 		Swing1;	
-		//private FastPivotFinder FastPivotFinder1;
+		private FastPivotFinder FastPivotFinder1;
 		
 		private Brush 	upColor; 
 		private Brush 	downColor;
@@ -152,7 +152,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			  {
 				  ClearOutputWindow();     
 				  Swing1				= Swing(5);	// for piv stops
-				  //FastPivotFinder1 = FastPivotFinder(false, false, 70, 0.005, cofirmationCount);
+				  FastPivotFinder1 = FastPivotFinder(false, false, 70, 0.005, 1);
 				  signals = new Series<int>(this, MaximumBarsLookBack.Infinite); // for starategy integration
 			  } 
 			  
@@ -168,17 +168,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if ( CurrentBar < 20 ) { resetStruct(doIt: false); return; }
 			
-			 //FastPivotFinder1 = FastPivotFinder(false, false, 70, 0.005, cofirmationCount);
-			
-			/// attemp to tighten pivot confirmation after stop out
-			if ( secondPivStopFlag ) {
-				cofirmationCount = 3;
-				BarBrush = Brushes.Goldenrod;
-				CandleOutlineBrush = Brushes.Goldenrod;
-			} else {
-				cofirmationCount = 1;
-			}
-			
 			resetBarsSinceEntry();
 			findSwings();
 
@@ -193,53 +182,51 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if( enableHardStop ) { setHardStop(pct: pctHardStop, shares: shares, plot: showHardStops);}
 			if ( enablePivotStop ) { setPivotStop(swingSize: pivotStopSwingSize, pivotSlop: pivotStopPivotRange); }
 			
-			//Print( Time[0].ToShortDateString() + " " + cofirmationCount);
-			
-			
-			
 			///	these functions under developement and disabled
 			//  recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
-			
-			///  Good Spy 22.41 pts 27.7 ROI, Gush, QQQ, Not good Uso, Eur, Fx	12 months
-			///  Indicator is 1 bar earlier than strat
-			///  This causes errors Move the intrade logic I bar later?
-			///  Add rules for entry if gap? compare the results to saved test
-			///  use dx graphics and follow all best practices
-			///  Math.Abs(
-			///	 fuck the draw optimizations  - no examples
-			///  implement fast pivot finder indicaor
-			///  when 2nd pivt stop change fastpivot to 3 till profitable tradde	
-			///  5 year test Was 20% now 27%
-			///  look over trades and decide of volatility should trigger larger swings or condition 3
 			///  MUCH BETTER! 41%, 48%, 8%, 37%, -.01% 5yr performance
-			///  Clean up code and test
-			/// 	1. decide how to implement indicator
-			/// 	2. remove unsused code
-			/// 	3. look for any other sections that should become indicators
+			///  upload to VPS
 			/// 
-			///  Solve playback & test
+			///  Solve playback 
+			///  clean up stream writer + upload to VPS
 			///  should Massive Gap Cause no Entry?
 			///  clac position size from 1. account size, 2. number of strategies
 			///  make FOMC look for neg afffects
 			///  should Massive Gap Cause no Entry?
-			
-			
 			}
 		
 		
 		public void findSwings() {
+			/// attempt to tighten swing confirmation after 2nd piv stop out
+			if ( secondPivStopFlag ) {
+				cofirmationCount = 3;
+				BarBrush = Brushes.Goldenrod;
+				CandleOutlineBrush = Brushes.Goldenrod;
 			
-			double numsd = FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastHigh[0];
+				swingData.lastHigh 			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastHigh[0];
+				swingData.lastHighBarnum	= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastHighBarnum;
+				swingData.lastLow 			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastLow[0];
+				
+				swingData.lastLowBarnum		= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastLowBarnum;
+				swingData.prevHigh			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevHigh;
+				swingData.prevHighBarnum	= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevHighBarnum;
+				swingData.prevLow			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevLow;
+				swingData.prevLowBarnum		= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevLowBarnum;	
+				
+			} else {
+				cofirmationCount = 1;
 			
-			swingData.lastHigh 			=  FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastHigh[0];
-			swingData.lastHighBarnum	= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastHighBarnum;
-			swingData.lastLow 			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastLow[0];
+				swingData.lastHigh 			= FastPivotFinder1.LastHigh[0];
+				swingData.lastHighBarnum	= FastPivotFinder1.LastHighBarnum;
+				swingData.lastLow 			= FastPivotFinder1.LastLow[0];
+				swingData.lastLowBarnum		= FastPivotFinder1.LastLowBarnum;
+				swingData.prevHigh			= FastPivotFinder1.PrevHigh;
+				swingData.prevHighBarnum	= FastPivotFinder1.PrevHighBarnum;
+				swingData.prevLow			= FastPivotFinder1.PrevLow;
+				swingData.prevLowBarnum		= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevLowBarnum;	
+			}
 			
-			swingData.lastLowBarnum		= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastLowBarnum;
-			swingData.prevHigh			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevHigh;
-			swingData.prevHighBarnum	= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevHighBarnum;
-			swingData.prevLow			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevLow;
-			swingData.prevLowBarnum		= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevLowBarnum;	
+			
 		}
 
 		public void resetBarsSinceEntry() {
