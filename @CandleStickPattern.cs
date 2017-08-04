@@ -30,8 +30,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public class CandlestickPattern : Indicator
 	{
 		private Brush					downColor			= Brushes.DimGray;
-		private Brush 					upColor				= Brushes.DimGray;
-		private Brush 					textColor			= Brushes.DimGray;
+		private Brush					upColor				= Brushes.DimGray;
+		private Brush					textColor			= Brushes.DimGray;
 		private bool					downTrend;
 		private bool					upTrend;
 		private bool					showPatternCount	= true;
@@ -56,29 +56,29 @@ namespace NinjaTrader.NinjaScript.Indicators
 				TrendStrength		= 4;
 				textFont			= new Gui.Tools.SimpleFont() { Size = 14 };
 
+				downColor			= Brushes.DimGray;
+				upColor				= Brushes.DimGray;
+				textColor			= Brushes.DimGray;
+
 				AddPlot(Brushes.Transparent, NinjaTrader.Custom.Resource.CandlestickPatternFound);
 			}
 			else if (State == State.Configure)
 			{
 				if (Calculate == Calculate.OnEachTick || Calculate == Calculate.OnPriceChange)
-					Calculate = Calculate.OnBarClose;
+					Calculate	= Calculate.OnBarClose;
 			}
-			else if (State == State.DataLoaded)
+			else if (State == State.Historical)
 			{
-				if(ChartControl != null)
+				if (ChartControl != null)
 				{
-					downColor		= ChartControl.Properties.AxisPen.Brush; // Get the color of the chart axis brush
-					textColor		= ChartControl.Properties.ChartText;
+					downColor	= ChartControl.Properties.AxisPen.Brush; // Get the color of the chart axis brush
+					textColor	= ChartControl.Properties.ChartText;
 				}
 
 				if (((SolidColorBrush)downColor).Color == ((SolidColorBrush)upColor).Color)
-				{
-					upColor			= Brushes.Transparent;				
-				}
+					upColor		= Brushes.Transparent;
 				else
-				{
-					upColor			= Brushes.DimGray;				
-				}
+					upColor		= Brushes.DimGray;
 			}
 		}
 

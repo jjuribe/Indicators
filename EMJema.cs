@@ -24,15 +24,16 @@ using NinjaTrader.NinjaScript.DrawingTools;
 //This namespace holds Indicators in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.Indicators
 {
-	public class fastUpCountTest : Indicator
+	public class EMJema : Indicator
 	{
-		private FastPivotFinder FastPivotFinder1;
+		
+		
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
 			{
 				Description									= @"Enter the description for your new custom Indicator here.";
-				Name										= "fastUpCountTest";
+				Name										= "EMJ Cross";
 				Calculate									= Calculate.OnBarClose;
 				IsOverlay									= true;
 				DisplayInDataBox							= true;
@@ -44,28 +45,61 @@ namespace NinjaTrader.NinjaScript.Indicators
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
 				IsSuspendedWhileInactive					= true;
+				AddPlot(Brushes.DodgerBlue, "fast");
+				AddPlot(Brushes.DarkRed, "Medium");
+				AddPlot(Brushes.Goldenrod, "Slow");
+				
 			}
 			else if (State == State.Configure)
 			{
 			}
-			else if(State == State.DataLoaded)
-			  {
-				  ClearOutputWindow();     
-				  FastPivotFinder1 = FastPivotFinder(false, false, 70, 0.005, 3);
-			  } 
 		}
 
 		protected override void OnBarUpdate()
 		{
-			double lastHigh =  FastPivotFinder1.LastHigh[0];
-			double lastLow  =  FastPivotFinder1.LastLow[0];
-			if ( lastHigh != 0) {
-				Draw.Text(this, "lastHigh"+CurrentBar, "*", 0, lastHigh );
+			double fastMa = EMA(34)[0]; 
+			double medMa = EMA(68)[0]; 
+			double slowMa = SMA(116)[0]; 
+			
+			/// Long
+			if ( CrossAbove( EMA(34), EMA(68), 1 ) && Close[0] >= slowMa) {
+				Draw.ArrowUp(this, "xUP"+CurrentBar.ToString(), true, 1, Close[0] ,Brushes.LimeGreen); 
 			}
-			if ( lastLow != 0) {
-				Draw.Text(this, "lastLow"+CurrentBar, "*", 0, lastLow );
+			/// Short
+			if ( CrossBelow( EMA(34), EMA(68), 1 ) && Close[0] <= slowMa) {
+				Draw.ArrowDown(this, "xDN"+CurrentBar.ToString(), true, 1, Close[0], Brushes.Red); 
 			}
+			
+			Values[0][0] = fastMa;
+			Values[1][0] = medMa;
+			Values[2][0] = slowMa;
 		}
+
+		#region Properties
+
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<double> Fast
+		{
+			get { return Values[0]; }
+		}
+
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<double> Medium
+		{
+			get { return Values[1]; }
+		}
+		
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<double> Slow
+		{
+			get { return Values[2]; }
+		}
+
+		#endregion
+
 	}
 }
 
@@ -75,19 +109,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
-		private fastUpCountTest[] cachefastUpCountTest;
-		public fastUpCountTest fastUpCountTest()
+		private EMJema[] cacheEMJema;
+		public EMJema EMJema()
 		{
-			return fastUpCountTest(Input);
+			return EMJema(Input);
 		}
 
-		public fastUpCountTest fastUpCountTest(ISeries<double> input)
+		public EMJema EMJema(ISeries<double> input)
 		{
-			if (cachefastUpCountTest != null)
-				for (int idx = 0; idx < cachefastUpCountTest.Length; idx++)
-					if (cachefastUpCountTest[idx] != null &&  cachefastUpCountTest[idx].EqualsInput(input))
-						return cachefastUpCountTest[idx];
-			return CacheIndicator<fastUpCountTest>(new fastUpCountTest(), input, ref cachefastUpCountTest);
+			if (cacheEMJema != null)
+				for (int idx = 0; idx < cacheEMJema.Length; idx++)
+					if (cacheEMJema[idx] != null &&  cacheEMJema[idx].EqualsInput(input))
+						return cacheEMJema[idx];
+			return CacheIndicator<EMJema>(new EMJema(), input, ref cacheEMJema);
 		}
 	}
 }
@@ -96,14 +130,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.fastUpCountTest fastUpCountTest()
+		public Indicators.EMJema EMJema()
 		{
-			return indicator.fastUpCountTest(Input);
+			return indicator.EMJema(Input);
 		}
 
-		public Indicators.fastUpCountTest fastUpCountTest(ISeries<double> input )
+		public Indicators.EMJema EMJema(ISeries<double> input )
 		{
-			return indicator.fastUpCountTest(input);
+			return indicator.EMJema(input);
 		}
 	}
 }
@@ -112,14 +146,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.fastUpCountTest fastUpCountTest()
+		public Indicators.EMJema EMJema()
 		{
-			return indicator.fastUpCountTest(Input);
+			return indicator.EMJema(Input);
 		}
 
-		public Indicators.fastUpCountTest fastUpCountTest(ISeries<double> input )
+		public Indicators.EMJema EMJema(ISeries<double> input )
 		{
-			return indicator.fastUpCountTest(input);
+			return indicator.EMJema(input);
 		}
 	}
 }

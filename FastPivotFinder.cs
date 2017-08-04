@@ -44,7 +44,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private RSI			Rsi1;
 		private	Bollinger	Bollinger1;
 		private double swingPct			= 0.005;	
-		
+		/// <summary>
+		///  vars for public access
+		/// </summary>
 		private int lastHighBarnum;
 		private int lastLowBarnum;
 		private int prevHighBarnum;

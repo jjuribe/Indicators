@@ -144,9 +144,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Configure)
 			{
-				upColor 	= Brushes.Green;
-				downColor	= Brushes.Red;
-				textColor	= Brushes.Red;
+				upColor 	= Brushes.LimeGreen;
+				downColor	= Brushes.Crimson;
+				textColor	= Brushes.Crimson;
             }
 			else if(State == State.DataLoaded)
 			  {
@@ -155,8 +155,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 				  FastPivotFinder1 = FastPivotFinder(false, false, 70, 0.005, 1);
 				  signals = new Series<int>(this, MaximumBarsLookBack.Infinite); // for starategy integration
 			  } 
-			  
-			 
 		}
 		
 		///******************************************************************************************************************************
@@ -166,7 +164,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// ****************************************************************************************************************************
 		protected override void OnBarUpdate()
 		{
-			if ( CurrentBar < 20 ) { resetStruct(doIt: false); return; }
+			if ( CurrentBar < 20 ) { resetStruct(doIt: true); return; }
 			
 			resetBarsSinceEntry();
 			findSwings();
@@ -182,18 +180,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if( enableHardStop ) { setHardStop(pct: pctHardStop, shares: shares, plot: showHardStops);}
 			if ( enablePivotStop ) { setPivotStop(swingSize: pivotStopSwingSize, pivotSlop: pivotStopPivotRange); }
 			
+			recordTrades(printChart: true, printLog: true, hiLow: true,  simple: true);
 			///	these functions under developement and disabled
-			//  recordTrades(printChart: printTradesOnChart, printLog: printTradesTolog, hiLow: true, simple: printTradesSimple);
-			///  MUCH BETTER! 41%, 48%, 8%, 37%, -.01% 5yr performance
+			///  MUCH BETTER! 41%, 48%,  8%, 37%, -.01% 5yr performance
 			///  upload to VPS
-			/// 
-			///  Solve playback 
+			///  Un-Solved Optimizer - Optimization Fails with bar21, index out of range
+			///  Solve playback + observe trades in action solve USO
+
+			///  problem solve USO , show entry names, print log for each bar
+			/// 1. entry line, Hi Low
 			///  clean up stream writer + upload to VPS
-			///  should Massive Gap Cause no Entry?
 			///  clac position size from 1. account size, 2. number of strategies
 			///  make FOMC look for neg afffects
 			///  should Massive Gap Cause no Entry?
+			///  Find another ETF to invest in like GUSH or USO
+		}
+		
+		public void checkForNil(object myobj) {
+			if (myobj == null) {
+				Print( CurrentBar.ToString() +  " Nil: " + myobj.ToString() );
 			}
+		}
 		
 		
 		public void findSwings() {
@@ -206,7 +213,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 				swingData.lastHigh 			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastHigh[0];
 				swingData.lastHighBarnum	= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastHighBarnum;
 				swingData.lastLow 			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastLow[0];
-				
 				swingData.lastLowBarnum		= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).LastLowBarnum;
 				swingData.prevHigh			= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevHigh;
 				swingData.prevHighBarnum	= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevHighBarnum;
@@ -223,10 +229,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				swingData.prevHigh			= FastPivotFinder1.PrevHigh;
 				swingData.prevHighBarnum	= FastPivotFinder1.PrevHighBarnum;
 				swingData.prevLow			= FastPivotFinder1.PrevLow;
-				swingData.prevLowBarnum		= FastPivotFinder(false, false, 70, 0.005, cofirmationCount).PrevLowBarnum;	
+				swingData.prevLowBarnum		= FastPivotFinder1.PrevLowBarnum;	
 			}
-			
-			
 		}
 
 		public void resetBarsSinceEntry() {
@@ -235,22 +239,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else { entry.barsSinceEntry = 0;}
 		}
 		
-		public void OpenProfitLockedIn(){
-			/// get current bar
-			if (Count - 2 == CurrentBar)
-			  {
-				  string upDate = "Long Open Profit of ";
-				  if( entry.inLongTrade ) {
-					  tradeData.openProfit = Close[0] -  entry.longEntryActual;
-					}
-				  if( entry.inShortTrade ) {
-					  tradeData.openProfit = entry.shortEntryActual  - Close[0];
-					  upDate = "Short Open Profit of " ;
-				  }
-				  double openGain = tradeData.openProfit * shares;
-			  }
-		}
-
 		
 		///******************************************************************************************************************************
 		/// 
@@ -448,14 +436,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 			} else { return false;}	
 		}
 		
-		/// report results
+/// report results
 		public void calcAndShowOnChart(bool printChart, bool printLog, bool hiLow, bool simple) {
 			calcTradeStats();
 			concatStats();
 			if( printChart ) { customDrawTrades(show: hiLow, simple: simple);}
 			
-			if ( printLog )
+			if ( printLog ) {
 				Print("\n"+Time[0].ToString() +" "+ tradeData.report );
+				debugEntry(isOn:true); }
+		}
+		
+		public void debugEntry(bool isOn){
+			string debugText = "LE Price "+ entry.longEntryPrice +"  LastHigh "+ swingData.lastHigh  +"  Last Low "+ swingData.lastLow ;
+			Print(debugText);
+			
 		}
 		
 		public void calcTradeStats() {
@@ -535,85 +530,73 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if(simple) { reportData = tradeData.reportSimple;}
 			if(show) {
 			if (CurrentBar == entry.longEntryBarnum ) {
-				Draw.Text(this, "LE"+CurrentBar, reportData, 0, MIN(Low, 20)[0], textColor); }
+				Draw.Text(this, "LE"+CurrentBar, reportData, 0, MIN(Low, 20)[0] - (TickSize * 5), textColor); }
 			if (CurrentBar == entry.shortEntryBarnum ) {
-				Draw.Text(this, "SE"+CurrentBar, reportData, 0, MAX(High, 20)[0], textColor); }
+				Draw.Text(this, "SE"+CurrentBar, reportData, 0, MAX(High, 20)[0] + (TickSize * 5), textColor); }
 			if (CurrentBar == entry.shortHardStopBarnum ) {
-				Draw.Text(this, "SXh"+CurrentBar, reportData, 0, MAX(High, 20)[0], textColor); }
+				Draw.Text(this, "SXh"+CurrentBar, reportData, 0, MAX(High, 20)[0] + (TickSize * 5), textColor); }
 			if (CurrentBar == entry.longHardStopBarnum ) {
-				Draw.Text(this, "LXh"+CurrentBar, reportData, 0, MIN(Low, 20)[0], textColor); }
+				Draw.Text(this, "LXh"+CurrentBar, reportData, 0, MIN(Low, 20)[0] - (TickSize * 5), textColor); }
 			if (CurrentBar == entry.shortPivStopBarnum ) {
-				Draw.Text(this, "SXp"+CurrentBar, reportData, 0, MAX(High, 20)[0], textColor); }
+				Draw.Text(this, "SXp"+CurrentBar, reportData, 0, MAX(High, 20)[0] + (TickSize * 5), textColor); }
 			if (CurrentBar == entry.longPivStopBarnum ) {
-				Draw.Text(this, "LXp"+CurrentBar, reportData, 0, MIN(Low, 20)[0], textColor); }
+				Draw.Text(this, "LXp"+CurrentBar, reportData, 0, MIN(Low, 20)[0] - (TickSize * 5), textColor); }
 			} else {
 				Draw.Text(this, "report"+CurrentBar, reportData, 0, MIN(Low, 20)[0]);
 			}
 		}
 		
-		/// Long Entry Linr
+		/// Long Entry Line ************************************************************************************************************
 		public void drawLongEntryLine(bool inLongTrade){
-			if ( inLongTrade ) { 
-				return;
-			}
+			if ( inLongTrade ) { return; }
 			entry.longLineLength++ ;
-			
 			if ( entry.longEntryPrice != 0 ) {
-				//Draw.Text(this, "LE"+CurrentBar, "*", 0, entry.longEntryPrice);
-				RemoveDrawObject("LeLine"+ (CurrentBar - 1));
+				if(DrawObjects["LeLine"+(CurrentBar-1).ToString()] != null)
+					RemoveDrawObject("LeLine"+ (CurrentBar - 1));
 				Draw.Line(this, "LeLine"+CurrentBar.ToString(), false, entry.longLineLength, entry.longEntryPrice, 0, 
-					entry.longEntryPrice, Brushes.LimeGreen, DashStyleHelper.Solid, 4);
+						entry.longEntryPrice, Brushes.LimeGreen, DashStyleHelper.Solid, 4);
 				showLongEntryArrow(inLongTrade: entry.inLongTrade);
 			}	
 		}
-				
-		///******************************************************************************************************************************
-		/// 
-		/// 										long entry Triggered
-		/// 
-		/// ****************************************************************************************************************************
-		public void showLongEntryArrow(bool inLongTrade){
-			
-			if ( inLongTrade ) { 
-				return;
-			}
-				
+		/// <summary>
+		///  Long Entry Arrow 
+		/// </summary>
+		/// <param name="inLongTrade"></param>
+		public void showLongEntryArrow(bool inLongTrade){	
+			if ( inLongTrade ) { return; }	
+			if(entry.longEntryPrice == null) { return; }
 			if ( High[0] > entry.longEntryPrice && Low[0] < entry.longEntryPrice ) {
-				
+				//Draw.Text(this, "LE"+CurrentBar.ToString(), "LE", 0, entry.longEntryPrice - (TickSize * 10), Brushes.LimeGreen);
+				//customDrawTrades( show: true,  simple: false);
 				ArrowUp myArrowUp = Draw.ArrowUp(this, "LEmade"+ CurrentBar.ToString(), true, 0, entry.longEntryPrice - (TickSize * 5), Brushes.LimeGreen);
-                signals[0] = 1;
+				signals[0] = 1;
 				secondPivStopFlag = false;
+				//debugEntry(isOn:true);
 			}
 		}
-		
+
+		/// Short Entry Line ************************************************************************************************************
 		public void drawShortEntryLine(bool inShortTrade){
-		
-			if ( inShortTrade ) {
-				return;
-			}
-			
+			if ( inShortTrade ) {return;}
 			entry.shortLineLength++ ;
-			
 			if ( entry.shortEntryPrice != 0 ) {
-				RemoveDrawObject("SeLine"+ (CurrentBar - 1));
+				if(DrawObjects["SeLine"+(CurrentBar-1).ToString()] != null)
+					RemoveDrawObject("SeLine"+ (CurrentBar - 1));
 				Draw.Line(this, "SeLine"+CurrentBar.ToString(), false, entry.shortLineLength, entry.shortEntryPrice, 0, 
 					entry.shortEntryPrice, Brushes.Red, DashStyleHelper.Solid, 4);
 				showShortEntryArrow(inShortTrade: entry.inShortTrade);
 			}	
 		}
 		
-		///******************************************************************************************************************************
-		/// 
-		/// 										Short Entry triggered
-		/// 	
-		/// ****************************************************************************************************************************		
+		/// <summary>
+		///  Short Entry Arrow 
+		/// </summary>
+		/// <param name="inLongTrade"></param>		
 		public void showShortEntryArrow(bool inShortTrade) {
-			
-			if ( inShortTrade ) {
-				return;
-			}
-			
+			if ( inShortTrade ) {return;}
+			if(entry.shortEntryPrice == null) { return; }
 			if ( High[0] > entry.shortEntryPrice && Low[0] < entry.shortEntryPrice ) {
+				//Draw.Text(this, "SE"+CurrentBar.ToString(), "SE", 0, entry.shortEntryPrice + (TickSize * 10), Brushes.Crimson);
 				ArrowDown myArrowDn = Draw.ArrowDown(this, "SEmade"+ CurrentBar.ToString(), true, 0, entry.shortEntryPrice + (TickSize * 5), Brushes.Red);
 				signals[0] = -1;
 				secondPivStopFlag = false;
@@ -639,6 +622,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 						entry.pivLineLength = 0;
 						entry.barsSinceEntry = 0;
 						Draw.Dot(this, "actualLE"+CurrentBar, true, 0, Open[0], Brushes.LimeGreen);
+						customDrawTrades( show: true,  simple: false);
 					} else {
 						exitFromGap();
 						Draw.Dot(this, "SXGapDot"+CurrentBar, true, 0, Close[0], Brushes.Yellow);
@@ -665,6 +649,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 						entry.pivLineLength = 0;
 						entry.barsSinceEntry = 0;
 						Draw.Dot(this, "actualSE"+CurrentBar, true, 0, Open[0], Brushes.Crimson);
+						customDrawTrades( show: true,  simple: false);
 						
 					} else {
 						exitFromGap();
@@ -748,16 +733,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		/// init params
 		public void resetStruct(bool doIt) {
-				swingData.lastHigh 		= Low[0];
-				swingData.lastHighBarnum  = 0;
-				swingData.lastLow  		= Low[0];
-				swingData.lastLowBarnum  	= 0;
-				swingData.prevHigh  		= Low[0];
-				swingData.prevHighBarnum  = 0;
-				swingData.prevLow  		= Low[0];
-				swingData.prevLowBarnum 	= 0;	
+			swingData.lastHigh 		= Low[0];
+			swingData.lastHighBarnum  = 0;
+			swingData.lastLow  		= Low[0];
+			swingData.lastLowBarnum  	= 0;
+			swingData.prevHigh  		= Low[0];
+			swingData.prevHighBarnum  = 0;
+			swingData.prevLow  		= Low[0];
+			swingData.prevLowBarnum 	= 0;	
 			entry.inShortTrade = true;
-			entry.inLongTrade = true;
+			entry.inLongTrade = true; 
 		}
 		
 		
