@@ -50,6 +50,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				DrawHorizontalGridLines						= true;
 				DrawVerticalGridLines						= true;
 				PaintPriceMarkers							= true;
+				
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
@@ -68,13 +69,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 
 		protected override void OnBarUpdate()
+			
 		{	
 			if(CurrentBar < 101) { return; }
 			setBands(debug: false);
 			setTrend(debug: false);
-			setVolatility( debug: false, showTxt: false);
+			setVolatility( debug: false, showTxt: true);
+			string output = parseTextBox( debug: false);
+			setTextBox( textInBox: output);
 			
-			/// show This creates 9 potential market states (see chart below): 
 			/// show guidance for next day
 			/// Based on this classification system and a test period of the last 16 years: 
 			/// a. Tomorrow, on average, is favorable when today’s market condition is any Bull or Sideways Quiet
@@ -92,6 +95,104 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		#region Misc_functions
 		
+		protected string parseTextBox(bool debug)
+		{
+			/// calc  9 potential market states: 		
+			var result 		= (int)setResult(showResult: true, showString: false, showText: false, debug: debug);
+			var reultString = (string)setResult(showResult: false, showString: true, showText: false, debug: debug);
+			
+			string textCondition = "\r\tVolatile\tNormal\tQuiet\t\n  Bull\t1\t2\t3\n  Side\t4\t5\t6\n  Bear\t7\t8\t9\r";
+			textCondition = textCondition + "\n\n\t  "+reultString+ "\n";
+			string output = "";
+			/// relace signal with X
+			if ( textCondition.Contains(result.ToString()) ) {
+					output = textCondition.Replace(result.ToString(), "   *");
+				}
+			int[] intArray = Enumerable.Range(1, 9).ToArray();
+			/// remove result from int array
+		    int numToRemove = result;
+			intArray = intArray.Where(val => val != numToRemove).ToArray();
+			/// loop throu remaining array replaceing chars found with space
+			textCondition = output;
+			foreach (int i in intArray )
+	        {
+				//Print(i);
+				if ( textCondition.Contains(i.ToString()) ) {
+					output = textCondition.Replace(i.ToString(), " ");
+				}
+				textCondition = output;
+				//Print(output);
+			}
+			if ( debug) { Print(output); }
+			return output;
+		}
+		
+		protected object setResult(bool showResult, bool showString, bool showText, bool debug)
+		{
+			/// bear = false, bull = false, sideways = false;
+			/// volatil = false, normal = false, normal = false;
+			/// 
+			int result = 0;
+			string reultString = "";
+			
+			if(bull && volatil) {
+				result = 1;
+				reultString = "Bullish Volatle";
+			}
+			if(bull && normal) {
+				result = 2;
+				reultString = "Bullish Normal";
+			}
+			if(bull && quiet) {
+				result = 3;
+				reultString = "Bullish Quiet";
+			}
+			
+			if(sideways && volatil) {
+				result = 4;
+				reultString = "Sideways Volatle";
+			}
+			if(sideways && normal) {
+				result = 5;
+				reultString = "Sideways Normal";
+			}
+			if(sideways && quiet) {
+				result = 6;
+				reultString = "Sideways Quiet";
+			}
+			
+			if(bear && volatil) {
+				result = 7;
+				reultString = "Bearish Volatle";
+			}
+			if(bear && normal) {
+				result = 8;
+				reultString = "Bearish Normal";
+			}
+			if(bear && quiet) {
+				result = 9;
+				reultString = "Bearish Quiet";
+			}
+			if(showText)
+				Draw.Text(this, "state"+CurrentBar, result.ToString(), 0, Low[0] - (TickSize * 80), Brushes.DarkGray);
+			if(debug)
+				Print(result + "  "+ reultString);
+			if(showResult)
+				return result;
+			if(showString)
+				return reultString;
+			
+			return result;
+		}
+		protected void setTextBox(string textInBox)
+		{
+			/// show market condition
+			TextFixed myTF = Draw.TextFixed(this, "MC", textInBox, TextPosition.TopRight);
+			myTF.TextPosition = TextPosition.TopLeft;
+			myTF.AreaBrush = Brushes.DimGray;
+			myTF.AreaOpacity = 50;
+			myTF.TextBrush = Brushes.White;
+		}
 		protected void setVolatility(bool debug, bool showTxt)
 		{
 			///  Volatility
