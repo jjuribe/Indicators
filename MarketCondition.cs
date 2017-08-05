@@ -56,6 +56,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				//See Help Guide for additional information.
 				/// swow plots
 				showBands 									= true;
+				showVolatilityText							= false;
 				IsSuspendedWhileInactive					= true;
 				AddPlot(Brushes.DarkGray, "Upper"); // Stored in Plots[0]
       			AddPlot(Brushes.DarkGray, "Lower");   // Stored in Plots[1]
@@ -76,12 +77,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if(CurrentBar < 101) { return; }
 			setBands(debug: false);
 			setTrend(debug: false);
-			setVolatility( debug: false, showTxt: true);
+			setVolatility( debug: false, showTxt: showVolatilityText);
 			string output = parseTextBox( debug: false);
 			setTextBox( textInBox: output);
 			
-			
-			/// 
 			///  add spy data series, so I can add this to other charts
 			///  write this as a rolling value indicator?
 			///  make public trend and volatility
@@ -98,7 +97,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			var reultString = (string)setResult(showResult: false, showString: true, showText: false, debug: debug);
 			
 			string textCondition = "\r\tVolatile\tNormal\tQuiet\t\n  Bull\t1\t2\t3\n  Side\t4\t5\t6\n  Bear\t7\t8\t9\r";
-			textCondition = textCondition + "\n\n"+reultString+ "\n";
+			textCondition = textCondition + "\n\n  "+reultString+ "  \n";
 			string output = "";
 			/// relace signal with X
 			if ( textCondition.Contains(result.ToString()) ) {
@@ -359,6 +358,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public bool showBands
 		{ get; set; }
 		
+		
+		[NinjaScriptProperty]
+		[Display(Name="Show Volatility Every Bar", Order=1, GroupName="Properties")]
+		public bool showVolatilityText
+		{ get; set; }
+		
 		#endregion
 	}
 }
@@ -370,18 +375,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private MarketCondition[] cacheMarketCondition;
-		public MarketCondition MarketCondition(bool showBands)
+		public MarketCondition MarketCondition(bool showBands, bool showVolatilityText)
 		{
-			return MarketCondition(Input, showBands);
+			return MarketCondition(Input, showBands, showVolatilityText);
 		}
 
-		public MarketCondition MarketCondition(ISeries<double> input, bool showBands)
+		public MarketCondition MarketCondition(ISeries<double> input, bool showBands, bool showVolatilityText)
 		{
 			if (cacheMarketCondition != null)
 				for (int idx = 0; idx < cacheMarketCondition.Length; idx++)
-					if (cacheMarketCondition[idx] != null && cacheMarketCondition[idx].showBands == showBands && cacheMarketCondition[idx].EqualsInput(input))
+					if (cacheMarketCondition[idx] != null && cacheMarketCondition[idx].showBands == showBands && cacheMarketCondition[idx].showVolatilityText == showVolatilityText && cacheMarketCondition[idx].EqualsInput(input))
 						return cacheMarketCondition[idx];
-			return CacheIndicator<MarketCondition>(new MarketCondition(){ showBands = showBands }, input, ref cacheMarketCondition);
+			return CacheIndicator<MarketCondition>(new MarketCondition(){ showBands = showBands, showVolatilityText = showVolatilityText }, input, ref cacheMarketCondition);
 		}
 	}
 }
@@ -390,14 +395,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.MarketCondition MarketCondition(bool showBands)
+		public Indicators.MarketCondition MarketCondition(bool showBands, bool showVolatilityText)
 		{
-			return indicator.MarketCondition(Input, showBands);
+			return indicator.MarketCondition(Input, showBands, showVolatilityText);
 		}
 
-		public Indicators.MarketCondition MarketCondition(ISeries<double> input , bool showBands)
+		public Indicators.MarketCondition MarketCondition(ISeries<double> input , bool showBands, bool showVolatilityText)
 		{
-			return indicator.MarketCondition(input, showBands);
+			return indicator.MarketCondition(input, showBands, showVolatilityText);
 		}
 	}
 }
@@ -406,14 +411,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.MarketCondition MarketCondition(bool showBands)
+		public Indicators.MarketCondition MarketCondition(bool showBands, bool showVolatilityText)
 		{
-			return indicator.MarketCondition(Input, showBands);
+			return indicator.MarketCondition(Input, showBands, showVolatilityText);
 		}
 
-		public Indicators.MarketCondition MarketCondition(ISeries<double> input , bool showBands)
+		public Indicators.MarketCondition MarketCondition(ISeries<double> input , bool showBands, bool showVolatilityText)
 		{
-			return indicator.MarketCondition(input, showBands);
+			return indicator.MarketCondition(input, showBands, showVolatilityText);
 		}
 	}
 }
