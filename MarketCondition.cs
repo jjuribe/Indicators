@@ -80,11 +80,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			string output = parseTextBox( debug: false);
 			setTextBox( textInBox: output);
 			
-			/// show guidance for next day
-			/// Based on this classification system and a test period of the last 16 years: 
-			/// a. Tomorrow, on average, is favorable when today’s market condition is any Bull or Sideways Quiet
-			/// b. Tomorrow, on average is flat when today’s market condition is Sideways Volatile or Sideways Neutral.
-			/// c. Tomorrow, on average, is down when today’s market condition is any Bear.
+			
 			/// 
 			///  add spy data series, so I can add this to other charts
 			///  write this as a rolling value indicator?
@@ -102,7 +98,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			var reultString = (string)setResult(showResult: false, showString: true, showText: false, debug: debug);
 			
 			string textCondition = "\r\tVolatile\tNormal\tQuiet\t\n  Bull\t1\t2\t3\n  Side\t4\t5\t6\n  Bear\t7\t8\t9\r";
-			textCondition = textCondition + "\n\n\t  "+reultString+ "\n";
+			textCondition = textCondition + "\n\n"+reultString+ "\n";
 			string output = "";
 			/// relace signal with X
 			if ( textCondition.Contains(result.ToString()) ) {
@@ -173,6 +169,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 				result = 9;
 				reultString = "Bearish Quiet";
 			}
+			
+			/// show guidance for next day
+			/// a. Tomorrow, on average, is favorable when today’s market condition is any Bull or Sideways Quit
+			string guidance = "********************";
+			if(result == 1 || result == 2 || result == 3 || result == 6 ) {
+				guidance = "Tomorrow is Favorable";
+			}
+			/// b. Tomorrow, on average is flat when today’s market condition is Sideways Volatile or Sideways Neutral.
+			if(result == 4 || result == 5 ) {
+				guidance = "Tomorrow is Flat";
+			}
+			/// c. Tomorrow, on average, is down when today’s market condition is any Bear.
+			if(result == 7 || result == 8 || result == 9 ) {
+				guidance = "Tomorrow is Down";
+			}
+			
 			if(showText)
 				Draw.Text(this, "state"+CurrentBar, result.ToString(), 0, Low[0] - (TickSize * 80), Brushes.DarkGray);
 			if(debug)
@@ -180,7 +192,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if(showResult)
 				return result;
 			if(showString)
-				return reultString;
+				return reultString +", "+ guidance;
 			
 			return result;
 		}
