@@ -54,6 +54,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
+				/// swow plots
+				showBands 									= true;
 				IsSuspendedWhileInactive					= true;
 				AddPlot(Brushes.DarkGray, "Upper"); // Stored in Plots[0]
       			AddPlot(Brushes.DarkGray, "Lower");   // Stored in Plots[1]
@@ -84,9 +86,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// b. Tomorrow, on average is flat when today’s market condition is Sideways Volatile or Sideways Neutral.
 			/// c. Tomorrow, on average, is down when today’s market condition is any Bear.
 			/// 
-			///  add spy data series, so I can add this to other charts?
-			///  add show MA Band
-			///  add show daily text
+			///  add spy data series, so I can add this to other charts
 			///  write this as a rolling value indicator?
 			///  make public trend and volatility
 			///  compare to examples on the web site
@@ -281,8 +281,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			sma0		= Math.Abs(sma[0]);
 			twoPctUp = Math.Abs(( sma[0] * 0.02 ) + sma0);
 			twoPctDn = Math.Abs(( sma[0] * 0.02 ) - sma0);
-			Upper[0] = twoPctUp;
-			Lower[0] = twoPctDn;
+			if ( showBands ) {
+				Upper[0] = twoPctUp;
+				Lower[0] = twoPctDn;
+			}
+			
 			if ( debug ) { Print(sma0 + " + " + twoPctUp + " - " + twoPctDn);}
 		}
 		
@@ -310,15 +313,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 				sideways = true;
 			}
 			
-			if (bull) {
+			if (bull && showBands) {
 				PlotBrushes[0][0] = Brushes.DodgerBlue;
 				PlotBrushes[1][0] = Brushes.DodgerBlue;
 			}
-			if (bear) {
+			if (bear && showBands ) {
 				PlotBrushes[0][0] = Brushes.Crimson;
 				PlotBrushes[1][0] = Brushes.Crimson;
 			}
-			if (sideways) {
+			if (sideways && showBands ) {
 				PlotBrushes[0][0] = Brushes.Goldenrod;
 				PlotBrushes[1][0] = Brushes.Goldenrod;
 			}
@@ -328,6 +331,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		#endregion
 		
 		#region Properties
+		
 		public Series<double> Upper
 		{
 		  get { return Values[0]; }
@@ -337,6 +341,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 		  get { return Values[1]; }
 		}
+		
+		[NinjaScriptProperty]
+		[Display(Name="Show Bands", Order=1, GroupName="Properties")]
+		public bool showBands
+		{ get; set; }
+		
 		#endregion
 	}
 }
@@ -348,18 +358,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private MarketCondition[] cacheMarketCondition;
-		public MarketCondition MarketCondition()
+		public MarketCondition MarketCondition(bool showBands)
 		{
-			return MarketCondition(Input);
+			return MarketCondition(Input, showBands);
 		}
 
-		public MarketCondition MarketCondition(ISeries<double> input)
+		public MarketCondition MarketCondition(ISeries<double> input, bool showBands)
 		{
 			if (cacheMarketCondition != null)
 				for (int idx = 0; idx < cacheMarketCondition.Length; idx++)
-					if (cacheMarketCondition[idx] != null &&  cacheMarketCondition[idx].EqualsInput(input))
+					if (cacheMarketCondition[idx] != null && cacheMarketCondition[idx].showBands == showBands && cacheMarketCondition[idx].EqualsInput(input))
 						return cacheMarketCondition[idx];
-			return CacheIndicator<MarketCondition>(new MarketCondition(), input, ref cacheMarketCondition);
+			return CacheIndicator<MarketCondition>(new MarketCondition(){ showBands = showBands }, input, ref cacheMarketCondition);
 		}
 	}
 }
@@ -368,14 +378,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.MarketCondition MarketCondition()
+		public Indicators.MarketCondition MarketCondition(bool showBands)
 		{
-			return indicator.MarketCondition(Input);
+			return indicator.MarketCondition(Input, showBands);
 		}
 
-		public Indicators.MarketCondition MarketCondition(ISeries<double> input )
+		public Indicators.MarketCondition MarketCondition(ISeries<double> input , bool showBands)
 		{
-			return indicator.MarketCondition(input);
+			return indicator.MarketCondition(input, showBands);
 		}
 	}
 }
@@ -384,14 +394,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.MarketCondition MarketCondition()
+		public Indicators.MarketCondition MarketCondition(bool showBands)
 		{
-			return indicator.MarketCondition(Input);
+			return indicator.MarketCondition(Input, showBands);
 		}
 
-		public Indicators.MarketCondition MarketCondition(ISeries<double> input )
+		public Indicators.MarketCondition MarketCondition(ISeries<double> input , bool showBands)
 		{
-			return indicator.MarketCondition(input);
+			return indicator.MarketCondition(input, showBands);
 		}
 	}
 }
