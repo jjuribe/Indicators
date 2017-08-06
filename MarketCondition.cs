@@ -34,6 +34,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private	double 	twoPctDn;
 		private bool bear = false, bull = false, sideways = false;
 		private bool volatil = false, normal = false, quiet = false;
+		private string unicodeBox = "\u25A1";
+		private string unicodeBoxSolid = "\u25A0";
+		private string uniCodeArrow = "\u21E9";
 		
 		private Series<double> atrPctSeries;
 		
@@ -54,7 +57,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
-				/// swow plots
+				/// show plots
 				showBands 									= true;
 				showVolatilityText							= false;
 				IsSuspendedWhileInactive					= true;
@@ -99,7 +102,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			string output = "";
 			/// relace signal with X
 			if ( textCondition.Contains(result.ToString()) ) {
-					output = textCondition.Replace(result.ToString(), "   *");
+					output = textCondition.Replace(result.ToString(), "   "+ unicodeBoxSolid);
 				}
 			int[] intArray = Enumerable.Range(1, 9).ToArray();
 			/// remove result from int array
@@ -111,7 +114,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	        {
 				//Print(i);
 				if ( textCondition.Contains(i.ToString()) ) {
-					output = textCondition.Replace(i.ToString(), " ");
+					output = textCondition.Replace(i.ToString(),"   "+ unicodeBox);
 				}
 				textCondition = output;
 				//Print(output);
