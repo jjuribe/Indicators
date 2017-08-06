@@ -43,7 +43,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{
 				Description									= @"Enter the description for your new custom Indicator here.";
 				Name										= "Market Condition";
-				Calculate									= Calculate.OnBarClose;
+				Calculate									= Calculate.OnEachTick;
 				IsOverlay									= true;
 				DisplayInDataBox							= true;
 				DrawOnPricePanel							= true;
@@ -81,11 +81,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			string output = parseTextBox( debug: false);
 			setTextBox( textInBox: output);
 			
-			///  add spy data series, so I can add this to other charts
-			///  write this as a rolling value indicator?
-			///  make public trend and volatility
 			///  compare to examples on the web site
-
+			///  write this as a rolling value indicator?
+			///  make public trend, volatility and market condition 1-9
 		}
 		
 		#region Misc_functions
