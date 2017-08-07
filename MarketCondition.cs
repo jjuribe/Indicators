@@ -37,8 +37,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private string unicodeBox = "\u25A1";
 		private string unicodeBoxSolid = "\u25A0";
 		private string uniCodeArrow = "\u21E9";
+		/// public var 1-9
+//		private int 	publicMarketCondition;
+//		private string 	publicMarketConditionText;
+//		private string 	publicMarketPredictionText;
 		
 		private Series<double> atrPctSeries;
+		private Series<int> marketCond;
+		//private int testCond = 0;
 		
 		protected override void OnStateChange()
 		{
@@ -64,12 +70,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(Brushes.DarkGray, "Upper"); // Stored in Plots[0]
       			AddPlot(Brushes.DarkGray, "Lower");   // Stored in Plots[1]
 			}
+			else if(State == State.Configure)
+			{
+				atrPctSeries = new Series<double>(this, MaximumBarsLookBack.Infinite);
+				marketCond = new Series<int>(this, MaximumBarsLookBack.Infinite);
+			}
 			else if (State == State.DataLoaded)
 			{
 				sma		= SMA(200);
 				atr		= ATR(14);
 				stdDev	= StdDev(100);
-				atrPctSeries = new Series<double>(this, MaximumBarsLookBack.Infinite);
 				ClearOutputWindow(); 
 			}
 		}
@@ -77,16 +87,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected override void OnBarUpdate()
 			
 		{	
-			if(CurrentBar < 101) { return; }
+			if(CurrentBar < 101) { 
+				return; }
 			setBands(debug: false);
 			setTrend(debug: false);
 			setVolatility( debug: false, showTxt: showVolatilityText);
 			string output = parseTextBox( debug: false);
 			setTextBox( textInBox: output);
 			
-			///  compare to examples on the web site
-			///  write this as a rolling value indicator?
-			///  make public trend, volatility and market condition 1-9
+			///  make public trend, volatility 
+
 		}
 		
 		#region Misc_functions
@@ -169,6 +179,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 				result = 9;
 				reultString = "Bearish Quiet";
 			}
+			//testCond = result;
+			marketCond[0] = result;
+			//Print("MC from indicator:\t" + marketCond[0]);
 			
 			/// show guidance for next day
 			/// a. Tomorrow, on average, is favorable when today’s market condition is any Bull or Sideways Quit
@@ -194,8 +207,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if(showString)
 				return reultString +", "+ guidance;
 			
+			
 			return result;
 		}
+		
 		protected void setTextBox(string textInBox)
 		{
 			/// show market condition
@@ -205,6 +220,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			myTF.AreaOpacity = 50;
 			myTF.TextBrush = Brushes.White;
 		}
+		
 		protected void setVolatility(bool debug, bool showTxt)
 		{
 			///  Volatility
@@ -364,6 +380,29 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(Name="Show Volatility Every Bar", Order=1, GroupName="Properties")]
 		public bool showVolatilityText
 		{ get; set; }
+		
+//		/// public var for market condition 1-9
+//		public int PublicMarketCondition
+//        {
+//            get { Update(); return publicMarketCondition; }
+//        }
+		
+//		public string PublicMarketConditionText
+//        {
+//            get { Update(); return publicMarketConditionText; }
+//        }
+		
+//		public string PublicMarketPredictionText
+//        {
+//            get { Update(); return publicMarketPredictionText; }
+//        }
+		
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<int> MarketCond
+		{
+			get { return marketCond; }
+		}
 		
 		#endregion
 	}
