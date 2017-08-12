@@ -26,6 +26,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class DiveDDTradeFramer : Indicator
 	{
+		/// Line Position
+		public int spaceToRight = -5;
+		public int textSpaceToRight = -5;
+		public int spaceToLeft = 0;
+		public int centerBar = -1;
+		
+		public double maxHigh;
+		public double minLow;
+		public double stop;
+		public double entry;
 		public string entryType = "5DD";
 		public double shares;
 		public double reward;
@@ -40,7 +50,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (State == State.SetDefaults)
 			{
 				Description									= @"Enter the description for your new custom Indicator here.";
-				Name										= "DiveDDTradeFramer";
+				Name										= "Five DD Trade Frame";
 				Calculate									= Calculate.OnEachTick;
 				IsOverlay									= true;
 				DisplayInDataBox							= true;
@@ -65,23 +75,42 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
-			/// Line Position
-			int spaceToRight = -5;
-			int textSpaceToRight = -5;
-			int spaceToLeft = 0;
-			int centerBar = -1;
-			/// Trade Frame Calc
-			double maxHigh = MAX(High, 10)[0];
-			double minLow = MIN(Low, 3)[0];
-			double stop = minLow - 0.05;
-			double entry = Close[0] + 0.05;
-			Print( Close[0] + "\t" + maxHigh + "\t" + minLow);
+			calcTradeFrame() ;
+			drawTradeFrame();
+			
+			/// consolidation
+			/// consolidation high
+
+			setTextBox( textInBox: popuateStatsTextBox());
+			/// market replay
+				 
+		}
+	
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 									Trade Frame Calc
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		protected void calcTradeFrame() {
+
+			maxHigh = MAX(High, 10)[0];
+			minLow = MIN(Low, 3)[0];
+			stop = minLow - 0.05;
+			entry = Close[0] + 0.05;
+			//Print( Close[0] + "\t" + maxHigh + "\t" + minLow);
 			/// Risk & Position Size
 			risk = Close[0] - stop;
 			reward = maxHigh - entry;
 			rR = reward / risk;
 			shares = maxRisk / risk;
-			
+		}
+
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 									Draw Trade Frame
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		protected void drawTradeFrame() {
 			/// Trade Frame Lines
 			Draw.Line(this, "vert", true, centerBar, MAX(High, 10)[0], centerBar, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
 			Draw.Line(this, "Target", true, spaceToLeft, MAX(High, 10)[0], spaceToRight, MAX(High, 10)[0], Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
@@ -102,13 +131,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			Draw.Text(this, "stopTxt", stop.ToString("0.00"), textSpaceToRight, stop + ( TickSize* space ), Brushes.CornflowerBlue);
 			/// target Text
 			Draw.Text(this, "TargetTxt", maxHigh.ToString("0.00"), textSpaceToRight, maxHigh + ( TickSize* space ), Brushes.CornflowerBlue);
-			
-			/// consolidation
-			/// consolidation high
-
-			setTextBox( textInBox: popuateStatsTextBox());
-			/// market replay
-				 
 		}
 		
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
