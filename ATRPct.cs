@@ -56,7 +56,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
-			ATRpctPlot[0] =  atr[0] / Close[0];
+			ATRpctPlot[0] =  (atr[0] / Close[0]) ;
 		}
 
 		#region Properties

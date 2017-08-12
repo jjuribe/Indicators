@@ -150,8 +150,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////		
 		protected bool entryConditionsChannel()
 		{
-			bool signal = false;
-			if ( Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && WilliamsR(10)[0] < -80 ){
+			bool signal = false;		// && High[0] < SMA(10)[0] 
+			if ( Close[0] > Math.Abs(sma0[0]) && WilliamsR(10)[0] < -80 ){
 				//signal = true;
 				Draw.Dot(this, "CH"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.Lime);
 				
@@ -174,7 +174,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			bool signal = false;
 			double onePercent = Close[0] * 0.01;
-			if ((Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && Close[0] < ( SMA(10)[0]- ATR(14)[0])) ||
+			if ((Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && Close[0] < ( SMA(10)[0]- ATR(14)[1])) ||
 				(Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && Close[0] < ( SMA(10)[0]- onePercent )) ){
 				signal = true;
 				Draw.Dot(this, "ORl"+CurrentBar, true, 0, Low[0] - (TickSize * 60), Brushes.Cyan);
@@ -197,7 +197,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			bool signal = false;
 			double onePercent = Close[0] * 0.01;
-			if ((Close[0] < Math.Abs(sma0[0])  && Low[0] > SMA(10)[0] && Close[0] > ( SMA(10)[0]+ ATR(14)[0])) ||
+			if ((Close[0] < Math.Abs(sma0[0])  && Low[0] > SMA(10)[0] && Close[0] > ( SMA(10)[0]+ ATR(14)[1])) ||
 				(Close[0] < Math.Abs(sma0[0])  && Low[0] > SMA(10)[0] && Close[0] > ( SMA(10)[0]+ onePercent )) ){
 				signal = true;
 				Draw.Dot(this, "ORs"+CurrentBar, true, 0, High[0] + (TickSize * 60), Brushes.Magenta);
