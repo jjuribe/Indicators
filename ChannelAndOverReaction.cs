@@ -102,8 +102,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (CurrentBar < 20 ) { return; }
 			//setTextBox( textInBox: "No Entry");
-			textForBox = "No Entry";
-			textForBoxToAdd = "";
+			textForBox = "\n\tNo Channel Entry\t\t\n";
+			textForBoxToAdd = "\n\tNo Overreaction Entry\t\t\n";
 			bool chLong = entryConditionsChannel();
 			bool orLong = entryConditionsORlong();
 			bool orShort = entryConditionsORshort();
@@ -219,6 +219,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			string bodyMessage = "\n\t";
 			
+			bodyMessage = bodyMessage + Time[0].ToShortDateString()+"\t\n\t";
 			bodyMessage = bodyMessage + entryType+"\t\n\t";
 			bodyMessage = bodyMessage + shares+" shares\t\n\t";
 			
@@ -235,7 +236,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// show market condition
 			TextFixed myTF = Draw.TextFixed(this, "tradeStat", textInBox, TextPosition.BottomLeft);
 			myTF.TextPosition = TextPosition.BottomLeft;
-			myTF.AreaBrush = Brushes.DimGray;
+			myTF.AreaBrush = Brushes.White;
 			myTF.AreaOpacity = 90;
 			myTF.TextBrush = Brushes.Black;
 		}
