@@ -220,7 +220,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			string bodyMessage = "\n\t";
 			
 			bodyMessage = bodyMessage + Time[0].ToShortDateString()+"\t\n\t";
-			bodyMessage = bodyMessage + entryType+"\t\n\t";
+			bodyMessage = bodyMessage + entryType+"\t\n\tEnter Tomorrow's Open\n\t";
 			bodyMessage = bodyMessage + shares+" shares\t\n\t";
 			
 			bodyMessage = bodyMessage + Pct+"% stop\t\n\t";
