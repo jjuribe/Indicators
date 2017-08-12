@@ -96,7 +96,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			maxHigh = MAX(High, 10)[0];
 			minLow = MIN(Low, 3)[0];
 			stop = minLow - 0.05;
-			entry = Close[0] + 0.05;
+			entry = High[0] + 0.05;
 			//Print( Close[0] + "\t" + maxHigh + "\t" + minLow);
 			/// Risk & Position Size
 			risk = Close[0] - stop;
@@ -112,25 +112,35 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		protected void drawTradeFrame() {
 			/// Trade Frame Lines
-			Draw.Line(this, "vert", true, centerBar, MAX(High, 10)[0], centerBar, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
-			Draw.Line(this, "Target", true, spaceToLeft, MAX(High, 10)[0], spaceToRight, MAX(High, 10)[0], Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
-			Draw.Line(this, "Stop", true, spaceToLeft, stop, spaceToRight, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
-			Draw.Line(this, "entry", true, spaceToLeft, entry, spaceToRight, entry, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			RemoveDrawObject("vert"+ (CurrentBar -1));
+			Draw.Line(this, "vert"+CurrentBar, true, centerBar, MAX(High, 10)[0], centerBar, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			RemoveDrawObject("Target"+ (CurrentBar -1));
+			Draw.Line(this, "Target"+CurrentBar, true, spaceToLeft, MAX(High, 10)[0], spaceToRight, MAX(High, 10)[0], Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			RemoveDrawObject("Stop"+ (CurrentBar -1));
+			Draw.Line(this, "Stop"+CurrentBar, true, spaceToLeft, stop, spaceToRight, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			RemoveDrawObject("entry"+ (CurrentBar -1));
+			Draw.Line(this, "entry"+CurrentBar, true, spaceToLeft, entry, spaceToRight, entry, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
 			/// ma 200
-			if (SMA(200)[0] < maxHigh && SMA(200)[0] > stop ) {
-				Draw.Line(this, "200MA", true, spaceToLeft, SMA(200)[0] , spaceToRight, SMA(200)[0] , Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			if (SMA(200)[0] < maxHigh && SMA(200)[0] > stop && SMA(200)[0] > entry ) {
+				RemoveDrawObject("200MA"+ (CurrentBar -1));
+				Draw.Line(this, "200MA"+CurrentBar, true, spaceToLeft, SMA(200)[0] , spaceToRight, SMA(200)[0] , Brushes.CornflowerBlue, DashStyleHelper.Dash, 4);
 			}
 			/// ma 10
-			if (SMA(10)[0] < maxHigh && SMA(10)[0] > stop ) {
-				Draw.Line(this, "10MA", true, spaceToLeft, SMA(10)[0] , spaceToRight, SMA(10)[0] , Brushes.CornflowerBlue, DashStyleHelper.Dash, 4);
+			if (SMA(10)[0] < maxHigh && SMA(10)[0] > stop  && SMA(10)[0] > entry  ) {
+				RemoveDrawObject("10MA"+ (CurrentBar -1));
+				Draw.Line(this, "10MA"+CurrentBar, true, spaceToLeft, SMA(10)[0] , spaceToRight, SMA(10)[0] , Brushes.CornflowerBlue, DashStyleHelper.Dot, 4);
 			}
 			
 			/// Entry Text
-			Draw.Text(this, "entryTxt", entry.ToString("0.00"), textSpaceToRight, entry + ( TickSize* space ), Brushes.CornflowerBlue);
+			RemoveDrawObject("entryTxt"+ (CurrentBar -1));
+			Draw.Text(this, "entryTxt"+CurrentBar, entry.ToString("0.00"), textSpaceToRight, entry + ( TickSize* space ), Brushes.CornflowerBlue);
 			/// Stop Text
-			Draw.Text(this, "stopTxt", stop.ToString("0.00"), textSpaceToRight, stop + ( TickSize* space ), Brushes.CornflowerBlue);
+			RemoveDrawObject("stopTxt"+ (CurrentBar -1));
+			Draw.Text(this, "stopTxt"+CurrentBar, stop.ToString("0.00"), textSpaceToRight, stop + ( TickSize* space ), Brushes.CornflowerBlue);
 			/// target Text
-			Draw.Text(this, "TargetTxt", maxHigh.ToString("0.00"), textSpaceToRight, maxHigh + ( TickSize* space ), Brushes.CornflowerBlue);
+			RemoveDrawObject("TargetTxt"+ (CurrentBar -1));
+			Draw.Text(this, "TargetTxt"+CurrentBar, maxHigh.ToString("0.00"), textSpaceToRight, maxHigh + ( TickSize* space ), Brushes.CornflowerBlue);
+			// Draw.RiskReward(NinjaScriptBase owner, string tag, bool isAutoScale, int entryBarsAgo , double entryY, int endBarsAgo, double endY, double ratio, bool isStop, bool isGlobal, string templateName)
 		}
 		
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
