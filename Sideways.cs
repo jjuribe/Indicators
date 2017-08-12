@@ -29,6 +29,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double twoPctUp;
 		private	double twoPctDn;
 		private int consolCount;
+		private Series<double> medianConsol;
 		
 		protected override void OnStateChange()
 		{
@@ -51,6 +52,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Configure)
 			{
+				medianConsol = new Series<double>(this, MaximumBarsLookBack.Infinite);
 			}
 		}
 
@@ -66,12 +68,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 			} else  {
 				consolCount = 0;
 			}
-			if ( consolCount > 3 ) {
+			if ( consolCount >= 3 ) {
 				SideHist[0] = 2;
 				double maxConsol = MAX(High, 3)[0];
 				double minConsol = MIN(Low, 3)[0];
-				double medianConsol = ( maxConsol - minConsol ) + minConsol;
-				Draw.Line(this, "consolMid", 0, medianConsol, 3, medianConsol, Brushes.Red);
+				medianConsol[0] = ( maxConsol - minConsol ) * 0.5 + minConsol;
+				//Draw.Line(this, "consolMid"+CurrentBar,true, -10, medianConsol[0], 3, medianConsol[0],  Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+				
+			
 			}
 		}
 
@@ -129,6 +133,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public Series<double> SideHist
 		{
 			get { return Values[0]; }
+		}
+		
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<double> MedianConsol
+		{
+			get { return medianConsol; }
 		}
 		#endregion
 

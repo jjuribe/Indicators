@@ -359,12 +359,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 		#endregion
 		
 		#region Properties
-		
+		[Browsable(false)]
+		[XmlIgnore]
 		public Series<double> Upper
 		{
 		  get { return Values[0]; }
 		}
-		  
+		[Browsable(false)]
+		[XmlIgnore]  
 		public Series<double> Lower
 		{
 		  get { return Values[1]; }

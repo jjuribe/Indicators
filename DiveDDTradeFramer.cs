@@ -44,6 +44,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public double risk;
 		public int space = 20;
 		
+		private Sideways Sideways1;
+		
 		
 		protected override void OnStateChange()
 		{
@@ -70,22 +72,58 @@ namespace NinjaTrader.NinjaScript.Indicators
 			  {
 			    //clear the output window as soon as the bars data is loaded
 			    ClearOutputWindow();  	
+				  Sideways1 = Sideways();
 			  }
 		}
 
 		protected override void OnBarUpdate()
 		{
-			calcTradeFrame() ;
-			drawTradeFrame();
+			if( CurrentBar < 100 ) { return;}
 			
-			/// consolidation
-			/// consolidation high
+						/// consolidation
+			Print("Loop----------");
+			int count = 9;
+			double lastConsol = 0;
+			for (int i = 0; i < count; i++) 
+			{
+				double thisSignals = Sideways1.MedianConsol[i];
+				if (thisSignals != 0 ) {
+					Print(Time[0].ToShortDateString() + "\t" + i + "\t" + thisSignals );
+					lastConsol = thisSignals;
+				}
+			}
+			Print("Loop----------"+ lastConsol);
+			
+			calcTradeFrame() ;
+			drawTradeFrame(lastConsol:lastConsol );
+			
+
+	
 
 			setTextBox( textInBox: popuateStatsTextBox());
 			/// market replay
 				 
 		}
 	
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 									Trade Frame Calc
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		protected void findColsolidation() {
+
+			maxHigh = MAX(High, 10)[0];
+			minLow = MIN(Low, 3)[0];
+			stop = minLow - 0.05;
+			entry = High[0] + 0.05;
+			//Print( Close[0] + "\t" + maxHigh + "\t" + minLow);
+			/// Risk & Position Size
+			risk = Close[0] - stop;
+			reward = maxHigh - entry;
+			rR = reward / risk;
+			shares = maxRisk / risk;
+		}
+		
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
 		/// 									Trade Frame Calc
@@ -110,7 +148,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 									Draw Trade Frame
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		protected void drawTradeFrame() {
+		protected void drawTradeFrame(double lastConsol) {
 			/// Trade Frame Lines
 			RemoveDrawObject("vert"+ (CurrentBar -1));
 			Draw.Line(this, "vert"+CurrentBar, true, centerBar, MAX(High, 10)[0], centerBar, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
@@ -120,6 +158,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			Draw.Line(this, "Stop"+CurrentBar, true, spaceToLeft, stop, spaceToRight, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
 			RemoveDrawObject("entry"+ (CurrentBar -1));
 			Draw.Line(this, "entry"+CurrentBar, true, spaceToLeft, entry, spaceToRight, entry, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			if (lastConsol != 0) {
+				RemoveDrawObject("lastConsol"+ (CurrentBar -1));
+				Draw.Line(this, "lastConsol"+CurrentBar, true, spaceToLeft, lastConsol, spaceToRight, lastConsol, Brushes.CornflowerBlue, DashStyleHelper.Dot, 4);	
+			}
 			/// ma 200
 			if (SMA(200)[0] < maxHigh && SMA(200)[0] > stop && SMA(200)[0] > entry ) {
 				RemoveDrawObject("200MA"+ (CurrentBar -1));
