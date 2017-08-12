@@ -36,7 +36,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public double minLow;
 		public double stop;
 		public double entry;
-		public string entryType = "5DD";
+		public string entryType = "5DD Mechanical Entry";
 		public double shares;
 		public double reward;
 		public double maxRisk = 50;
@@ -180,7 +180,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected string popuateStatsTextBox() {
 
 			string bodyMessage = "\n\t";
-			bodyMessage = bodyMessage + entryType+"\t"+Time[0].ToShortDateString()+"\t\n\t";
+			bodyMessage = bodyMessage + Time[0].ToShortDateString()+"\t\n\t";
+			bodyMessage = bodyMessage + entryType+"\t\n\t";
 			bodyMessage = bodyMessage + "$"+maxRisk+" Risk\t\n\t";
 			bodyMessage = bodyMessage + risk.ToString("0.00")+" Risk Points\t\n\t"; //risk
 			bodyMessage = bodyMessage + shares.ToString("0")+" shares\t\n\t";	
