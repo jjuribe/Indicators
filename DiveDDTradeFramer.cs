@@ -78,30 +78,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
+			/// Things to fix:
+			/// Sometimes needs to load twice
+			/// Text above entry gets spaced out on lower prices like 31
+			/// auto adjust entry - only 5 cents from $20 - $120
+			/// risk is not correct
 			if( CurrentBar < 100 ) { return;}
-			
-						/// consolidation
-			Print("Loop----------");
+			/// consolidation
 			int count = 9;
 			double lastConsol = 0;
 			for (int i = 0; i < count; i++) 
 			{
 				double thisSignals = Sideways1.MedianConsol[i];
 				if (thisSignals != 0 ) {
-					Print(Time[0].ToShortDateString() + "\t" + i + "\t" + thisSignals );
 					lastConsol = thisSignals;
 				}
 			}
-			Print("Loop----------"+ lastConsol);
 			
 			calcTradeFrame() ;
 			drawTradeFrame(lastConsol:lastConsol );
-			
-
-	
 
 			setTextBox( textInBox: popuateStatsTextBox());
-			/// market replay
 				 
 		}
 	
