@@ -79,10 +79,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected override void OnBarUpdate()
 		{
 			/// Things to fix:
-			/// Sometimes needs to load twice
+			/// Sometimes needs to load twice because not last date loaded
 			/// Text above entry gets spaced out on lower prices like 31
 			/// auto adjust entry - only 5 cents from $20 - $120
-			/// risk is not correct
+		
 			if( CurrentBar < 100 ) { return;}
 			/// consolidation
 			int count = 9;
@@ -107,34 +107,24 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 									Trade Frame Calc
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		protected void findColsolidation() {
-
-			maxHigh = MAX(High, 10)[0];
-			minLow = MIN(Low, 3)[0];
-			stop = minLow - 0.05;
-			entry = High[0] + 0.05;
-			//Print( Close[0] + "\t" + maxHigh + "\t" + minLow);
-			/// Risk & Position Size
-			risk = Close[0] - stop;
-			reward = maxHigh - entry;
-			rR = reward / risk;
-			shares = maxRisk / risk;
-		}
-		
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		/// 	
-		/// 									Trade Frame Calc
-		/// 
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		protected void calcTradeFrame() {
 
+			// set adjustable entry buffer
+			double buffer = 0.05;
+			if (Close[0] > 120 ) {
+				buffer =  0.1;
+				Print("Buffer now is "+ buffer.ToString("0.00"));
+			} if (Close[0] > 400 ) {
+				buffer =  0.5;
+				Print("Buffer now is "+ buffer.ToString("0.00"));
+			}
 			maxHigh = MAX(High, 10)[0];
 			minLow = MIN(Low, 3)[0];
-			stop = minLow - 0.05;
-			entry = High[0] + 0.05;
+			stop = minLow - buffer;
+			entry = High[0] +buffer;
 			//Print( Close[0] + "\t" + maxHigh + "\t" + minLow);
 			/// Risk & Position Size
-			risk = Close[0] - stop;
+			risk = entry - stop;
 			reward = maxHigh - entry;
 			rR = reward / risk;
 			shares = maxRisk / risk;
@@ -190,8 +180,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected string popuateStatsTextBox() {
 
 			string bodyMessage = "\n\t";
-			bodyMessage = bodyMessage + entryType+"\t\n\t";
-			bodyMessage = bodyMessage + "$"+maxRisk+" maxRisk\t\n\t";
+			bodyMessage = bodyMessage + entryType+"\t"+Time[0].ToShortDateString()+"\t\n\t";
+			bodyMessage = bodyMessage + "$"+maxRisk+" Risk\t\n\t";
+			bodyMessage = bodyMessage + risk.ToString("0.00")+" Risk Points\t\n\t"; //risk
 			bodyMessage = bodyMessage + shares.ToString("0")+" shares\t\n\t";	
 			bodyMessage = bodyMessage + rR.ToString("0.00")+" RR: \t\n";
 			return bodyMessage;
