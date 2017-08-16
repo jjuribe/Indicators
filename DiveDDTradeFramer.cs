@@ -64,6 +64,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
 				IsSuspendedWhileInactive					= true;
+				On = true;
 			}
 			else if (State == State.Configure)
 			{
@@ -78,6 +79,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
+			if (!On) {   return; }
 			/// Things to fix:
 			/// Sometimes needs to load twice because not last date loaded
 			/// Text above entry gets spaced out on lower prices like 31
@@ -185,7 +187,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bodyMessage = bodyMessage + "$"+maxRisk+" Risk\t\n\t";
 			bodyMessage = bodyMessage + risk.ToString("0.00")+" Risk Points\t\n\t"; //risk
 			bodyMessage = bodyMessage + shares.ToString("0")+" shares\t\n\t";	
-			bodyMessage = bodyMessage + rR.ToString("0.00")+" RR: \t\n";
+			bodyMessage = bodyMessage + "RR:"+ rR.ToString("0.00")+" At 10 Day High\t\n";
 			return bodyMessage;
 		}		
 		protected void setTextBox(string textInBox)
@@ -197,9 +199,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			myTF.AreaOpacity = 90;
 			myTF.TextBrush = Brushes.Black;
 		}
-	}
-	
-	
+		
+		#region Properties
+
+		[NinjaScriptProperty]
+		[Display(Name="Indicator On", Description="is this thing on?", Order=1, GroupName="Parameters")]
+		public bool On
+		{ get; set; }
+
+		#endregion
+	}	
 }
 
 #region NinjaScript generated code. Neither change nor remove.
@@ -209,18 +218,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private DiveDDTradeFramer[] cacheDiveDDTradeFramer;
-		public DiveDDTradeFramer DiveDDTradeFramer()
+		public DiveDDTradeFramer DiveDDTradeFramer(bool on)
 		{
-			return DiveDDTradeFramer(Input);
+			return DiveDDTradeFramer(Input, on);
 		}
 
-		public DiveDDTradeFramer DiveDDTradeFramer(ISeries<double> input)
+		public DiveDDTradeFramer DiveDDTradeFramer(ISeries<double> input, bool on)
 		{
 			if (cacheDiveDDTradeFramer != null)
 				for (int idx = 0; idx < cacheDiveDDTradeFramer.Length; idx++)
-					if (cacheDiveDDTradeFramer[idx] != null &&  cacheDiveDDTradeFramer[idx].EqualsInput(input))
+					if (cacheDiveDDTradeFramer[idx] != null && cacheDiveDDTradeFramer[idx].On == on && cacheDiveDDTradeFramer[idx].EqualsInput(input))
 						return cacheDiveDDTradeFramer[idx];
-			return CacheIndicator<DiveDDTradeFramer>(new DiveDDTradeFramer(), input, ref cacheDiveDDTradeFramer);
+			return CacheIndicator<DiveDDTradeFramer>(new DiveDDTradeFramer(){ On = on }, input, ref cacheDiveDDTradeFramer);
 		}
 	}
 }
@@ -229,14 +238,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.DiveDDTradeFramer DiveDDTradeFramer()
+		public Indicators.DiveDDTradeFramer DiveDDTradeFramer(bool on)
 		{
-			return indicator.DiveDDTradeFramer(Input);
+			return indicator.DiveDDTradeFramer(Input, on);
 		}
 
-		public Indicators.DiveDDTradeFramer DiveDDTradeFramer(ISeries<double> input )
+		public Indicators.DiveDDTradeFramer DiveDDTradeFramer(ISeries<double> input , bool on)
 		{
-			return indicator.DiveDDTradeFramer(input);
+			return indicator.DiveDDTradeFramer(input, on);
 		}
 	}
 }
@@ -245,14 +254,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.DiveDDTradeFramer DiveDDTradeFramer()
+		public Indicators.DiveDDTradeFramer DiveDDTradeFramer(bool on)
 		{
-			return indicator.DiveDDTradeFramer(Input);
+			return indicator.DiveDDTradeFramer(Input, on);
 		}
 
-		public Indicators.DiveDDTradeFramer DiveDDTradeFramer(ISeries<double> input )
+		public Indicators.DiveDDTradeFramer DiveDDTradeFramer(ISeries<double> input , bool on)
 		{
-			return indicator.DiveDDTradeFramer(input);
+			return indicator.DiveDDTradeFramer(input, on);
 		}
 	}
 }

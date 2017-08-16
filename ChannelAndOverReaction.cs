@@ -86,6 +86,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				
 				MaxRisk					= 50;
 				Pct						= 3;
+				On = true;
 			}
 			else if (State == State.Configure)
 			{
@@ -100,6 +101,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
+			if (!On) {   return; }
 			if (CurrentBar < 20 ) { return; }
 			//setTextBox( textInBox: "No Entry");
 			textForBox = "\n\tNo Channel Entry\t\t\n";
@@ -107,6 +109,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bool chLong = entryConditionsChannel();
 			bool orLong = entryConditionsORlong();
 			bool orShort = entryConditionsORshort();
+			
+			///  Add Target Rules to Indicator
+			///  Add On / Off
 			
 			textForBox = textForBox + textForBoxToAdd;
 			setTextBox( textInBox: textForBox);
@@ -223,10 +228,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bodyMessage = bodyMessage + entryType+"\t\n\tEnter Tomorrow's Open\n\t";
 			bodyMessage = bodyMessage + shares+" shares\t\n\t";
 			
-			bodyMessage = bodyMessage + Pct+"% stop\t\n\t";
+			bodyMessage = bodyMessage + Pct+"% stop\t";
 			
 			bodyMessage = bodyMessage + "$"+maxLoss+" risk\t\n\t";
 			bodyMessage = bodyMessage + stopPrice.ToString("0.00")+" stop order\t\n";
+			if (entryType == "Channel" ) {
+				bodyMessage = bodyMessage + "\tTarget: %R > -30\t\n";
+			} else {
+				bodyMessage = bodyMessage + "\tTarget:  > SMA(10)\t\n";
+			}
+			
 			
 			
 			return bodyMessage;
@@ -246,15 +257,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(ResourceType = typeof(Custom.Resource), Name="Max Risk", Order=10, GroupName="NinjaScriptStrategyParameters")]
+		[Display(ResourceType = typeof(Custom.Resource), Name="Max Risk", Order=2, GroupName="Parameters")]
 		public int MaxRisk
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(ResourceType = typeof(Custom.Resource), Name="Percent Stop", Order=10, GroupName="NinjaScriptStrategyParameters")]
+		[Display(ResourceType = typeof(Custom.Resource), Name="Percent Stop", Order=3, GroupName="Parameters")]
 		public int Pct
 		{ get; set; }
+
+		[NinjaScriptProperty]
+		[Display(Name="Indicator On", Description="is this thing on?", Order=1, GroupName="Parameters")]
+		public bool On
+		{ get; set; }
+
 		#endregion
 
 	}
@@ -267,18 +284,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private ChannelAndOverReaction[] cacheChannelAndOverReaction;
-		public ChannelAndOverReaction ChannelAndOverReaction(int maxRisk, int pct)
+		public ChannelAndOverReaction ChannelAndOverReaction(int maxRisk, int pct, bool on)
 		{
-			return ChannelAndOverReaction(Input, maxRisk, pct);
+			return ChannelAndOverReaction(Input, maxRisk, pct, on);
 		}
 
-		public ChannelAndOverReaction ChannelAndOverReaction(ISeries<double> input, int maxRisk, int pct)
+		public ChannelAndOverReaction ChannelAndOverReaction(ISeries<double> input, int maxRisk, int pct, bool on)
 		{
 			if (cacheChannelAndOverReaction != null)
 				for (int idx = 0; idx < cacheChannelAndOverReaction.Length; idx++)
-					if (cacheChannelAndOverReaction[idx] != null && cacheChannelAndOverReaction[idx].MaxRisk == maxRisk && cacheChannelAndOverReaction[idx].Pct == pct && cacheChannelAndOverReaction[idx].EqualsInput(input))
+					if (cacheChannelAndOverReaction[idx] != null && cacheChannelAndOverReaction[idx].MaxRisk == maxRisk && cacheChannelAndOverReaction[idx].Pct == pct && cacheChannelAndOverReaction[idx].On == on && cacheChannelAndOverReaction[idx].EqualsInput(input))
 						return cacheChannelAndOverReaction[idx];
-			return CacheIndicator<ChannelAndOverReaction>(new ChannelAndOverReaction(){ MaxRisk = maxRisk, Pct = pct }, input, ref cacheChannelAndOverReaction);
+			return CacheIndicator<ChannelAndOverReaction>(new ChannelAndOverReaction(){ MaxRisk = maxRisk, Pct = pct, On = on }, input, ref cacheChannelAndOverReaction);
 		}
 	}
 }
@@ -287,14 +304,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(int maxRisk, int pct)
+		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(int maxRisk, int pct, bool on)
 		{
-			return indicator.ChannelAndOverReaction(Input, maxRisk, pct);
+			return indicator.ChannelAndOverReaction(Input, maxRisk, pct, on);
 		}
 
-		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(ISeries<double> input , int maxRisk, int pct)
+		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(ISeries<double> input , int maxRisk, int pct, bool on)
 		{
-			return indicator.ChannelAndOverReaction(input, maxRisk, pct);
+			return indicator.ChannelAndOverReaction(input, maxRisk, pct, on);
 		}
 	}
 }
@@ -303,14 +320,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(int maxRisk, int pct)
+		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(int maxRisk, int pct, bool on)
 		{
-			return indicator.ChannelAndOverReaction(Input, maxRisk, pct);
+			return indicator.ChannelAndOverReaction(Input, maxRisk, pct, on);
 		}
 
-		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(ISeries<double> input , int maxRisk, int pct)
+		public Indicators.ChannelAndOverReaction ChannelAndOverReaction(ISeries<double> input , int maxRisk, int pct, bool on)
 		{
-			return indicator.ChannelAndOverReaction(input, maxRisk, pct);
+			return indicator.ChannelAndOverReaction(input, maxRisk, pct, on);
 		}
 	}
 }

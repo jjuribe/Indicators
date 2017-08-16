@@ -26,52 +26,33 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class UniversalEntry : Indicator
 	{
-		public double 	entryPrice;
-		public int 		entryBar;
-		public int 		entryBar2;
-		public bool 	entryOne	 	= false;
-		public bool 	entryTwo 		= false;
-		/// short
-		public int		entryBar2short 	= 1;
-		public bool 	entryTwoShort 	= true;
+		/// Line Position
+		public int spaceToRight = -5;
+		public int textSpaceToRight = -5;
+		public int spaceToLeft = 0;
+		public int centerBar = -1;
 		
+		public double maxHigh;
+		public double minLow;
+		public double stop;
+		public double entry;
+		public string entryType = "5DD Mechanical Entry";
+		public double shares;
+		public double reward;
+		public double maxRisk = 50;
+		public double rR;
+		public double risk;
+		public int space = 20;
 		
-		///  money management
-		public double 	shares;
-		//public int  	portfolioSize	= 826000;
-		//public int		numSystems		= 10;
-		private int 	initialBalance;
-		private	int 	cashAvailiable;
-		private	double 	priorTradesCumProfit;
-		private	int 	priorTradesCount;
-		private	double 	sharesFraction;
+		private Sideways Sideways1;
 		
-		/// stops
-		private double 	stopLine;
-		private double 	trailStop;
-		private double  lossInPonts;
-		private bool	autoStop = true;
-		
-		///  indicators
-		private MarketCondition MarketCondition1;
-		private SMA		sma0;
-		
-		///  reporting
-		private double gainInPoints; 
-		private	double riskInLastTrade; 
-		private	double rValue; 
-		private	double totalR; 
-		public string 	ComputerName	= "MBP";
-		public string textForBox;
-		public string textForBoxToAdd;
-		public string entryType;
 		
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
 			{
 				Description									= @"Enter the description for your new custom Indicator here.";
-				Name										= "Channel + OverReaction";
+				Name										= "Five DD Trade Frame";
 				Calculate									= Calculate.OnEachTick;
 				IsOverlay									= true;
 				DisplayInDataBox							= true;
@@ -83,152 +64,130 @@ namespace NinjaTrader.NinjaScript.Indicators
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
 				IsSuspendedWhileInactive					= true;
-				
-				MaxRisk					= 50;
-				Pct						= 3;
 			}
 			else if (State == State.Configure)
 			{
-				MarketCondition1 = MarketCondition(showBands: false, showVolatilityText: false);
 			}
-			else if (State == State.DataLoaded)
-			{
-				sma0				= SMA(200);
-				ClearOutputWindow(); 
-			}
+			else if(State == State.DataLoaded)
+			  {
+			    //clear the output window as soon as the bars data is loaded
+			    ClearOutputWindow();  	
+				  Sideways1 = Sideways();
+			  }
 		}
 
 		protected override void OnBarUpdate()
 		{
-			if (CurrentBar < 20 ) { return; }
-			//setTextBox( textInBox: "No Entry");
-			textForBox = "\n\tNo Channel Entry\t\t\n";
-			textForBoxToAdd = "\n\tNo Overreaction Entry\t\t\n";
-			bool chLong = entryConditionsChannel();
-			bool orLong = entryConditionsORlong();
-			bool orShort = entryConditionsORshort();
+			/// Things to fix:
+			/// Sometimes needs to load twice because not last date loaded
+			/// Text above entry gets spaced out on lower prices like 31
+			/// auto adjust entry - only 5 cents from $20 - $120
+		
+			if( CurrentBar < 100 ) { return;}
+			/// consolidation
+			int count = 9;
+			double lastConsol = 0;
+			for (int i = 0; i < count; i++) 
+			{
+				double thisSignals = Sideways1.MedianConsol[i];
+				if (thisSignals != 0 ) {
+					lastConsol = thisSignals;
+				}
+			}
 			
-			textForBox = textForBox + textForBoxToAdd;
-			setTextBox( textInBox: textForBox);
+			calcTradeFrame() ;
+			drawTradeFrame(lastConsol:lastConsol );
+
+			setTextBox( textInBox: popuateStatsTextBox());
+				 
+		}
+	
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 									Trade Frame Calc
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		protected void calcTradeFrame() {
+
+			// set adjustable entry buffer
+			double buffer = 0.05;
+			if (Close[0] > 120 ) {
+				buffer =  0.1;
+				Print("Buffer now is "+ buffer.ToString("0.00"));
+			} if (Close[0] > 400 ) {
+				buffer =  0.5;
+				Print("Buffer now is "+ buffer.ToString("0.00"));
+			}
 			
+			
+			maxHigh = MAX(High, 10)[0];
+			minLow = MIN(Low, 3)[0];
+			stop = minLow - buffer;
+			entry = High[0] +buffer;
+			//Print( Close[0] + "\t" + maxHigh + "\t" + minLow);
+			/// Risk & Position Size
+			risk = entry - stop;
+			reward = maxHigh - entry;
+			rR = reward / risk;
+			shares = maxRisk / risk;
+		}
+
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 									Draw Trade Frame
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		protected void drawTradeFrame(double lastConsol) {
+			/// Trade Frame Lines
+			RemoveDrawObject("vert"+ (CurrentBar -1));
+			Draw.Line(this, "vert"+CurrentBar, true, centerBar, MAX(High, 10)[0], centerBar, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			RemoveDrawObject("Target"+ (CurrentBar -1));
+			Draw.Line(this, "Target"+CurrentBar, true, spaceToLeft, MAX(High, 10)[0], spaceToRight, MAX(High, 10)[0], Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			RemoveDrawObject("Stop"+ (CurrentBar -1));
+			Draw.Line(this, "Stop"+CurrentBar, true, spaceToLeft, stop, spaceToRight, stop, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			RemoveDrawObject("entry"+ (CurrentBar -1));
+			Draw.Line(this, "entry"+CurrentBar, true, spaceToLeft, entry, spaceToRight, entry, Brushes.CornflowerBlue, DashStyleHelper.Solid, 4);
+			if (lastConsol != 0) {
+				RemoveDrawObject("lastConsol"+ (CurrentBar -1));
+				Draw.Line(this, "lastConsol"+CurrentBar, true, spaceToLeft, lastConsol, spaceToRight, lastConsol, Brushes.CornflowerBlue, DashStyleHelper.Dot, 4);	
+			}
+			/// ma 200
+			if (SMA(200)[0] < maxHigh && SMA(200)[0] > stop && SMA(200)[0] > entry ) {
+				RemoveDrawObject("200MA"+ (CurrentBar -1));
+				Draw.Line(this, "200MA"+CurrentBar, true, spaceToLeft, SMA(200)[0] , spaceToRight, SMA(200)[0] , Brushes.CornflowerBlue, DashStyleHelper.Dash, 4);
+			}
+			/// ma 10
+			if (SMA(10)[0] < maxHigh && SMA(10)[0] > stop  && SMA(10)[0] > entry  ) {
+				RemoveDrawObject("10MA"+ (CurrentBar -1));
+				Draw.Line(this, "10MA"+CurrentBar, true, spaceToLeft, SMA(10)[0] , spaceToRight, SMA(10)[0] , Brushes.CornflowerBlue, DashStyleHelper.Dot, 4);
+			}
+			
+			/// Entry Text
+			RemoveDrawObject("entryTxt"+ (CurrentBar -1));
+			Draw.Text(this, "entryTxt"+CurrentBar, entry.ToString("0.00"), textSpaceToRight, entry + ( TickSize* space ), Brushes.CornflowerBlue);
+			/// Stop Text
+			RemoveDrawObject("stopTxt"+ (CurrentBar -1));
+			Draw.Text(this, "stopTxt"+CurrentBar, stop.ToString("0.00"), textSpaceToRight, stop + ( TickSize* space ), Brushes.CornflowerBlue);
+			/// target Text
+			RemoveDrawObject("TargetTxt"+ (CurrentBar -1));
+			Draw.Text(this, "TargetTxt"+CurrentBar, maxHigh.ToString("0.00"), textSpaceToRight, maxHigh + ( TickSize* space ), Brushes.CornflowerBlue);
+			// Draw.RiskReward(NinjaScriptBase owner, string tag, bool isAutoScale, int entryBarsAgo , double entryY, int endBarsAgo, double endY, double ratio, bool isStop, bool isGlobal, string templateName)
 		}
 		
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		/// 	
-		/// 									POSTION SIZE
-		/// 
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-	
-		protected int calcPositionSize(double stopPrice, bool isLong) {
-			if (isLong) {
-				sharesFraction = MaxRisk / ( Close[0] -stopPrice );
-			} else {
-				sharesFraction = MaxRisk / ( stopPrice - Close[0] );
-			}
-			//Print(sharesFraction);
-			return (int)sharesFraction;
-		}
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		/// 	
-		/// 									STOP PRICE
-		/// 
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////		
-		protected double calcInitialStop(int pct, bool isLong) {
-			double result;
-			double convertedPct = pct * 0.01;
-			if (isLong) {
-				result = Close[0] - ( Close[0] * convertedPct);
-			} else {
-				result = Close[0] + ( Close[0] * convertedPct);
-			}
-			return result; 
-		}
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		/// 	
-		/// 									Channel Long
-		/// 
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////		
-		protected bool entryConditionsChannel()
-		{
-			bool signal = false;		// && High[0] < SMA(10)[0] 
-			if ( Close[0] > Math.Abs(sma0[0]) && WilliamsR(10)[0] < -80 ){
-				//signal = true;
-				Draw.Dot(this, "CH"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.Lime);
-				
-				double theStop = calcInitialStop(pct: Pct, isLong: true);
-				shares = calcPositionSize(stopPrice: theStop, isLong: true); 
-				entryType = "Channel";
-				textForBox = popuateStatsTextBox( entryType: entryType, shares: shares, maxLoss: MaxRisk , stopPrice: theStop);
-				Print(Time[0].ToShortDateString() +"\n"+ textForBox);
-				Draw.Text(this, "stop"+CurrentBar, "-", 0, theStop);
-			}
-			
-			return signal;
-		}
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		/// 	
-		/// 									Overreaction Long
-		/// 
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		protected bool entryConditionsORlong()
-		{
-			bool signal = false;
-			double onePercent = Close[0] * 0.01;
-			if ((Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && Close[0] < ( SMA(10)[0]- ATR(14)[1])) ||
-				(Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && Close[0] < ( SMA(10)[0]- onePercent )) ){
-				signal = true;
-				Draw.Dot(this, "ORl"+CurrentBar, true, 0, Low[0] - (TickSize * 60), Brushes.Cyan);
-					
-				double theStop = calcInitialStop(pct: Pct, isLong: true);
-				shares = calcPositionSize(stopPrice: theStop, isLong: true); 
-				
-				textForBoxToAdd = popuateStatsTextBox( entryType: "Overreaction Long", shares: shares, maxLoss: MaxRisk , stopPrice: theStop);
-				Print(Time[0].ToShortDateString() +"\n"+ textForBox);
-				Draw.Text(this, "stop"+CurrentBar, "-", 0, theStop);
-			}
-			return signal;
-		}
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		/// 	
-		/// 									Overreaction Short
-		/// 
-		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		protected bool entryConditionsORshort()
-		{
-			bool signal = false;
-			double onePercent = Close[0] * 0.01;
-			if ((Close[0] < Math.Abs(sma0[0])  && Low[0] > SMA(10)[0] && Close[0] > ( SMA(10)[0]+ ATR(14)[1])) ||
-				(Close[0] < Math.Abs(sma0[0])  && Low[0] > SMA(10)[0] && Close[0] > ( SMA(10)[0]+ onePercent )) ){
-				signal = true;
-				Draw.Dot(this, "ORs"+CurrentBar, true, 0, High[0] + (TickSize * 60), Brushes.Magenta);
-					
-				double theStop = calcInitialStop(pct: Pct, isLong: false);
-				shares = calcPositionSize(stopPrice: theStop, isLong: false); 
-				textForBox = popuateStatsTextBox( entryType: "Overreaction Short", shares: shares, maxLoss: MaxRisk , stopPrice: theStop);
-				Print(Time[0].ToShortDateString() +"\n"+ textForBox);
-				Draw.Text(this, "stop"+CurrentBar, "-", 0, theStop);
-			}
-			return signal;
-		}
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
 		/// 									Text Box
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////		
-		protected string popuateStatsTextBox(string entryType, double shares, int maxLoss, double stopPrice) {
+		protected string popuateStatsTextBox() {
 
 			string bodyMessage = "\n\t";
-			
 			bodyMessage = bodyMessage + Time[0].ToShortDateString()+"\t\n\t";
-			bodyMessage = bodyMessage + entryType+"\t\n\tEnter Tomorrow's Open\n\t";
-			bodyMessage = bodyMessage + shares+" shares\t\n\t";
-			
-			bodyMessage = bodyMessage + Pct+"% stop\t\n\t";
-			
-			bodyMessage = bodyMessage + "$"+maxLoss+" risk\t\n\t";
-			bodyMessage = bodyMessage + stopPrice.ToString("0.00")+" stop order\t\n";
-			
-			
+			bodyMessage = bodyMessage + entryType+"\t\n\t";
+			bodyMessage = bodyMessage + "$"+maxRisk+" Risk\t\n\t";
+			bodyMessage = bodyMessage + risk.ToString("0.00")+" Risk Points\t\n\t"; //risk
+			bodyMessage = bodyMessage + shares.ToString("0")+" shares\t\n\t";	
+			bodyMessage = bodyMessage + rR.ToString("0.00")+" RR: \t\n";
 			return bodyMessage;
 		}		
 		protected void setTextBox(string textInBox)
@@ -240,24 +199,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			myTF.AreaOpacity = 90;
 			myTF.TextBrush = Brushes.Black;
 		}
-		
-	
-		#region Properties
-		
-		[NinjaScriptProperty]
-		[Range(1, int.MaxValue)]
-		[Display(ResourceType = typeof(Custom.Resource), Name="Max Risk", Order=10, GroupName="NinjaScriptStrategyParameters")]
-		public int MaxRisk
-		{ get; set; }
-		
-		[NinjaScriptProperty]
-		[Range(1, int.MaxValue)]
-		[Display(ResourceType = typeof(Custom.Resource), Name="Percent Stop", Order=10, GroupName="NinjaScriptStrategyParameters")]
-		public int Pct
-		{ get; set; }
-		#endregion
-
 	}
+	
 }
 
 #region NinjaScript generated code. Neither change nor remove.
@@ -267,18 +210,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private UniversalEntry[] cacheUniversalEntry;
-		public UniversalEntry UniversalEntry(int maxRisk, int pct)
+		public UniversalEntry UniversalEntry()
 		{
-			return UniversalEntry(Input, maxRisk, pct);
+			return UniversalEntry(Input);
 		}
 
-		public UniversalEntry UniversalEntry(ISeries<double> input, int maxRisk, int pct)
+		public UniversalEntry UniversalEntry(ISeries<double> input)
 		{
 			if (cacheUniversalEntry != null)
 				for (int idx = 0; idx < cacheUniversalEntry.Length; idx++)
-					if (cacheUniversalEntry[idx] != null && cacheUniversalEntry[idx].MaxRisk == maxRisk && cacheUniversalEntry[idx].Pct == pct && cacheUniversalEntry[idx].EqualsInput(input))
+					if (cacheUniversalEntry[idx] != null &&  cacheUniversalEntry[idx].EqualsInput(input))
 						return cacheUniversalEntry[idx];
-			return CacheIndicator<UniversalEntry>(new UniversalEntry(){ MaxRisk = maxRisk, Pct = pct }, input, ref cacheUniversalEntry);
+			return CacheIndicator<UniversalEntry>(new UniversalEntry(), input, ref cacheUniversalEntry);
 		}
 	}
 }
@@ -287,14 +230,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.UniversalEntry UniversalEntry(int maxRisk, int pct)
+		public Indicators.UniversalEntry UniversalEntry()
 		{
-			return indicator.UniversalEntry(Input, maxRisk, pct);
+			return indicator.UniversalEntry(Input);
 		}
 
-		public Indicators.UniversalEntry UniversalEntry(ISeries<double> input , int maxRisk, int pct)
+		public Indicators.UniversalEntry UniversalEntry(ISeries<double> input )
 		{
-			return indicator.UniversalEntry(input, maxRisk, pct);
+			return indicator.UniversalEntry(input);
 		}
 	}
 }
@@ -303,14 +246,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.UniversalEntry UniversalEntry(int maxRisk, int pct)
+		public Indicators.UniversalEntry UniversalEntry()
 		{
-			return indicator.UniversalEntry(Input, maxRisk, pct);
+			return indicator.UniversalEntry(Input);
 		}
 
-		public Indicators.UniversalEntry UniversalEntry(ISeries<double> input , int maxRisk, int pct)
+		public Indicators.UniversalEntry UniversalEntry(ISeries<double> input )
 		{
-			return indicator.UniversalEntry(input, maxRisk, pct);
+			return indicator.UniversalEntry(input);
 		}
 	}
 }
