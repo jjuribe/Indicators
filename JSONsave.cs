@@ -28,13 +28,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 {	
 	public class JSONsave : Indicator
 	{
+		
+		private string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+		
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
 			{
 				Description									= @"Enter the description for your new custom Indicator here.";
 				Name										= "JSON Save";
-				Calculate									= Calculate.OnPriceChange;
+				Calculate									= Calculate.OnBarClose;
 				IsOverlay									= true;
 				DisplayInDataBox							= true;
 				DrawOnPricePanel							= true;
@@ -47,52 +50,49 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive					= true;
 				
 			}
-			else if (State == State.Configure)
+			else if(State == State.DataLoaded)
 			{
+				  ClearOutputWindow(); 
 			}
 		}
 
 		protected override void OnBarUpdate()
 		{
+			checkForDirectory();
 			createCSV();
 		}
 		
-		private void createCSV() {
-			Print("Call CSV");
-			Print(CurrentBar);
-			// remove old data
-			//MARK: - TODO only on 1st run
-			var filePath = "C:\\Users\\MBPtrader\\Documents\\FireBase\\PriceData.csv";
-//			if(File.Exists(filePath))
-//			{
-//			    File.Delete(filePath);
-//			}
+		private void checkForDirectory() {
 
-			for (int i = 0; i < CurrentBar; i++) {
-					Print(i);
-				Print("hello");
-				}
-			// example of object instantiated which need to be disposed  using System.IO;
+			/// check to see if Firebase Dir exists
+			bool folderExists = Directory.Exists(systemPath+ @"\Firebase");
+			Print("\npath to documents: " + systemPath + " Does Firebase folder exists? " + folderExists);
+		
+			/// if not create the directory
+			if (!folderExists) {
+				Print("creating directory... " + systemPath+ @"\Firebase" );
+				Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Firebase"));
+			} else {
+				Print("found diretory... " + systemPath+ @"\Firebase");
+			}
+		}
+		
+		private void createCSV() {
+			
+			var filePath = systemPath+ @"\Firebase\PriceData.csv";
+			Print("writing file... " + filePath);
+			
 			using (StreamWriter writer = new StreamWriter(filePath, true))
 			{
 				var newLine =  Time[0].ToString() + ", " + Open[0].ToString("0.00") + ", " + High[0].ToString("0.00") 
 					+ ", " + Low[0].ToString("0.00") + ", " + Close[0].ToString("0.00");
-				
-				if (CurrentBar == 0) {
-					newLine = "Date, Open, High, Low, Close";
-				} 
-				
-				// use the object
+		
 				writer.WriteLine(newLine);
-				
-				// implements IDisposbile, make sure to call .Dispose() when finished
+	
 				writer.Dispose();
 			}
 		}
-		
-		
-		
-		
+
 	}
 }
 
