@@ -53,10 +53,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private int tradesToday;
 		private int winsToday;
 		
-		private double stopSize = 3.5;
+		private double stopSize = 3;
 		private double targetSize = 3.5;
 		
 		private int barsSinceEntry = 0;
+		private int daycount;
+		
 		
 		protected override void OnStateChange()
 		{
@@ -98,15 +100,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
-			if (CurrentBars[0] < 1)
-			return;
-			if (BarsInProgress >= 1) 
-    			return; 
-
+			if (CurrentBars[0] < 1) { return; }
+			if (BarsInProgress >= 1) { return; }
+			if (Time[0].DayOfWeek == DayOfWeek.Sunday) { return; }
+			if (ToTime(Time[0]) >= 60000 && ToTime(Time[0]) <= 60003 ) { daycount++;}
+			
 			Upper[0] = MAEnvelopes1.Upper[0];
 			Lower[0] = MAEnvelopes1.Lower[0];
 			
-			optimizeRuns( stops: true,  targets: false,  buffer: 0.25 );
+			optimizeRuns( stops: false,  targets: false,  buffer: 0.25 );
 			
 			if ( !inLongTrade ) { longSignal = entrySignal(longEntry: true); }
 			showLongTrades();
@@ -118,9 +120,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// [X] add 3 trade limit Trades:22   Win %73  Gains:50.0
 			/// [X] add 2 win limit	  Trades:52   Win %62  Gains:60.0 both: Trades:22  Win %73  Gains:50.0
 			/// [X] optimize stop target, show avg mae, mpe - No Effect
-			/// [X] try 3 min bars - Same
+			/// [X] try 3 min bars - better with smaller targets / stops
 			/// [X] no target first bar  Trades:20  Wins12.0  Win %60  Gains:20.0
-			/// [ ] optimize stop target,  Trades:25  Wins15.0  Win %60  Gains:27.7
+			/// [X] optimize stop target,  Trades:25  Wins15.0  Win %60  Gains:27.7
+			/// [ ] stop hit before target  Trades:20  Wins12.0  Win %60  Gains:18.0
+			/// [ ] use 1 min for entry
+			/// [ ] lowest fib in array?
 			/// [ ] add short entry trades
 			
 			/// [ ] if win rate > 50% find an orderflow filter like 1 min bars with trades and market replay 
@@ -167,6 +172,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					totalLoss += stopSize;
 					lossCount += 1;
 					calcStats();
+					return;
 				}
 				/// target hit
 				if (High[0] >= targetPrice ) {
@@ -195,6 +201,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		private void calcStats() {
 			var message = "";	
+			message += daycount.ToString();
+			message += "   ";
 			message += Time[0].ToShortDateString();
 			message += "  MPE:";
 			message +=  mpe.ToString("0.0");
@@ -226,6 +234,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			message += "  Gains:";
 			var grossProfit = totalGain - totalLoss;
 			message +=  grossProfit.ToString("0.0");
+			
+			message += "  Avg Day:";
+			var avgDay = totalGain / daycount ;
+			message +=  avgDay.ToString("0.0");
+			
+			message += "  ROI ";
+			var roi = (( grossProfit * 20 ) / 4500 ) * 100;
+			message +=  roi.ToString("0.0");
+			message += "%";
+			
 			Print(message);
 		}
 		
@@ -239,6 +257,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tradesToday = 0;
 				winsToday = 0;
 			}
+			
 			return canTrade;
 		}
 		
