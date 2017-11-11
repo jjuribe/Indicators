@@ -40,6 +40,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double			lastDnAvgL;
 		private double			lastUpAvgH;
 		private double			lastUpAvgL;
+		private Series<double>	dnAvgHSeries;
+		private Series<double>	dnAvgLSeries;
+		private Series<double>	upAvgHSeries;
+		private Series<double>	upAvgLSeries;
 		private int				savedCurrentBar;
 		private StdDev			stdDevHigh;
 		private StdDev			stdDevLow;
@@ -68,6 +72,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{
 				stdDevHigh	= StdDev(High, 10);
 				stdDevLow	= StdDev(Low, 10);
+
+				if (BarsArray[0].BarsType.IsRemoveLastBarSupported)
+				{
+					dnAvgHSeries = new Series<double>(this);
+					dnAvgLSeries = new Series<double>(this);
+					upAvgHSeries = new Series<double>(this);
+					upAvgLSeries = new Series<double>(this);
+				}
 			}
 		}
 		
@@ -81,10 +93,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			if (CurrentBar != savedCurrentBar)
 			{
-				dnAvgH			= lastDnAvgH;
-				dnAvgL			= lastDnAvgL;
-				upAvgH			= lastUpAvgH;
-				upAvgL			= lastUpAvgL;
+				dnAvgH			= BarsArray[0].BarsType.IsRemoveLastBarSupported ? dnAvgHSeries[1] : lastDnAvgH;
+				dnAvgL			= BarsArray[0].BarsType.IsRemoveLastBarSupported ? dnAvgLSeries[1] : lastDnAvgL;
+				upAvgH			= BarsArray[0].BarsType.IsRemoveLastBarSupported ? upAvgHSeries[1] : lastUpAvgH;
+				upAvgL			= BarsArray[0].BarsType.IsRemoveLastBarSupported ? upAvgLSeries[1] : lastUpAvgL;
 				savedCurrentBar	= CurrentBar;
 			}
 
@@ -117,7 +129,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double actUpAvgL	= lastUpAvgL = (upAvgL * (Period - 1) + up) / Period;
 			double actDnAvgL 	= lastDnAvgL = (dnAvgL * (Period - 1) + dn) / Period;
 			double rviL 		= 100 * (actUpAvgL / (actUpAvgL + actDnAvgL));
-			
+
+			if (BarsArray[0].BarsType.IsRemoveLastBarSupported)
+			{
+				dnAvgHSeries[0] = actDnAvgH;
+				dnAvgLSeries[0] = actDnAvgL;
+				upAvgHSeries[0] = actUpAvgH;
+				upAvgLSeries[0] = actUpAvgL;
+			}
+
 			if(CurrentBar == 1)
 				Value[0] = 50;
 			else

@@ -32,16 +32,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 	/// </summary>
 	public class ParabolicSAR : Indicator
 	{
-		private double 	af;		// Acceleration factor
-		private bool 	afIncreased;
-		private bool   	longPosition;
-		private int 	prevBar;
-		private double 	prevSAR;
-		private int 	reverseBar;
-		private double	reverseValue;
-		private double 	todaySAR;		// SAR value
-		private double 	xp;		// Extreme Price
-				
+		private double 			af;				// Acceleration factor
+		private bool 			afIncreased;
+		private bool   			longPosition;
+		private int 			prevBar;
+		private double 			prevSAR;
+		private int 			reverseBar;
+		private double			reverseValue;
+		private double 			todaySAR;		// SAR value
+		private double 			xp;				// Extreme Price
+
+		private Series<double> 	afSeries;
+		private Series<bool> 	afIncreasedSeries;
+		private Series<bool>   	longPositionSeries;
+		private Series<int> 	prevBarSeries;
+		private Series<double> 	prevSARSeries;
+		private Series<int> 	reverseBarSeries;
+		private Series<double>	reverseValueSeries;
+		private Series<double> 	todaySARSeries;
+		private Series<double> 	xpSeries;		
+	
+		
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -69,6 +80,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 		 		prevBar			= 0;
 		 		afIncreased		= false;
 			}
+			else if (State == State.DataLoaded)
+			{
+				if (BarsArray[0].BarsType.IsRemoveLastBarSupported)
+				{
+					afSeries			= new Series<double>(this);
+					afIncreasedSeries	= new Series<bool>(this);
+					longPositionSeries	= new Series<bool>(this);
+					prevBarSeries		= new Series<int>(this);
+					prevSARSeries		= new Series<double>(this);
+					reverseBarSeries	= new Series<int>(this);
+					reverseValueSeries	= new Series<double>(this);
+					todaySARSeries		= new Series<double>(this);
+					xpSeries			= new Series<double>(this);		
+				}
+			}
 		}
 		
 		protected override void OnBarUpdate()
@@ -85,7 +111,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Value[0] = xp + (longPosition ? -1 : 1) * ((MAX(High, CurrentBar)[0] - MIN(Low, CurrentBar)[0]) * af);
 				return;
 			}
-			
+			else if (BarsArray[0].BarsType.IsRemoveLastBarSupported && CurrentBar < prevBar)
+			{
+				af				= afSeries[0];
+				afIncreased		= afIncreasedSeries[0];
+				longPosition	= longPositionSeries[0];
+				prevBar			= prevBarSeries[0];
+				prevSAR			= prevSARSeries[0];
+				reverseBar		= reverseBarSeries[0];
+				reverseValue	= reverseValueSeries[0];
+				todaySAR		= todaySARSeries[0];
+				xp				= xpSeries[0];
+			}
+
 			// Reset accelerator increase limiter on new bars
 			if (afIncreased && prevBar != CurrentBar)
 				afIncreased = false;
@@ -169,7 +207,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if ((longPosition && (Low[0] < todaySAR || Low[1] < todaySAR))
 				|| (!longPosition && (High[0] > todaySAR || High[1] > todaySAR))) 
 				Value[0] = Reverse();
-			
+
+			if (BarsArray[0].BarsType.IsRemoveLastBarSupported)
+			{
+				afSeries[0]				= af;
+				afIncreasedSeries[0]	= afIncreased;
+				longPositionSeries[0]	= longPosition;
+				prevBarSeries[0]		= prevBar;
+				prevSARSeries[0]		= prevSAR;
+				reverseBarSeries[0]		= reverseBar;
+				reverseValueSeries[0]	= reverseValue;
+				todaySARSeries[0]		= todaySAR;
+				xpSeries[0]				= xp;
+			}
 		}
 		
 		#region Miscellaneous

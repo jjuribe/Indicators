@@ -73,7 +73,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				return;
 			}
 
-			if (CurrentBar - runningBar >= Period)
+			if (CurrentBar - runningBar >= Period || CurrentBar < thisBar)
 			{
 				runningMin = double.MaxValue;
 				for (int barsBack = Math.Min(CurrentBar, Period - 1); barsBack > 0; barsBack--)

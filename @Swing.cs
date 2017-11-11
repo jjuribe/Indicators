@@ -86,9 +86,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		protected override void OnBarUpdate()
 		{
-			double high0		= Input is Indicator ? Input[0] : High[0];
-			double low0			= Input is Indicator ? Input[0] : Low[0];
-			double close0		= Input is Indicator ? Input[0] : Close[0];
+			double high0		= (Input is Indicator || Input is Series<double>) ? Input[0] : High[0];
+			double low0			= (Input is Indicator || Input is Series<double>) ? Input[0] : Low[0];
+			double close0		= (Input is Indicator || Input is Series<double>) ? Input[0] : Close[0];
 			double highStrength	= High[Math.Min(Strength, CurrentBar)];
 			double lowStrength	= Low[Math.Min(Strength, CurrentBar)];
 

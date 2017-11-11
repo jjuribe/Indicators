@@ -38,6 +38,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private int			runningMaxBar;
 		private double		runningMin;
 		private int			runningMinBar;
+		private int			saveCurrentBar;
 
 		protected override void OnStateChange()
 		{
@@ -79,7 +80,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 
 			int back = Math.Min(Period, CurrentBar);
-			if (CurrentBar - runningMaxBar >= Period)
+			if (CurrentBar - runningMaxBar >= Period || CurrentBar < saveCurrentBar)
 			{
 				runningMax = double.MinValue;
 				for (int barsBack = back; barsBack > 0; barsBack--)
@@ -90,7 +91,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					}
 			}
 
-			if (CurrentBar - runningMinBar >= Period)
+			if (CurrentBar - runningMinBar >= Period || CurrentBar < saveCurrentBar)
 			{
 				runningMin = double.MaxValue;
 				for (int barsBack = back; barsBack > 0; barsBack--)
@@ -112,6 +113,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				runningMin		= low0;
 				runningMinBar	= CurrentBar;
 			}
+
+			saveCurrentBar = CurrentBar;
 
 			Up[0] = 100 * ((double)(back - (CurrentBar - runningMaxBar)) / back);
 			Down[0] = 100 * ((double)(back - (CurrentBar - runningMinBar)) / back);

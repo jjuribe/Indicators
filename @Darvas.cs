@@ -29,16 +29,24 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class Darvas : Indicator
 	{
-		private double	boxBottom			= double.MaxValue;
-		private double	boxTop				= double.MinValue;
-		private bool	buySignal;
-		private double	currentBarHigh		= double.MinValue;
-		private double	currentBarLow		= double.MaxValue;
-		private bool	isRealtime;
-		private int		savedCurrentBar		= -1;
-		private bool	sellSignal;
-		private int		startBarActBox;
-		private int		state;
+		private double			boxBottom				= double.MaxValue;
+		private double			boxTop					= double.MinValue;
+		private bool			buySignal;
+		private double			currentBarHigh			= double.MinValue;
+		private double			currentBarLow			= double.MaxValue;
+		private bool			isRealtime;
+		private int				savedCurrentBar			= -1;
+		private bool			sellSignal;
+		private int				startBarActBox;
+		private int				state;
+
+		private int				prevCurrentBar			= -1;
+		private Series<double>	boxBottomSeries;
+		private Series<double>	boxTopSeries;	
+		private Series<double>	currentBarHighSeries;	
+		private Series<double>	currentBarLowSeries;	
+		private Series<int>		startBarActBoxSeries;
+		private Series<int>		stateSeries;
 
 		protected override void OnStateChange()
 		{
@@ -52,12 +60,34 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(new Stroke(Brushes.Crimson,		2), PlotStyle.Square, NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddPlot(new Stroke(Brushes.DarkCyan,	2), PlotStyle.Square, NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
+			else if (State == State.DataLoaded)
+			{
+				if (BarsArray[0].BarsType.IsRemoveLastBarSupported)
+				{
+					boxBottomSeries			= new Series<double>(this);
+					boxTopSeries			= new Series<double>(this);
+					currentBarHighSeries	= new Series<double>(this);
+					currentBarLowSeries		= new Series<double>(this);
+					startBarActBoxSeries	= new Series<int>(this);
+					stateSeries				= new Series<int>(this);
+				}
+			}
 		}
 
 		protected override void OnBarUpdate()
 		{
 			BuySignal	= false;
 			SellSignal	= false;
+
+			if (BarsArray[0].BarsType.IsRemoveLastBarSupported && CurrentBar < prevCurrentBar)
+			{
+				boxBottom		= boxBottomSeries[0];
+				boxTop			= boxTopSeries[0];
+				currentBarHigh	= currentBarHighSeries[0];
+				currentBarLow	= currentBarLowSeries[0];
+				startBarActBox	= startBarActBoxSeries[0];
+				state			= stateSeries[0];
+			}
 
 			if (savedCurrentBar == -1)
 			{
@@ -126,6 +156,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 					Upper[0] = boxTop;
 					Lower[0] = boxBottom;
 				}
+			}
+
+			if (BarsArray[0].BarsType.IsRemoveLastBarSupported)
+			{
+				boxBottomSeries[0]		= boxBottom;
+				boxTopSeries[0]			= boxTop;
+				currentBarHighSeries[0]	= currentBarHigh;
+				currentBarLowSeries[0]	= currentBarLow;
+				startBarActBoxSeries[0]	= startBarActBox;
+				stateSeries[0]			= state;
+				prevCurrentBar			= CurrentBar;
 			}
 		}
 

@@ -1,4 +1,4 @@
-// 
+//
 // Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
@@ -30,229 +30,228 @@ using SharpDX.Direct2D1;
 //This namespace holds indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
-	/// <summary>
-	/// Linear regression is used to calculate a best fit line for the price data. In addition an upper and lower band is added by calculating the standard deviation of prices from the regression line.
-	/// </summary>
-	public class RegressionChannel : Indicator
-	{
-		private Series<double> interceptSeries;
-		private Series<double> slopeSeries;
-		private Series<double> stdDeviationSeries;
-		
-		protected override void OnStateChange()
-		{
-			if (State == State.SetDefaults)
-			{
-				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionRegressionChannel;
-				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRegressionChannel;
-				IsAutoScale					= false;
-				IsOverlay					= true;
-				IsSuspendedWhileInactive	= true;
-				Period						= 35;
-				Width						= 2;
+    /// <summary>
+    /// Linear regression is used to calculate a best fit line for the price data. In addition an upper and lower band is added by calculating the standard deviation of prices from the regression line.
+    /// </summary>
+    public class RegressionChannel : Indicator
+    {
+        private Series<double> interceptSeries;
+        private Series<double> slopeSeries;
+        private Series<double> stdDeviationSeries;
 
-				AddPlot(Brushes.DarkGray, NinjaTrader.Custom.Resource.NinjaScriptIndicatorMiddle);
-				AddPlot(Brushes.DodgerBlue, NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
-				AddPlot(Brushes.DodgerBlue, NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
-			}
-			
-			else if (State == State.DataLoaded)
-			{
-				interceptSeries		= new Series<double>(this);
-				slopeSeries			= new Series<double>(this);
-				stdDeviationSeries	= new Series<double>(this);
-			}
-		}
-		
-		protected override void OnBarUpdate()
-		{
-			// First we calculate the linear regression parameters
+        protected override void OnStateChange()
+        {
+            if (State == State.SetDefaults)
+            {
+                Description = NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionRegressionChannel;
+                Name = NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRegressionChannel;
+                IsAutoScale = false;
+                IsOverlay = true;
+                IsSuspendedWhileInactive = true;
+                Period = 35;
+                Width = 2;
 
-			double	sumX		= (double) Period*(Period - 1)*.5;
-			double	divisor		= sumX*sumX -
-								(double) Period*Period*(Period - 1)*(2*Period - 1)/6;
-			double	sumXY		= 0;
-			double	sumY		= 0;
-			int		barCount	= Math.Min(Period, CurrentBar);
+                AddPlot(Brushes.DarkGray, NinjaTrader.Custom.Resource.NinjaScriptIndicatorMiddle);
+                AddPlot(Brushes.DodgerBlue, NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
+                AddPlot(Brushes.DodgerBlue, NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+            }
+            else if (State == State.DataLoaded)
+            {
+                interceptSeries = new Series<double>(this);
+                slopeSeries = new Series<double>(this);
+                stdDeviationSeries = new Series<double>(this);
+            }
+        }
 
-			for (int count = 0; count < barCount; count++)
-			{
-				sumXY	+= count*Input[count];
-				sumY	+= Input[count];
-			}
+        protected override void OnBarUpdate()
+        {
+            // First we calculate the linear regression parameters
 
-			if (divisor.ApproxCompare(0) == 0 && Period == 0) return;
+            double sumX = (double) Period*(Period - 1)*.5;
+            double divisor = sumX*sumX -
+                                (double) Period*Period*(Period - 1)*(2*Period - 1)/6;
+            double sumXY = 0;
+            double sumY = 0;
+            int barCount = Math.Min(Period, CurrentBar);
 
-			double slope = (Period*sumXY - sumX*sumY)/divisor;
-			double intercept = (sumY - slope*sumX)/Period;
+            for (int count = 0; count < barCount; count++)
+            {
+                sumXY += count*Input[count];
+                sumY += Input[count];
+            }
 
-			slopeSeries[0]		= slope;
-			interceptSeries[0]	= intercept;
+            if (divisor.ApproxCompare(0) == 0 && Period == 0) return;
 
-			// Next we calculate the standard deviation of the 
-			// residuals (vertical distances to the regression line).
+            double slope = (Period*sumXY - sumX*sumY)/divisor;
+            double intercept = (sumY - slope*sumX)/Period;
 
-			double sumResiduals = 0;
+            slopeSeries[0] = slope;
+            interceptSeries[0] = intercept;
 
-			for (int count = 0; count < barCount; count++) 
-			{
-				double regressionValue	= intercept + slope * (Period - 1 - count);
-				double residual			= Math.Abs(Input[count] - regressionValue);
-				sumResiduals			+= residual;
-			}
+            // Next we calculate the standard deviation of the
+            // residuals (vertical distances to the regression line).
 
-			double avgResiduals = sumResiduals / Math.Min(CurrentBar - 1, Period);
+            double sumResiduals = 0;
 
-			sumResiduals = 0;
-			for (int count = 0; count < barCount; count++)
-			{
-				double regressionValue	= intercept + slope * (Period - 1 - count);
-				double residual			= Math.Abs(Input[count] - regressionValue);
-				sumResiduals			+= (residual - avgResiduals) * (residual - avgResiduals);
-			}
+            for (int count = 0; count < barCount; count++)
+            {
+                double regressionValue = intercept + slope * (Period - 1 - count);
+                double residual = Math.Abs(Input[count] - regressionValue);
+                sumResiduals += residual;
+            }
 
-			double stdDeviation = Math.Sqrt(sumResiduals / Math.Min(CurrentBar + 1, Period));
-			stdDeviationSeries[0] = stdDeviation;
-			
-			double middle		= intercept + slope * (Period - 1);
-			Middle[0]			= CurrentBar == 0 ? Input[0] : middle;
-			Upper[0]			= stdDeviation.ApproxCompare(0) == 0 || Double.IsInfinity(stdDeviation) ? Input[0] : middle + stdDeviation * Width;
-			Lower[0]			= stdDeviation.ApproxCompare(0) == 0 || Double.IsInfinity(stdDeviation) ? Input[0] : middle - stdDeviation * Width;
-		}
+            double avgResiduals = sumResiduals / Math.Min(CurrentBar - 1, Period);
 
-		#region Properties
-		[Browsable(false)]
-		[XmlIgnore()]
-		public Series<double> Lower
-		{
-			get { return Values[2]; }
-		}
-		
-		[Browsable(false)]
-		[XmlIgnore()]
-		public Series<double> Middle
-		{
-			get { return Values[0]; }
-		}
-		
-		[Range(2, int.MaxValue), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptGeneral", Order = 0)]
-		public int Period
-		{ get; set; }
+            sumResiduals = 0;
+            for (int count = 0; count < barCount; count++)
+            {
+                double regressionValue = intercept + slope * (Period - 1 - count);
+                double residual = Math.Abs(Input[count] - regressionValue);
+                sumResiduals += (residual - avgResiduals) * (residual - avgResiduals);
+            }
 
-		[Browsable(false)]
-		[XmlIgnore()]
-		public Series<double> Upper
-		{
-			get { return Values[1]; }
-		}
-		
-		[Range(1, double.MaxValue), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Width", GroupName = "NinjaScriptGeneral", Order = 1)]
-		public double Width
-		{ get; set; }
-		#endregion
+            double stdDeviation = Math.Sqrt(sumResiduals / Math.Min(CurrentBar + 1, Period));
+            stdDeviationSeries[0] = stdDeviation;
 
-		#region Misc
-		private int GetXPos(int barsBack)
-		{
-			return ChartControl.GetXByBarIndex(ChartBars,
-				Math.Max(0, Bars.Count - 1 - barsBack - (Calculate == Calculate.OnBarClose ? 1 : 0)));
-		}
+            double middle = intercept + slope * (Period - 1);
+            Middle[0] = CurrentBar == 0 ? Input[0] : middle;
+            Upper[0] = stdDeviation.ApproxCompare(0) == 0 || Double.IsInfinity(stdDeviation) ? Input[0] : middle + stdDeviation * Width;
+            Lower[0] = stdDeviation.ApproxCompare(0) == 0 || Double.IsInfinity(stdDeviation) ? Input[0] : middle - stdDeviation * Width;
+        }
 
-		private int GetYPos(double price, ChartScale chartScale)
-		{
-			return chartScale.GetYByValue(price);
-		}
+        #region Properties
+        [Browsable(false)]
+        [XmlIgnore()]
+        public Series<double> Lower
+        {
+            get { return Values[2]; }
+        }
 
-		protected override void OnRender(ChartControl chartControl, ChartScale chartScale)
-		{
-			if (Bars == null || ChartControl == null) return;
+        [Browsable(false)]
+        [XmlIgnore()]
+        public Series<double> Middle
+        {
+            get { return Values[0]; }
+        }
 
-			RenderTarget.AntialiasMode	= AntialiasMode.PerPrimitive;
+        [Range(2, int.MaxValue), NinjaScriptProperty]
+        [Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptGeneral", Order = 0)]
+        public int Period
+        { get; set; }
+
+        [Browsable(false)]
+        [XmlIgnore()]
+        public Series<double> Upper
+        {
+            get { return Values[1]; }
+        }
+
+        [Range(1, double.MaxValue), NinjaScriptProperty]
+        [Display(ResourceType = typeof(Custom.Resource), Name = "Width", GroupName = "NinjaScriptGeneral", Order = 1)]
+        public double Width
+        { get; set; }
+        #endregion
+
+        #region Misc
+        private int GetXPos(int barsBack)
+        {
+            return ChartControl.GetXByBarIndex(ChartBars,
+                Math.Max(0, Bars.Count - 1 - barsBack - (Calculate == Calculate.OnBarClose ? 1 : 0)));
+        }
+
+        private int GetYPos(double price, ChartScale chartScale)
+        {
+            return chartScale.GetYByValue(price);
+        }
+
+        protected override void OnRender(ChartControl chartControl, ChartScale chartScale)
+        {
+            if (Bars == null || ChartControl == null) return;
+
+            RenderTarget.AntialiasMode = AntialiasMode.PerPrimitive;
 
             ChartPanel panel = chartControl.ChartPanels[ChartPanel.PanelIndex];
 
-            int			idx				= Input.Count - 1 - (Calculate == Calculate.OnBarClose ? 1 : 0);
-			double		intercept		= interceptSeries.GetValueAt(idx);
-			double		slope			= slopeSeries.GetValueAt(idx);
-			double		stdDev			= stdDeviationSeries.GetValueAt(idx);
-			int			stdDevPixels	= (int) Math.Round(((stdDev*Width)/(panel.MaxValue - panel.MinValue))*panel.H, 0);
-			int			xPos			= GetXPos(Period - 1);
-			int			yPos			= GetYPos(intercept, chartScale);
-			int			xPos2			= GetXPos(0);
-			int			yPos2			= GetYPos(intercept + slope*(Period - 1), chartScale);
-			Vector2		startVector		= new Vector2(xPos, yPos);
-			Vector2		endVector		= new Vector2(xPos2, yPos2);
+            int idx = Input.Count - 1 - (Calculate == Calculate.OnBarClose ? 1 : 0) - Displacement;
+            double intercept = interceptSeries.GetValueAt(idx);
+            double slope = slopeSeries.GetValueAt(idx);
+            double stdDev = stdDeviationSeries.GetValueAt(idx);
+            int stdDevPixels = (int) Math.Round(((stdDev*Width)/(panel.MaxValue - panel.MinValue))*panel.H, 0);
+            int xPos = GetXPos(Period - 1);
+            int yPos = GetYPos(intercept, chartScale);
+            int xPos2 = GetXPos(0);
+            int yPos2 = GetYPos(intercept + slope*(Period - 1), chartScale);
+            Vector2 startVector = new Vector2(xPos, yPos);
+            Vector2 endVector = new Vector2(xPos2, yPos2);
 
-			// Middle
-			RenderTarget.DrawLine(startVector, endVector, Plots[0].BrushDX, Plots[0].Width, Plots[0].StrokeStyle);
+            // Middle
+            RenderTarget.DrawLine(startVector, endVector, Plots[0].BrushDX, Plots[0].Width, Plots[0].StrokeStyle);
 
-			// Upper
-			RenderTarget.DrawLine(new Vector2(startVector.X, startVector.Y - stdDevPixels), new Vector2(endVector.X, endVector.Y - stdDevPixels), Plots[1].BrushDX, Plots[1].Width, Plots[1].StrokeStyle);
+            // Upper
+            RenderTarget.DrawLine(new Vector2(startVector.X, startVector.Y - stdDevPixels), new Vector2(endVector.X, endVector.Y - stdDevPixels), Plots[1].BrushDX, Plots[1].Width, Plots[1].StrokeStyle);
 
-			// Lower
-			RenderTarget.DrawLine(new Vector2(startVector.X, startVector.Y + stdDevPixels), new Vector2(endVector.X, endVector.Y + stdDevPixels), Plots[2].BrushDX, Plots[2].Width, Plots[2].StrokeStyle);
+            // Lower
+            RenderTarget.DrawLine(new Vector2(startVector.X, startVector.Y + stdDevPixels), new Vector2(endVector.X, endVector.Y + stdDevPixels), Plots[2].BrushDX, Plots[2].Width, Plots[2].StrokeStyle);
 
-			RenderTarget.AntialiasMode = AntialiasMode.Aliased;
-		}
-		#endregion
-	}
+            RenderTarget.AntialiasMode = AntialiasMode.Aliased;
+        }
+        #endregion
+    }
 }
 
 #region NinjaScript generated code. Neither change nor remove.
 
 namespace NinjaTrader.NinjaScript.Indicators
 {
-	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
-	{
-		private RegressionChannel[] cacheRegressionChannel;
-		public RegressionChannel RegressionChannel(int period, double width)
-		{
-			return RegressionChannel(Input, period, width);
-		}
+    public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
+    {
+        private RegressionChannel[] cacheRegressionChannel;
+        public RegressionChannel RegressionChannel(int period, double width)
+        {
+            return RegressionChannel(Input, period, width);
+        }
 
-		public RegressionChannel RegressionChannel(ISeries<double> input, int period, double width)
-		{
-			if (cacheRegressionChannel != null)
-				for (int idx = 0; idx < cacheRegressionChannel.Length; idx++)
-					if (cacheRegressionChannel[idx] != null && cacheRegressionChannel[idx].Period == period && cacheRegressionChannel[idx].Width == width && cacheRegressionChannel[idx].EqualsInput(input))
-						return cacheRegressionChannel[idx];
-			return CacheIndicator<RegressionChannel>(new RegressionChannel(){ Period = period, Width = width }, input, ref cacheRegressionChannel);
-		}
-	}
+        public RegressionChannel RegressionChannel(ISeries<double> input, int period, double width)
+        {
+            if (cacheRegressionChannel != null)
+                for (int idx = 0; idx < cacheRegressionChannel.Length; idx++)
+                    if (cacheRegressionChannel[idx] != null && cacheRegressionChannel[idx].Period == period && cacheRegressionChannel[idx].Width == width && cacheRegressionChannel[idx].EqualsInput(input))
+                        return cacheRegressionChannel[idx];
+            return CacheIndicator<RegressionChannel>(new RegressionChannel(){ Period = period, Width = width }, input, ref cacheRegressionChannel);
+        }
+    }
 }
 
 namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
-	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
-	{
-		public Indicators.RegressionChannel RegressionChannel(int period, double width)
-		{
-			return indicator.RegressionChannel(Input, period, width);
-		}
+    public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
+    {
+        public Indicators.RegressionChannel RegressionChannel(int period, double width)
+        {
+            return indicator.RegressionChannel(Input, period, width);
+        }
 
-		public Indicators.RegressionChannel RegressionChannel(ISeries<double> input , int period, double width)
-		{
-			return indicator.RegressionChannel(input, period, width);
-		}
-	}
+        public Indicators.RegressionChannel RegressionChannel(ISeries<double> input , int period, double width)
+        {
+            return indicator.RegressionChannel(input, period, width);
+        }
+    }
 }
 
 namespace NinjaTrader.NinjaScript.Strategies
 {
-	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
-	{
-		public Indicators.RegressionChannel RegressionChannel(int period, double width)
-		{
-			return indicator.RegressionChannel(Input, period, width);
-		}
+    public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
+    {
+        public Indicators.RegressionChannel RegressionChannel(int period, double width)
+        {
+            return indicator.RegressionChannel(Input, period, width);
+        }
 
-		public Indicators.RegressionChannel RegressionChannel(ISeries<double> input , int period, double width)
-		{
-			return indicator.RegressionChannel(input, period, width);
-		}
-	}
+        public Indicators.RegressionChannel RegressionChannel(ISeries<double> input , int period, double width)
+        {
+            return indicator.RegressionChannel(input, period, width);
+        }
+    }
 }
 
 #endregion

@@ -62,21 +62,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			if (fast > slow) {
 				Strength[0] = 1;
-				PlotBrushes[0][0] = Brushes.Blue;
+				PlotBrushes[0][0] = Brushes.DodgerBlue;
 				
 				if (Close[0] > fast) {
 					Strength[0] = 2;
-					PlotBrushes[0][0] = Brushes.DodgerBlue;
+					PlotBrushes[0][0] = Brushes.Blue;
 				}
 			}
 			
 			if (fast < slow) {
 				Strength[0] = -1;
-				PlotBrushes[0][0] = Brushes.Red;
+				PlotBrushes[0][0] = Brushes.Salmon;
 				
 				if (Close[0] < fast) {
 					Strength[0] = -2;
-					PlotBrushes[0][0] = Brushes.Crimson;;
+					PlotBrushes[0][0] = Brushes.Red;;
 				}
 			}
 		}

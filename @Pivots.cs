@@ -1,4 +1,4 @@
-// 
+//
 // Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
@@ -27,7 +27,7 @@ using SharpDX.DirectWrite;
 
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	[TypeConverter("NinjaTrader.NinjaScript.Indicators.PivotsTypeConverter")]
@@ -36,20 +36,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private DateTime				cacheMonthlyEndDate		= Globals.MinDate;
 		private DateTime				cacheSessionDate		= Globals.MinDate;
 		private DateTime				cacheSessionEnd			= Globals.MinDate;
+		private DateTime				cacheTime;
 		private DateTime				cacheWeeklyEndDate		= Globals.MinDate;
 		private DateTime				currentDate				= Globals.MinDate;
 		private DateTime				currentMonth			= Globals.MinDate;
 		private DateTime				currentWeek				= Globals.MinDate;
 		private DateTime				sessionDateTmp			= Globals.MinDate;
+		private HLCCalculationMode		priorDayHlc;
+		private PivotRange				pivotRangeType;
+		private SessionIterator			storedSession;
 		private double					currentClose;
 		private double					currentHigh				= double.MinValue;
 		private double					currentLow				= double.MaxValue;
 		private double					dailyBarClose			= double.MinValue;
 		private double					dailyBarHigh			= double.MinValue;
 		private double					dailyBarLow				= double.MinValue;
-		private readonly List<int>		newSessionBarIdxArr		= new List<int>();
-		private PivotRange				pivotRangeType;
-		private HLCCalculationMode		priorDayHlc;
 		private double					pp;
 		private double					r1;
 		private double					r2;
@@ -57,13 +58,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double					s1;
 		private double					s2;
 		private double					s3;
-		private SessionIterator			storedSession;
 		private double					userDefinedClose;
 		private double					userDefinedHigh;
 		private double					userDefinedLow;
-		private int						width					= 20;
-		private DateTime				cacheTime;
 		private int						cacheBar;
+		private int						width					= 20;
+		private readonly List<int>		newSessionBarIdxArr		= new List<int>();
 
 		protected override void OnStateChange()
 		{
@@ -89,7 +89,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Configure)
 			{
-				AddDataSeries(BarsPeriodType.Day, 1);
+				if (priorDayHlc == HLCCalculationMode.DailyBars)
+					AddDataSeries(BarsPeriodType.Day, 1);
 			}
 			else if (State == State.DataLoaded)
 			{
@@ -97,7 +98,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Historical)
 			{
-				if (BarsArray[1].DayCount <= 0)
+				if (priorDayHlc == HLCCalculationMode.DailyBars && BarsArray[1].DayCount <= 0)
 				{
 					Draw.TextFixed(this, "NinjaScriptInfo", NinjaTrader.Custom.Resource.PiviotsDailyDataError, TextPosition.BottomRight);
 					Log(NinjaTrader.Custom.Resource.PiviotsDailyDataError, LogLevel.Error);
@@ -119,10 +120,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 					Draw.TextFixed(this, "NinjaScriptInfo", NinjaTrader.Custom.Resource.PiviotsPeriodTypeError, TextPosition.BottomRight);
 					Log(NinjaTrader.Custom.Resource.PiviotsPeriodTypeError, LogLevel.Error);
 				}
-				if (
-					pivotRangeType == PivotRange.Monthly && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddMonths(-1)
+				if ((priorDayHlc == HLCCalculationMode.DailyBars &&
+					(pivotRangeType == PivotRange.Monthly && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddMonths(-1)
 					|| pivotRangeType == PivotRange.Weekly && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddDays(-7)
-					|| pivotRangeType == PivotRange.Daily && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddDays(-1)
+					|| pivotRangeType == PivotRange.Daily && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddDays(-1)))
 					|| pivotRangeType == PivotRange.Monthly && BarsArray[0].GetTime(0).Date >= BarsArray[0].GetTime(BarsArray[0].Count - 1).Date.AddMonths(-1)
 					|| pivotRangeType == PivotRange.Weekly && BarsArray[0].GetTime(0).Date >= BarsArray[0].GetTime(BarsArray[0].Count - 1).Date.AddDays(-7)
 					|| pivotRangeType == PivotRange.Daily && BarsArray[0].GetTime(0).Date >= BarsArray[0].GetTime(BarsArray[0].Count - 1).Date.AddDays(-1)
@@ -139,20 +140,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (BarsInProgress != 0)
 				return;
 
-			if ((BarsArray[1].DayCount <= 0)
+			if ((priorDayHlc == HLCCalculationMode.DailyBars && BarsArray[1].DayCount <= 0)
 				|| (!Bars.BarsType.IsIntraday && BarsPeriod.BarsPeriodType != BarsPeriodType.Day)
 				|| (BarsPeriod.BarsPeriodType == BarsPeriodType.Day && pivotRangeType == PivotRange.Daily)
 				|| (BarsPeriod.BarsPeriodType == BarsPeriodType.Day && BarsPeriod.Value > 1)
-				|| (pivotRangeType == PivotRange.Monthly && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddMonths(-1)
+				|| ((priorDayHlc == HLCCalculationMode.DailyBars && (pivotRangeType == PivotRange.Monthly && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddMonths(-1)
 				|| pivotRangeType == PivotRange.Weekly && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddDays(-7)
-				|| pivotRangeType == PivotRange.Daily && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddDays(-1)
+				|| pivotRangeType == PivotRange.Daily && BarsArray[1].GetTime(0).Date >= BarsArray[1].GetTime(BarsArray[1].Count - 1).Date.AddDays(-1)))
 				|| pivotRangeType == PivotRange.Monthly && BarsArray[0].GetTime(0).Date >= BarsArray[0].GetTime(BarsArray[0].Count - 1).Date.AddMonths(-1)
 				|| pivotRangeType == PivotRange.Weekly && BarsArray[0].GetTime(0).Date >= BarsArray[0].GetTime(BarsArray[0].Count - 1).Date.AddDays(-7)
 				|| pivotRangeType == PivotRange.Daily && BarsArray[0].GetTime(0).Date >= BarsArray[0].GetTime(BarsArray[0].Count - 1).Date.AddDays(-1)))
 				return;
 
 			RemoveDrawObject("NinjaScriptInfo");
-			
+
 			if (PriorDayHlc == HLCCalculationMode.DailyBars && CurrentBars[1] >= 0)
 			{
 				// Get daily bars like this to avoid situation where primary series moves to next session before previous day OHLC are added
@@ -175,9 +176,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double high		= (dailyBarHigh == double.MinValue)		? Highs[0][0]	: dailyBarHigh;
 			double low		= (dailyBarLow == double.MinValue)		? Lows[0][0]	: dailyBarLow;
 			double close	= (dailyBarClose == double.MinValue)	? Closes[0][0]	: dailyBarClose;
-			
+
 			DateTime lastBarTimeStamp = GetLastBarSessionDate(Times[0][0], pivotRangeType);
-			
+
 			if ((currentDate != Globals.MinDate && pivotRangeType == PivotRange.Daily && lastBarTimeStamp != currentDate)
 				|| (currentWeek != Globals.MinDate && pivotRangeType == PivotRange.Weekly && lastBarTimeStamp != currentWeek)
 				|| (currentMonth != Globals.MinDate && pivotRangeType == PivotRange.Monthly && lastBarTimeStamp != currentMonth))
@@ -351,6 +352,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 			set { pivotRangeType = value; }
 		}
 
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<double> Pp
+		{
+			get { return Values[0]; }
+		}
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "HLCCalculationMode", Description = "Approach for calculation the prior day HLC values.", GroupName = "NinjaScriptParameters", Order = 1)]
 		[RefreshProperties(RefreshProperties.All)] // Update UI when value is changed
@@ -358,45 +366,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return priorDayHlc; }
 			set { priorDayHlc = value; }
-		}
-
-		[NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "UserDefinedClose", GroupName = "NinjaScriptParameters", Order = 2)]
-		public double UserDefinedClose
-		{
-			get { return userDefinedClose; }
-			set { userDefinedClose = value; }
-		}
-
-		[NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "UserDefinedHigh", GroupName = "NinjaScriptParameters", Order = 3)]
-		public double UserDefinedHigh
-		{
-			get { return userDefinedHigh; }
-			set { userDefinedHigh = value; }
-		}
-
-		[NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "UserDefinedLow", GroupName = "NinjaScriptParameters", Order = 4)]
-		public double UserDefinedLow
-		{
-			get { return userDefinedLow; }
-			set { userDefinedLow = value; }
-		}
-
-		[NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Width", GroupName = "NinjaScriptParameters", Order = 5)]
-		public int Width
-		{
-			get { return width; }
-			set { width = value; }
-		}
-
-		[Browsable(false)]
-		[XmlIgnore]
-		public Series<double> Pp
-		{
-			get { return Values[0]; }
 		}
 
 		[Browsable(false)]
@@ -439,6 +408,38 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public Series<double> S3
 		{
 			get { return Values[6]; }
+		}
+
+		[NinjaScriptProperty]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "UserDefinedClose", GroupName = "NinjaScriptParameters", Order = 2)]
+		public double UserDefinedClose
+		{
+			get { return userDefinedClose; }
+			set { userDefinedClose = value; }
+		}
+
+		[NinjaScriptProperty]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "UserDefinedHigh", GroupName = "NinjaScriptParameters", Order = 3)]
+		public double UserDefinedHigh
+		{
+			get { return userDefinedHigh; }
+			set { userDefinedHigh = value; }
+		}
+
+		[NinjaScriptProperty]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "UserDefinedLow", GroupName = "NinjaScriptParameters", Order = 4)]
+		public double UserDefinedLow
+		{
+			get { return userDefinedLow; }
+			set { userDefinedLow = value; }
+		}
+
+		[NinjaScriptProperty]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "Width", GroupName = "NinjaScriptParameters", Order = 5)]
+		public int Width
+		{
+			get { return width; }
+			set { width = value; }
 		}
 
 		#endregion
