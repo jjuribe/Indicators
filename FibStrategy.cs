@@ -53,8 +53,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private int tradesToday;
 		private int winsToday;
 		
-		private double stopSize = 5;
-		private double targetSize = 5;
+		private double stopSize = 3.5;
+		private double targetSize = 3.5;
+		
+		private int barsSinceEntry = 0;
 		
 		protected override void OnStateChange()
 		{
@@ -104,7 +106,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			Upper[0] = MAEnvelopes1.Upper[0];
 			Lower[0] = MAEnvelopes1.Lower[0];
 			
-			optimizeRuns( stops: false,  targets: false,  buffer:1.5 );
+			optimizeRuns( stops: true,  targets: false,  buffer: 0.25 );
 			
 			if ( !inLongTrade ) { longSignal = entrySignal(longEntry: true); }
 			showLongTrades();
@@ -115,10 +117,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// [X] entry @ fib 	  Trades 52   Win %62  Gains 60
 			/// [X] add 3 trade limit Trades:22   Win %73  Gains:50.0
 			/// [X] add 2 win limit	  Trades:52   Win %62  Gains:60.0 both: Trades:22  Win %73  Gains:50.0
-			/// [X] optimize stop target, show avg mae, mpe No Effect
-			/// [ ] try 3 min bars
+			/// [X] optimize stop target, show avg mae, mpe - No Effect
+			/// [X] try 3 min bars - Same
+			/// [X] no target first bar  Trades:20  Wins12.0  Win %60  Gains:20.0
+			/// [ ] optimize stop target,  Trades:25  Wins15.0  Win %60  Gains:27.7
 			/// [ ] add short entry trades
-			/// [ ] no target first bar
+			
 			/// [ ] if win rate > 50% find an orderflow filter like 1 min bars with trades and market replay 
 			/// or make entry on the 1 min time frame...
 			
@@ -136,23 +140,28 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			
 			if ( inLongTrade ) {
-				
-				
-				
-				
 				var mpeNow = High[0] - longEntryPrice;
 				var maeNow = longEntryPrice -  Low[0];
 				
 				if (mpeNow > mpe) {
 					mpe = mpeNow;
-					//Draw.Text(this, "mpe"+CurrentBar, mpe.ToString(), 0, Low[0] -1);
 				}
 				
 				if (maeNow > mae ) {
 					mae = maeNow;
 				}
+			}
+			
+			manageLongTrade();
+		}
+		
+		private void manageLongTrade() {
+			if ( !inLongTrade ) { barsSinceEntry = 0; return; }
+			if ( barsSinceEntry >= 1 ) { 
+				var stopPrice = longEntryPrice - stopSize;
+				var targetPrice = longEntryPrice + targetSize;
 				/// Stopped out
-				if (maeNow >= stopSize ) {
+				if (Low[0] <= stopPrice ) {
 					inLongTrade = false;
 					Draw.Dot(this, "Stop"+CurrentBar, true, 0, longEntryPrice - stopSize, Brushes.Red);
 					totalLoss += stopSize;
@@ -160,7 +169,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					calcStats();
 				}
 				/// target hit
-				if (mpeNow >= targetSize ) {
+				if (High[0] >= targetPrice ) {
 					inLongTrade = false;
 					Draw.Dot(this, "Target"+CurrentBar, true, 0, longEntryPrice + targetSize, Brushes.Green);
 					totalGain += targetSize;
@@ -168,6 +177,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					calcStats();
 				}
 			}
+			barsSinceEntry++;
 		}
 		
 		private void optimizeRuns(bool stops, bool targets, double buffer ) {
