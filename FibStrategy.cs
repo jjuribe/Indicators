@@ -28,8 +28,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 	{
 		private NinjaTrader.NinjaScript.Indicators.GoldenZoneTrading.GZT_GoldenFibs_MTF GZT_GoldenFibs_MTF1;
 		private MAEnvelopes MAEnvelopes1;
-		private Series<int> signals;
+		private Series<double> mpeAvg;
 		private double [] fibs = new double[20];
+		List<double> avgMpe = new List<double>();
+		List<double> avgMae = new List<double>();
 		
 		private int counter;
 		private bool foundFib;
@@ -47,6 +49,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double totalLoss;
 		private double winCount;
 		private double lossCount;
+		
+		private int tradesToday;
+		private int winsToday;
+		
+		private double stopSize = 5;
+		private double targetSize = 5;
 		
 		protected override void OnStateChange()
 		{
@@ -82,7 +90,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				GZT_GoldenFibs_MTF1			= GZT_GoldenFibs_MTF(Close);
 				MAEnvelopes1				= MAEnvelopes(Close, 0.125, 1, 34);
 				ClearOutputWindow();  
-				signals = new Series<int>(this, MaximumBarsLookBack.Infinite); 
+				mpeAvg = new Series<double>(this, MaximumBarsLookBack.Infinite); 
 			}
 		}
 
@@ -96,19 +104,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 			Upper[0] = MAEnvelopes1.Upper[0];
 			Lower[0] = MAEnvelopes1.Lower[0];
 			
+			optimizeRuns( stops: false,  targets: false,  buffer:1.5 );
+			
 			if ( !inLongTrade ) { longSignal = entrySignal(longEntry: true); }
 			showLongTrades();
 			
 			if ( !inShortTrade ) { shortSignal = entrySignal(longEntry: false); }
 			
 			/// God I commit this work to you. I pledge none to margarie and 20% to your kingdom
-			/// [X] entry @ fib
-			/// [ ] no target first bar
-			/// [ ] add short entry trades
-			/// [ ] add 3 trade limit
-			/// [ ] add 2 win limit
-			/// [ ] optimize stop target, shoe avg mae, mpe
+			/// [X] entry @ fib 	  Trades 52   Win %62  Gains 60
+			/// [X] add 3 trade limit Trades:22   Win %73  Gains:50.0
+			/// [X] add 2 win limit	  Trades:52   Win %62  Gains:60.0 both: Trades:22  Win %73  Gains:50.0
+			/// [X] optimize stop target, show avg mae, mpe No Effect
 			/// [ ] try 3 min bars
+			/// [ ] add short entry trades
+			/// [ ] no target first bar
 			/// [ ] if win rate > 50% find an orderflow filter like 1 min bars with trades and market replay 
 			/// or make entry on the 1 min time frame...
 			
@@ -116,17 +126,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		private void showLongTrades() {
 			
+			if ( tradesToday == 3 ) {return;} // same results -  if ( winsToday == 2 ) {return;}
+			
 			if (!inLongTrade  && longSignal) {
 				Draw.ArrowUp(this, "LE"+CurrentBar, true, 0, longEntryPrice, Brushes.Green);
 				inLongTrade = true;
-				//longEntryPrice = Close[0];
+				tradesToday++ ;
 				mpe = 0; mae = 0;
 			}
 			
 			if ( inLongTrade ) {
 				
-				var stopSize = 5;
-				var targetSize = 10;
+				
+				
+				
 				var mpeNow = High[0] - longEntryPrice;
 				var maeNow = longEntryPrice -  Low[0];
 				
@@ -157,30 +170,53 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
 		
-		private void calcStats() {
-				var message = "";	
-				message += Time[0].ToShortDateString();
-				message += "  MPE:";
-				message +=  mpe.ToString("0.0"); 
-				message += "  MAE:";
-				message +=  mae.ToString("0.0");
-				
-				message += "  Trades:";
-				var total = winCount + lossCount;
-				message +=  total.ToString("0");
-				
-				message += "  Wins";
-				//var winPct = winCount / total;    
-				message +=  winCount.ToString("0.0");
-				
-				message += "  Win %";
-				var winPct = ( winCount / total ) * 100;    
-				message +=  winPct.ToString("0");
+		private void optimizeRuns(bool stops, bool targets, double buffer ) {
 			
-				message += "  Gains:";
-				var grossProfit = totalGain - totalLoss;
-				message +=  grossProfit.ToString("0.0");
-				Print(message);
+			if ( avgMpe.Count > 1 ) {
+					if ( targets ) {targetSize = avgMpe.Average(); }
+					if ( stops ) { 
+						stopSize = avgMae.Average() + buffer;
+						if (stopSize > 5) {
+							stopSize = 5;
+						}
+					}
+				}
+		}
+		
+		private void calcStats() {
+			var message = "";	
+			message += Time[0].ToShortDateString();
+			message += "  MPE:";
+			message +=  mpe.ToString("0.0");
+			
+			avgMpe.Add(mpe);
+			if (avgMpe.Count > 1 ) {
+				message += "  Avg:";
+				message +=  avgMpe.Average().ToString("0.0");
+			}
+			message += "  MAE:";
+			message +=  mae.ToString("0.0");
+			avgMae.Add(mae);
+			if (avgMae.Count > 1 ) {
+				message += "  Avg:";
+				message +=  avgMae.Average().ToString("0.0");
+			}
+			message += "  Trades:";
+			var total = winCount + lossCount;
+			message +=  total.ToString("0");
+			
+			message += "  Wins";
+			//var winPct = winCount / total;    
+			message +=  winCount.ToString("0.0");
+			
+			message += "  Win %";
+			var winPct = ( winCount / total ) * 100;    
+			message +=  winPct.ToString("0");
+		
+			message += "  Gains:";
+			var grossProfit = totalGain - totalLoss;
+			message +=  grossProfit.ToString("0.0");
+			Print(message);
 		}
 		
 		private bool isTradingHours() {
@@ -189,6 +225,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (ToTime(Time[0]) >= 63000 && ToTime(Time[0]) <= 90000)
 			{
 			    canTrade = true;
+			} else {
+				tradesToday = 0;
+				winsToday = 0;
 			}
 			return canTrade;
 		}
