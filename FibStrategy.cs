@@ -136,12 +136,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// [X] no target first bar    Trades:20  Wins12.0  Win %60  Gains:20.0
 			/// [X] optimize stop target,  Trades:25  Wins15.0  Win %60  Gains:27.7
 			/// [X] stop hit before target Trades:20  Wins12.0  Win %60  Gains:18.0  Avg Day:4.2  ROI 8.0%
-			/// [X] add short entry trades Trades:25  Wins21.0  Win 84%  Gains:51.0  Avg Day:6.3  ROI 22.7%
-			/// 
-			/// 
-			/// 
-			/// [ ] use 1 min for entry
-			/// [ ] lowest fib in array?			
+			/// [X] add short entry trades T\Trades:25  Wins14.0  Win 56%  Gains:12.0  Avg Day:5.6  ROI 5.3%			
 			/// [ ] if win rate > 50% find an orderflow filter like 1 min bars with trades and market replay 
 			/// or make entry on the 1 min time frame...
 			
