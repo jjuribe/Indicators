@@ -40,6 +40,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private bool shortSignal;
 		private double longEntryPrice;
 		private double shortEntryPrice;
+		
+		private double longEntryActual;
+		private double shortEntryActual;
+		
 		private bool inLongTrade;
 		private bool inShortTrade;
 		private double mpe;
@@ -56,8 +60,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double stopSize = 3;
 		private double targetSize = 3.5;
 		
-		private int barsSinceEntry = 0;
+		private int barsSinceEntryL = 0;
+		private int barsSinceEntryS = 0;
 		private int daycount;
+		
+		private string tradeDirection = "Short";
 		
 		
 		protected override void OnStateChange()
@@ -112,9 +119,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			if ( !inLongTrade ) { longSignal = entrySignal(longEntry: true); }
 			showLongTrades();
+			manageLongTrade();
 			
 			if ( !inShortTrade ) { shortSignal = entrySignal(longEntry: false); }
-			
+			showShortTrades();
+			manageShortTrade();
 			/// God I commit this work to you. I pledge none to margarie and 20% to your kingdom
 			/// [X] entry @ fib 	  Trades 52   Win %62  Gains 60
 			/// [X] add 3 trade limit Trades:22   Win %73  Gains:50.0
@@ -123,7 +132,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// [X] try 3 min bars - better with smaller targets / stops
 			/// [X] no target first bar  Trades:20  Wins12.0  Win %60  Gains:20.0
 			/// [X] optimize stop target,  Trades:25  Wins15.0  Win %60  Gains:27.7
-			/// [ ] stop hit before target  Trades:20  Wins12.0  Win %60  Gains:18.0
+			/// [ ] stop hit before target  Trades:20  Wins12.0  Win %60  Gains:18.0  Avg Day:4.2  ROI 8.0%
 			/// [ ] use 1 min for entry
 			/// [ ] lowest fib in array?
 			/// [ ] add short entry trades
@@ -134,14 +143,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		private void showLongTrades() {
-			
-			if ( tradesToday == 3 ) {return;} // same results -  if ( winsToday == 2 ) {return;}
-			
+			if ( tradesToday == 3 ) {return;}
 			if (!inLongTrade  && longSignal) {
-				Draw.ArrowUp(this, "LE"+CurrentBar, true, 0, longEntryPrice, Brushes.Green);
-				inLongTrade = true;
 				tradesToday++ ;
+				longEntryActual = longEntryPrice;
+				Draw.ArrowUp(this, "LE"+CurrentBar, true, 0, longEntryPrice, Brushes.Lime);
+				Draw.Text(this, "inshd"+CurrentBar, tradesToday.ToString(), 0, Low[0] -1);
+				inLongTrade = true;
+				
 				mpe = 0; mae = 0;
+				tradeDirection = "LE";
 			}
 			
 			if ( inLongTrade ) {
@@ -157,35 +168,105 @@ namespace NinjaTrader.NinjaScript.Indicators
 				}
 			}
 			
-			manageLongTrade();
+			
 		}
 		
 		private void manageLongTrade() {
-			if ( !inLongTrade ) { barsSinceEntry = 0; return; }
-			if ( barsSinceEntry >= 1 ) { 
-				var stopPrice = longEntryPrice - stopSize;
-				var targetPrice = longEntryPrice + targetSize;
+			if ( !inLongTrade ) { barsSinceEntryL = 0; return; }
+			if ( barsSinceEntryL >= 1 ) { 
+//Draw.Text(this, "inshd"+CurrentBar, barsSinceEntryL.ToString(), 0, Low[0] -1);
+				var stopPrice = longEntryActual - stopSize;
+				var targetPrice = longEntryActual + targetSize;
 				/// Stopped out
 				if (Low[0] <= stopPrice ) {
 					inLongTrade = false;
-					Draw.Dot(this, "Stop"+CurrentBar, true, 0, longEntryPrice - stopSize, Brushes.Red);
+					Draw.Dot(this, "Stop"+CurrentBar, true, 0, longEntryPrice - stopSize, Brushes.Crimson);
 					totalLoss += stopSize;
 					lossCount += 1;
 					calcStats();
+					barsSinceEntryL = 0;
 					return;
 				}
 				/// target hit
 				if (High[0] >= targetPrice ) {
 					inLongTrade = false;
-					Draw.Dot(this, "Target"+CurrentBar, true, 0, longEntryPrice + targetSize, Brushes.Green);
+					Draw.Dot(this, "Target"+CurrentBar, true, 0, longEntryPrice + targetSize, Brushes.Lime);
 					totalGain += targetSize;
 					winCount += 1;
+					barsSinceEntryL = 0;
 					calcStats();
 				}
 			}
-			barsSinceEntry++;
+			barsSinceEntryL++;
 		}
 		
+		private void showShortTrades() {
+			
+			if ( tradesToday == 3 ) {return;} // same results -  if ( winsToday == 2 ) {return;}
+			if (!inShortTrade  && shortSignal) {
+				tradesToday++ ;
+				shortEntryActual = shortEntryPrice;
+				Draw.ArrowDown(this, "SE"+CurrentBar, true, 0, shortEntryPrice, Brushes.Crimson);
+				Draw.Text(this, "inshd"+CurrentBar, tradesToday.ToString(), 0, Low[0] -1);
+				inShortTrade = true;
+				
+				mpe = 0; mae = 0;
+				tradeDirection = "SE";
+				var stopPrice = shortEntryPrice + stopSize;
+				var targetPrice = shortEntryPrice - targetSize;
+//				Draw.Text(this, "StopLine"+CurrentBar, "=", 0, stopPrice);
+//				Draw.Text(this, "EntryLine"+CurrentBar, "-", 0, shortEntryPrice);
+//				Draw.Text(this, "TargetLine"+CurrentBar, "+", 0, targetPrice);
+			}
+			
+			if ( inShortTrade ) {
+				var mpeNow = shortEntryPrice - Low[0];
+				var maeNow = High[0] - shortEntryPrice;
+				
+				if (mpeNow > mpe) {
+					mpe = mpeNow;
+				}
+				
+				if (maeNow > mae ) {
+					mae = maeNow;
+				}
+			}
+			
+			
+		}
+				
+		private void manageShortTrade() {
+			if ( !inShortTrade ) { barsSinceEntryS = 0; return; }
+			if ( barsSinceEntryS >= 1 ) { 
+//Draw.Text(this, "insh"+CurrentBar, barsSinceEntryS.ToString(), 0, Low[0] -1);
+				var stopPrice = shortEntryActual + stopSize;
+				var targetPrice = shortEntryActual - targetSize;
+				Draw.Text(this, "StopLine"+CurrentBar, "=", 0, stopPrice);
+				Draw.Text(this, "EntryLine"+CurrentBar, "-", 0, shortEntryPrice);
+				Draw.Text(this, "TargetLine"+CurrentBar, "+", 0, targetPrice);
+				/// Stopped out
+				if (High[0] >= stopPrice ) {
+					inShortTrade = false;
+					Draw.Dot(this, "Stop"+CurrentBar, true, 0, stopPrice, Brushes.Crimson);
+					totalLoss += stopSize;
+					lossCount += 1;
+					calcStats();
+					barsSinceEntryS = 0;
+					return;
+				}
+				/// target hit
+				if (Low[0] <= targetPrice ) {
+					inShortTrade = false;
+					Draw.Dot(this, "Target"+CurrentBar, true, 0, targetPrice, Brushes.Lime);
+					totalGain += targetSize;
+					winCount += 1;
+					barsSinceEntryS = 0;
+					calcStats();
+				}
+			}
+			barsSinceEntryS++;
+		}
+				
 		private void optimizeRuns(bool stops, bool targets, double buffer ) {
 			
 			if ( avgMpe.Count > 1 ) {
@@ -203,6 +284,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			var message = "";	
 			message += daycount.ToString();
 			message += "   ";
+			
+			message += tradeDirection;
+			message += "   ";
+			
 			message += Time[0].ToShortDateString();
 			message += "  MPE:";
 			message +=  mpe.ToString("0.0");
@@ -227,10 +312,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			//var winPct = winCount / total;    
 			message +=  winCount.ToString("0.0");
 			
-			message += "  Win %";
+			message += "  Win ";
 			var winPct = ( winCount / total ) * 100;    
 			message +=  winPct.ToString("0");
-		
+			message += "%";
+			
 			message += "  Gains:";
 			var grossProfit = totalGain - totalLoss;
 			message +=  grossProfit.ToString("0.0");
@@ -268,14 +354,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 			var answer = false;
 			if ( longEntry ) {
 				if ( foundFib && outsideRange(upper: false) && isTradingHours() ) {
-					CandleOutlineBrush = Brushes.DodgerBlue;
-					BarBrush = Brushes.DodgerBlue;
+					CandleOutlineBrush = Brushes.DarkGoldenrod;
+					BarBrush = Brushes.DarkGoldenrod;
 					answer = true;
 				}
 			} else {
 				if ( foundFib && outsideRange(upper: true) && isTradingHours() ) {
-					CandleOutlineBrush = Brushes.Crimson;
-					BarBrush = Brushes.Crimson;
+					CandleOutlineBrush = Brushes.DarkGoldenrod;
+					BarBrush = Brushes.DarkGoldenrod;
 					answer = true;
 				}	
 			}
@@ -306,10 +392,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			for (int i = 0; i < 19; i++) 
 			{
-				if ( fibs[i] >= MAEnvelopes1.Upper[0] || fibs[i] <= MAEnvelopes1.Lower[0] ) {
+				if ( fibs[i] <= MAEnvelopes1.Lower[0] ) {
 					if (fibs[i] <= barHighBuffer && fibs[i] >= barLowBuffer ) { 
 						foundFib = true; 
 						longEntryPrice = fibs[i]; 
+					}
+				}
+				if ( fibs[i] >= MAEnvelopes1.Upper[0] ) {
+					if (fibs[i] <= barHighBuffer && fibs[i] >= barLowBuffer ) { 
+						foundFib = true; 
+						shortEntryPrice = fibs[i]; 
 					}
 				}
 			}
