@@ -57,15 +57,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private int tradesToday;
 		private int winsToday;
 		
-		private double stopSize = 3;
-		private double targetSize = 3.5;
+		private double stopSize = 4;
+		private double targetSize = 4;
 		
 		private int barsSinceEntryL = 0;
 		private int barsSinceEntryS = 0;
 		private int daycount;
 		
 		private string tradeDirection = "Short";
-		
+		private bool upperRangeOpen;
+		private bool lowerRangeOpen;
 		
 		protected override void OnStateChange()
 		{
@@ -110,7 +111,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (CurrentBars[0] < 1) { return; }
 			if (BarsInProgress >= 1) { return; }
 			if (Time[0].DayOfWeek == DayOfWeek.Sunday) { return; }
-			if (ToTime(Time[0]) >= 60000 && ToTime(Time[0]) <= 60003 ) { daycount++;}
+			if (ToTime(Time[0]) >= 60000 && ToTime(Time[0]) <= 60003 ) { daycount++; tradesToday = 0;}
+			upperRangeOpen = outsideRange(upper: true);
+			lowerRangeOpen = outsideRange(upper: false);
 			
 			Upper[0] = MAEnvelopes1.Upper[0];
 			Lower[0] = MAEnvelopes1.Lower[0];
@@ -130,13 +133,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// [X] add 2 win limit	  Trades:52   Win %62  Gains:60.0 both: Trades:22  Win %73  Gains:50.0
 			/// [X] optimize stop target, show avg mae, mpe - No Effect
 			/// [X] try 3 min bars - better with smaller targets / stops
-			/// [X] no target first bar  Trades:20  Wins12.0  Win %60  Gains:20.0
+			/// [X] no target first bar    Trades:20  Wins12.0  Win %60  Gains:20.0
 			/// [X] optimize stop target,  Trades:25  Wins15.0  Win %60  Gains:27.7
-			/// [ ] stop hit before target  Trades:20  Wins12.0  Win %60  Gains:18.0  Avg Day:4.2  ROI 8.0%
+			/// [X] stop hit before target Trades:20  Wins12.0  Win %60  Gains:18.0  Avg Day:4.2  ROI 8.0%
+			/// [X] add short entry trades Trades:25  Wins21.0  Win 84%  Gains:51.0  Avg Day:6.3  ROI 22.7%
+			/// 
+			/// 
+			/// 
 			/// [ ] use 1 min for entry
-			/// [ ] lowest fib in array?
-			/// [ ] add short entry trades
-			
+			/// [ ] lowest fib in array?			
 			/// [ ] if win rate > 50% find an orderflow filter like 1 min bars with trades and market replay 
 			/// or make entry on the 1 min time frame...
 			
@@ -147,17 +152,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (!inLongTrade  && longSignal) {
 				tradesToday++ ;
 				longEntryActual = longEntryPrice;
-				Draw.ArrowUp(this, "LE"+CurrentBar, true, 0, longEntryPrice, Brushes.Lime);
-				Draw.Text(this, "inshd"+CurrentBar, tradesToday.ToString(), 0, Low[0] -1);
+				Draw.ArrowUp(this, "LE"+CurrentBar, true, 0, longEntryActual, Brushes.Lime);
+				Draw.Text(this, "letoday"+CurrentBar, tradesToday.ToString(), 0, Low[0] -2, Brushes.DodgerBlue);
 				inLongTrade = true;
-				
+				barsSinceEntryL = 0;
 				mpe = 0; mae = 0;
 				tradeDirection = "LE";
 			}
 			
 			if ( inLongTrade ) {
-				var mpeNow = High[0] - longEntryPrice;
-				var maeNow = longEntryPrice -  Low[0];
+				var mpeNow = High[0] - longEntryActual;
+				var maeNow = longEntryActual -  Low[0];
 				
 				if (mpeNow > mpe) {
 					mpe = mpeNow;
@@ -174,13 +179,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private void manageLongTrade() {
 			if ( !inLongTrade ) { barsSinceEntryL = 0; return; }
 			if ( barsSinceEntryL >= 1 ) { 
-//Draw.Text(this, "inshd"+CurrentBar, barsSinceEntryL.ToString(), 0, Low[0] -1);
+				Draw.Text(this, "bsel"+CurrentBar, barsSinceEntryL.ToString(), 0, Low[0] -1, Brushes.Cyan);
 				var stopPrice = longEntryActual - stopSize;
 				var targetPrice = longEntryActual + targetSize;
 				/// Stopped out
 				if (Low[0] <= stopPrice ) {
 					inLongTrade = false;
-					Draw.Dot(this, "Stop"+CurrentBar, true, 0, longEntryPrice - stopSize, Brushes.Crimson);
+					Draw.Dot(this, "Stop"+CurrentBar, true, 0, stopPrice, Brushes.Crimson);
 					totalLoss += stopSize;
 					lossCount += 1;
 					calcStats();
@@ -190,7 +195,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				/// target hit
 				if (High[0] >= targetPrice ) {
 					inLongTrade = false;
-					Draw.Dot(this, "Target"+CurrentBar, true, 0, longEntryPrice + targetSize, Brushes.Lime);
+					Draw.Dot(this, "Target"+CurrentBar, true, 0, targetPrice, Brushes.Lime);
 					totalGain += targetSize;
 					winCount += 1;
 					barsSinceEntryL = 0;
@@ -206,22 +211,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (!inShortTrade  && shortSignal) {
 				tradesToday++ ;
 				shortEntryActual = shortEntryPrice;
-				Draw.ArrowDown(this, "SE"+CurrentBar, true, 0, shortEntryPrice, Brushes.Crimson);
-				Draw.Text(this, "inshd"+CurrentBar, tradesToday.ToString(), 0, Low[0] -1);
+				Draw.ArrowDown(this, "SE"+CurrentBar, true, 0, shortEntryActual, Brushes.Crimson);
+				Draw.Text(this, "sttoday"+CurrentBar, tradesToday.ToString(), 0, High[0] +2, Brushes.Red);
 				inShortTrade = true;
+				barsSinceEntryS = 0;
 				
 				mpe = 0; mae = 0;
 				tradeDirection = "SE";
-				var stopPrice = shortEntryPrice + stopSize;
-				var targetPrice = shortEntryPrice - targetSize;
+	
 //				Draw.Text(this, "StopLine"+CurrentBar, "=", 0, stopPrice);
 //				Draw.Text(this, "EntryLine"+CurrentBar, "-", 0, shortEntryPrice);
 //				Draw.Text(this, "TargetLine"+CurrentBar, "+", 0, targetPrice);
 			}
 			
 			if ( inShortTrade ) {
-				var mpeNow = shortEntryPrice - Low[0];
-				var maeNow = High[0] - shortEntryPrice;
+				var mpeNow = shortEntryActual - Low[0];
+				var maeNow = High[0] - shortEntryActual;
 				
 				if (mpeNow > mpe) {
 					mpe = mpeNow;
@@ -238,12 +243,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private void manageShortTrade() {
 			if ( !inShortTrade ) { barsSinceEntryS = 0; return; }
 			if ( barsSinceEntryS >= 1 ) { 
-//Draw.Text(this, "insh"+CurrentBar, barsSinceEntryS.ToString(), 0, Low[0] -1);
+			Draw.Text(this, "bses"+CurrentBar, barsSinceEntryS.ToString(), 0, High[0] +1, Brushes.Magenta);
 				var stopPrice = shortEntryActual + stopSize;
 				var targetPrice = shortEntryActual - targetSize;
-				Draw.Text(this, "StopLine"+CurrentBar, "=", 0, stopPrice);
-				Draw.Text(this, "EntryLine"+CurrentBar, "-", 0, shortEntryPrice);
-				Draw.Text(this, "TargetLine"+CurrentBar, "+", 0, targetPrice);
+				//Draw.Text(this, "StopLine"+CurrentBar, "=", 0, stopPrice);
+				//Draw.Text(this, "EntryLine"+CurrentBar, "-", 0, shortEntryPrice);
+				//Draw.Text(this, "TargetLine"+CurrentBar, "+", 0, targetPrice);
 				/// Stopped out
 				if (High[0] >= stopPrice ) {
 					inShortTrade = false;
@@ -281,7 +286,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 		
 		private void calcStats() {
-			var message = "";	
+			var message = "";
+			var screenMessage = "\n";
 			message += daycount.ToString();
 			message += "   ";
 			
@@ -307,6 +313,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			message += "  Trades:";
 			var total = winCount + lossCount;
 			message +=  total.ToString("0");
+			screenMessage += total.ToString("0");
+			screenMessage += " Trades\n";
 			
 			message += "  Wins";
 			//var winPct = winCount / total;    
@@ -316,10 +324,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 			var winPct = ( winCount / total ) * 100;    
 			message +=  winPct.ToString("0");
 			message += "%";
+			screenMessage += winPct.ToString("0");
+			screenMessage += "%\n";
 			
 			message += "  Gains:";
 			var grossProfit = totalGain - totalLoss;
 			message +=  grossProfit.ToString("0.0");
+			screenMessage += grossProfit.ToString("0.0");
+			screenMessage += " Gain\n";
 			
 			message += "  Avg Day:";
 			var avgDay = totalGain / daycount ;
@@ -329,8 +341,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			var roi = (( grossProfit * 20 ) / 4500 ) * 100;
 			message +=  roi.ToString("0.0");
 			message += "%";
+			screenMessage += roi.ToString("0.0");
+			screenMessage += " ROI";
 			
 			Print(message);
+			Draw.TextFixed(this, "results", screenMessage, TextPosition.TopLeft);
 		}
 		
 		private bool isTradingHours() {
@@ -353,15 +368,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 			//Print(counter);
 			var answer = false;
 			if ( longEntry ) {
-				if ( foundFib && outsideRange(upper: false) && isTradingHours() ) {
-					CandleOutlineBrush = Brushes.DarkGoldenrod;
-					BarBrush = Brushes.DarkGoldenrod;
+				if ( foundFib && lowerRangeOpen && isTradingHours() ) {
+					CandleOutlineBrush = Brushes.DodgerBlue;
+					BarBrush = Brushes.DodgerBlue;
 					answer = true;
 				}
 			} else {
-				if ( foundFib && outsideRange(upper: true) && isTradingHours() ) {
-					CandleOutlineBrush = Brushes.DarkGoldenrod;
-					BarBrush = Brushes.DarkGoldenrod;
+				if ( foundFib && upperRangeOpen && isTradingHours() ) {
+					CandleOutlineBrush = Brushes.Crimson;
+					BarBrush = Brushes.Crimson;
 					answer = true;
 				}	
 			}
