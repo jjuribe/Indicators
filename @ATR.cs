@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Average True Range (ATR) is a measure of volatility. It was introduced by Welles Wilder 
-	/// in his book 'New Concepts in Technical Trading Systems' and has since been used as a component 
+	/// The Average True Range (ATR) is a measure of volatility. It was introduced by Welles Wilder
+	/// in his book 'New Concepts in Technical Trading Systems' and has since been used as a component
 	/// of many indicators and trading systems.
 	/// </summary>
 	public class ATR : Indicator
@@ -51,7 +51,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			double high0	= High[0];
 			double low0		= Low[0];
-			
+
 			if (CurrentBar == 0)
 				Value[0] = high0 - low0;
 			else

@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -49,7 +49,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Smooth						= 9;
 
 				AddLine(Brushes.DarkGray,	0,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
-				AddPlot(Brushes.Goldenrod,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorNamePriceOscillator);
+				AddPlot(Brushes.Goldenrod,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNamePriceOscillator);
 			}
 			else if (State == State.DataLoaded)
 			{

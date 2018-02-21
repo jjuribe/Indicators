@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,14 +28,14 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// Average Directional Movement Rating quantifies momentum change in the ADX. 
-	/// It is calculated by adding two values of ADX (the current value and a value n periods back), 
-	/// then dividing by two. This additional smoothing makes the ADXR slightly less responsive than ADX. 
+	/// Average Directional Movement Rating quantifies momentum change in the ADX.
+	/// It is calculated by adding two values of ADX (the current value and a value n periods back),
+	/// then dividing by two. This additional smoothing makes the ADXR slightly less responsive than ADX.
 	/// The interpretation is the same as the ADX; the higher the value, the stronger the trend.
 	/// </summary>
 	public class ADXR : Indicator
 	{
-		private ADX		adx;
+		private ADX adx;
 
 		protected override void OnStateChange()
 		{
@@ -47,14 +47,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 14;
 				Interval					= 10;
 
-				AddPlot(Brushes.DarkCyan,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameADXR);
-				AddLine(Brushes.SlateBlue,		25,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+				AddPlot(Brushes.DarkCyan,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameADXR);
+				AddLine(Brushes.SlateBlue,	25,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddLine(Brushes.Goldenrod,	75,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
 			else if (State == State.DataLoaded)
 				adx = ADX(Period);
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			Value[0] = CurrentBar < Interval ? ((adx[0] + adx[CurrentBar]) / 2) : ((adx[0] + adx[Interval]) / 2);

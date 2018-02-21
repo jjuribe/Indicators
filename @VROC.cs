@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The VROC (Volume Rate-of-Change) shows whether or not a volume trend is 
-	/// developing in either an up or down direction. It is similar to the ROC 
+	/// The VROC (Volume Rate-of-Change) shows whether or not a volume trend is
+	/// developing in either an up or down direction. It is similar to the ROC
 	/// indicator, but is applied to volume instead.
 	/// </summary>
 	public class VROC : Indicator
@@ -49,10 +49,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 14;
 				Smooth						= 3;
 
-				AddPlot(Brushes.Goldenrod,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVROC);
+				AddPlot(Brushes.Goldenrod,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVROC);
 				AddLine(Brushes.DarkGray,	0,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
 			}
-			
+
 			else if (State == State.DataLoaded)
 			{
 				smaVolume	= new Series<double>(this);
@@ -67,7 +67,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				}
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double back 	= Volume[Math.Min(CurrentBar, Period - 1)];
@@ -80,7 +80,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Period
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Smooth", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int Smooth

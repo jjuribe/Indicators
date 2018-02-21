@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -50,10 +50,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				MAType						= 3;
 				Period						= 14;
 				EnvelopePercentage			= 1.5;
-				
-				AddPlot(Brushes.DodgerBlue,															NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
+
+				AddPlot(Brushes.DodgerBlue,																NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 				AddPlot(new Gui.Stroke(Brushes.DodgerBlue, DashStyleHelper.Dash, 1), PlotStyle.Line,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorMiddle);
-				AddPlot(Brushes.DodgerBlue,															NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+				AddPlot(Brushes.DodgerBlue,																NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 			}
 			else if (State == State.DataLoaded)
 			{
@@ -65,7 +65,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				wma		= WMA(Inputs[0], Period);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double maValue = 0;
@@ -73,7 +73,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			switch (MAType)
 			{
 				case 1:
-				{	
+				{
 					Middle[0] = maValue = ema[0];
 					break;
 				}
@@ -103,7 +103,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					break;
 				}
 			}
-			
+
 			Upper[0] = maValue + (maValue * EnvelopePercentage / 100);
 			Lower[0] = maValue - (maValue * EnvelopePercentage / 100);
 		}
@@ -113,14 +113,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "EnvelopePercentage", GroupName = "NinjaScriptParameters", Order = 0)]
 		public double EnvelopePercentage
 		{ get; set; }
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Lower
 		{
 			get { return Values[2]; }
 		}
-		
+
 		[Range(1, 6), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "MAType", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int MAType
@@ -132,12 +132,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[1]; }
 		}
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 2)]
 		public int Period
 		{ get; set; }
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Upper

@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// This indicator returns 1 when we have n of consecutive bars down, otherwise returns 0. 
-	/// A down bar is defined as a bar where the close is below the open and the bars makes a 
+	/// This indicator returns 1 when we have n of consecutive bars down, otherwise returns 0.
+	/// A down bar is defined as a bar where the close is below the open and the bars makes a
 	/// lower high and a lower low. You can adjust the specific requirements with the indicator options.
 	/// </summary>
 	public class NBarsDown : Indicator
@@ -49,7 +49,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(new Stroke(Brushes.Crimson, 2), PlotStyle.Bar, NinjaTrader.Custom.Resource.NBarsDownTrigger);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar < BarCount)
@@ -71,7 +71,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					if (!(Close[i] < Close[i + 1]))
 						break;
 
-					if (BarDown && !(Close[i] < Open[i])) 
+					if (BarDown && !(Close[i] < Open[i]))
 						break;
 
 					if (LowerHigh && !(High[i] < High[i + 1]))
@@ -90,17 +90,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "BarCount", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int BarCount
 		{ get; set; }
-		
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "BarDown", GroupName = "NinjaScriptParameters", Order = 1)]
 		public bool BarDown
 		{ get; set; }
-		
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "LowerHigh", GroupName = "NinjaScriptParameters", Order = 2)]
 		public bool LowerHigh
 		{ get; set; }
-		
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "LowerLow", GroupName = "NinjaScriptParameters", Order = 3)]
 		public bool LowerLow

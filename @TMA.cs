@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -52,13 +52,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{
 				p1 = 0;
 				p2 = 0;
-				if ((Period & 1) == 0) 
+				if ((Period & 1) == 0)
 				{
 					// Even period
 					p1 = Period / 2;
 					p2 = p1 + 1;
-				} 
-				else 
+				}
+				else
 				{
 					// Odd period
 					p1 = (Period + 1) / 2;
@@ -80,7 +80,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof (Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
-		public int Period 
+		public int Period
 		{ get; set; }
 
 		#endregion

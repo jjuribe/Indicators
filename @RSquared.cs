@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -43,7 +43,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double sumY2;
 		private double denominator;
 		private double r;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -54,11 +54,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 8;
 				IsOverlay					= false;
 
-				AddPlot(Brushes.Crimson,					NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRSquared);
-				AddLine(Brushes.SlateBlue,		0.2,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+				AddPlot(Brushes.Crimson,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRSquared);
+				AddLine(Brushes.SlateBlue,	0.2,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddLine(Brushes.Goldenrod,	0.75,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
-			
+
 			else if (State == State.Configure)
 				priorSumXY = priorSumY = priorSumY2 = sumX = sumXY = sumX2 = sumY2 = denominator = 0;
 		}

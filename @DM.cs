@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -30,8 +30,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 	/// <summary>
 	/// Directional Movement (DM). This is the same indicator as the ADX,
 	/// with the addition of the two directional movement indicators +DI
-	/// and -DI. +DI and -DI measure upward and downward momentum. A buy 
-	/// signal is generated when +DI crosses -DI to the upside. 
+	/// and -DI. +DI and -DI measure upward and downward momentum. A buy
+	/// signal is generated when +DI crosses -DI to the upside.
 	/// A sell signal is generated when -DI crosses +DI to the downside.
 	/// </summary>
 	public class DM : Indicator
@@ -42,7 +42,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Series<double> sumDmMinus;
 		private Series<double> sumTr;
 		private Series<double> tr;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -55,22 +55,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(new Stroke(Brushes.DarkSeaGreen, 2),	PlotStyle.Line,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameADX);
 				AddPlot(Brushes.DodgerBlue,										NinjaTrader.Custom.Resource.DMPlusDI);
 				AddPlot(Brushes.Crimson,										NinjaTrader.Custom.Resource.DMMinusDI);
-				
-				AddLine(Brushes.DarkCyan,					25,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
-				AddLine(Brushes.DarkCyan,				75,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
+
+				AddLine(Brushes.DarkCyan,						25,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+				AddLine(Brushes.DarkCyan,						75,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
-			
+
 			else if (State == State.DataLoaded)
 			{
-				dmPlus 		= new Series<double>(this);
-				dmMinus 	= new Series<double>(this);
-				sumDmPlus 	= new Series<double>(this);
+				dmPlus		= new Series<double>(this);
+				dmMinus		= new Series<double>(this);
+				sumDmPlus	= new Series<double>(this);
 				sumDmMinus	= new Series<double>(this);
-				sumTr 		= new Series<double>(this);
-				tr 			= new Series<double>(this);
+				sumTr		= new Series<double>(this);
+				tr			= new Series<double>(this);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double high0		= High[0];
@@ -82,19 +82,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tr[0]			= trueRange;
 				dmPlus[0]		= 0;
 				dmMinus[0]		= 0;
-				sumTr[0] 		= tr[0];
+				sumTr[0]		= tr[0];
 				sumDmPlus[0]	= dmPlus[0];
 				sumDmMinus[0]	= dmMinus[0];
-				Value[0]		= 50;
+				ADXPlot[0]		= 50;
 			}
 			else
 			{
 				double low1			= Low[1];
 				double high1		= High[1];
 				double close1		= Close[1];
-				
-				tr[0] 				= Math.Max(Math.Abs(low0 - close1), Math.Max(trueRange, Math.Abs(high0 - close1)));
-				dmPlus[0] 			= high0 - high1 > low1 - low0 ? Math.Max(high0 - high1, 0) : 0;
+
+				tr[0]				= Math.Max(Math.Abs(low0 - close1), Math.Max(trueRange, Math.Abs(high0 - close1)));
+				dmPlus[0]			= high0 - high1 > low1 - low0 ? Math.Max(high0 - high1, 0) : 0;
 				dmMinus[0]			= low1 - low0 > high0 - high1 ? Math.Max(low1 - low0, 0) : 0;
 
 				double sumDmPlus1	= sumDmPlus[1];
@@ -103,43 +103,50 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				if (CurrentBar < Period)
 				{
-					sumTr[0] 		= sumTr1 + tr[0];
+					sumTr[0]		= sumTr1 + tr[0];
 					sumDmPlus[0]	= sumDmPlus1 + dmPlus[0];
 					sumDmMinus[0]	= sumDmMinus1 + dmMinus[0];
 				}
 				else
 				{
-					sumTr[0] 		= sumTr1 - sumTr[1] / Period + tr[0];
-					sumDmPlus[0] 	= sumDmPlus1 - sumDmPlus1 / Period + dmPlus[0];
+					sumTr[0]		= sumTr1 - sumTr[1] / Period + tr[0];
+					sumDmPlus[0]	= sumDmPlus1 - sumDmPlus1 / Period + dmPlus[0];
 					sumDmMinus[0]	= sumDmMinus1 - sumDmMinus1 / Period + dmMinus[0];
 				}
 
 				double diPlus	= 100 * (sumTr[0] == 0 ? 0 : sumDmPlus[0] / sumTr[0]);
 				double diMinus	= 100 * (sumTr[0] == 0 ? 0 : sumDmMinus[0] / sumTr[0]);
-				double diff 	= Math.Abs(diPlus - diMinus);
-				double sum 		= diPlus + diMinus;
+				double diff		= Math.Abs(diPlus - diMinus);
+				double sum		= diPlus + diMinus;
 
-				Value[0] 		= sum == 0 ? 50 : ((Period - 1) * Value[1] + 100 * diff / sum) / Period;
-				DiPlus[0] 		= diPlus;
+				ADXPlot[0]		= sum == 0 ? 50 : ((Period - 1) * ADXPlot[1] + 100 * diff / sum) / Period;
+				DiPlus[0]		= diPlus;
 				DiMinus[0]		= diMinus;
 			}
 		}
 
 		#region Properties
-        [Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
-        [XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
-        public Series<double> DiPlus
-        {
-            get { return Values[1]; }
-        }
+		[Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
+		[XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
+		public Series<double> ADXPlot
+		{
+			get { return Values[0]; }
+		}
 
-        [Browsable(false)]	
-        [XmlIgnore()]		
-        public Series<double> DiMinus
-        {
-            get { return Values[2]; }
-        }
-		
+		[Browsable(false)]
+		[XmlIgnore()]
+		public Series<double> DiPlus
+		{
+			get { return Values[1]; }
+		}
+
+		[Browsable(false)]
+		[XmlIgnore()]
+		public Series<double> DiMinus
+		{
+			get { return Values[2]; }
+		}
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Period

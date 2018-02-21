@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,13 +28,13 @@ using SharpDX.Direct2D1;
 using Point = System.Windows.Point;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class RangeCounter : Indicator
 	{
 		private bool	isRangeDerivate;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)

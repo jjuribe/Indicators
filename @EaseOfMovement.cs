@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -26,19 +26,19 @@ using NinjaTrader.NinjaScript.DrawingTools;
 
 // This namespace holds indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
-{	
+{
 	/// <summary>
 	/// The Ease of Movement (EMV) indicator emphasizes days in which the stock is moving
-	///  easily and minimizes the days in which the stock is finding it difficult to move. 
+	///  easily and minimizes the days in which the stock is finding it difficult to move.
 	/// A buy signal is generated when the EMV crosses above zero, a sell signal when it
-	///  crosses below zero. When the EMV hovers around zero, then there are small price 
+	///  crosses below zero. When the EMV hovers around zero, then there are small price
 	/// movements and/or high volume, which is to say, the price is not moving easily.
 	/// </summary>
 	public class EaseOfMovement : Indicator
 	{
 		private EMA				ema;
 		private Series<double>	emv;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -67,7 +67,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				}
 				}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar == 0)

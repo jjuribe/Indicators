@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The PPO (Percentage Price Oscillator) is based on two moving averages expressed as 
-	/// a percentage. The PPO is found by subtracting the longer MA from the shorter MA and 
+	/// The PPO (Percentage Price Oscillator) is based on two moving averages expressed as
+	/// a percentage. The PPO is found by subtracting the longer MA from the shorter MA and
 	/// then dividing the difference by the longer MA.
 	/// </summary>
 	public class PPO : Indicator
@@ -48,8 +48,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Slow						= 26;
 				Smooth						= 9;
 
-				AddPlot(Brushes.DimGray,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorDefault);
-				AddPlot(Brushes.Crimson,			NinjaTrader.Custom.Resource.PPOSmoothed);
+				AddPlot(Brushes.DimGray,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorDefault);
+				AddPlot(Brushes.Crimson,		NinjaTrader.Custom.Resource.PPOSmoothed);
 				AddLine(Brushes.DarkGray,	0,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
 			}
 			else if (State == State.DataLoaded)
@@ -58,14 +58,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 				emaSlow = EMA(Slow);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double emaSlow0		= emaSlow[0];
 			Default[0] 			= 100 * ((emaFast[0] - emaSlow0) / emaSlow0);
 			Smoothed[0]			= EMA(Values[0], Smooth)[0];
 		}
-		
+
 		#region Properties
 		[Browsable(false)]
 		[XmlIgnore()]
@@ -88,7 +88,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Smooth", GroupName = "NinjaScriptParameters", Order = 2)]
 		public int Smooth
 		{ get; set; }
-				
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Smoothed

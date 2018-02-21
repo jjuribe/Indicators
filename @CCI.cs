@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Commodity Channel Index (CCI) measures the variation of a security's price 
-	/// from its statistical mean. High values show that prices are unusually high 
+	/// The Commodity Channel Index (CCI) measures the variation of a security's price
+	/// from its statistical mean. High values show that prices are unusually high
 	/// compared to average prices whereas low values indicate that prices are unusually low.
 	/// </summary>
 	public class CCI : Indicator
@@ -45,7 +45,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive	= true;
 				Period						= 14;
 
-				AddPlot(Brushes.Goldenrod,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameCCI);
+				AddPlot(Brushes.Goldenrod,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameCCI);
 				AddLine(Brushes.DarkGray,	200,	NinjaTrader.Custom.Resource.CCILevel2);
 				AddLine(Brushes.DarkGray,	100,	NinjaTrader.Custom.Resource.CCILevel1);
 				AddLine(Brushes.DarkGray,	0,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);

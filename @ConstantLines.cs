@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -49,13 +49,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsChartOnly					= true;
 				DisplayInDataBox			= false;
 
-				AddPlot(new Stroke(Brushes.DodgerBlue),		PlotStyle.HLine, NinjaTrader.Custom.Resource.ConstantLines1);
-				AddPlot(new Stroke(Brushes.DarkCyan),		PlotStyle.HLine, NinjaTrader.Custom.Resource.ConstantLines2);
+				AddPlot(new Stroke(Brushes.DodgerBlue),	PlotStyle.HLine, NinjaTrader.Custom.Resource.ConstantLines1);
+				AddPlot(new Stroke(Brushes.DarkCyan),	PlotStyle.HLine, NinjaTrader.Custom.Resource.ConstantLines2);
 				AddPlot(new Stroke(Brushes.SlateBlue),	PlotStyle.HLine, NinjaTrader.Custom.Resource.ConstantLines3);
-				AddPlot(new Stroke(Brushes.Goldenrod),	PlotStyle.HLine, NinjaTrader.Custom.Resource.ConstantLines4);	
+				AddPlot(new Stroke(Brushes.Goldenrod),	PlotStyle.HLine, NinjaTrader.Custom.Resource.ConstantLines4);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (Line1Value != 0) Line1[0] = Line1Value;
@@ -66,52 +66,52 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		#region Properties
 		[Browsable(false)]	// This line prevents the data series from being displayed in the indicator properties dialog, do not remove
-        [XmlIgnore()]		// This line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
-        public Series<double> Line1
-        {
-            get { return Values[0]; }
-        }
+		[XmlIgnore()]		// This line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
+		public Series<double> Line1
+		{
+			get { return Values[0]; }
+		}
 
-        [Browsable(false)]	
-        [XmlIgnore()]		
-        public Series<double> Line2
-        {
-            get { return Values[1]; }
-        }
+		[Browsable(false)]
+		[XmlIgnore()]
+		public Series<double> Line2
+		{
+			get { return Values[1]; }
+		}
 
-        [Browsable(false)]	
-        [XmlIgnore()]		
-        public Series<double> Line3
-        {
-            get { return Values[2]; }
-        }
-		
-		[Browsable(false)]	
-        [XmlIgnore()]		
-        public Series<double> Line4
-        {
-            get { return Values[3]; }
-        }
-		
+		[Browsable(false)]
+		[XmlIgnore()]
+		public Series<double> Line3
+		{
+			get { return Values[2]; }
+		}
+
+		[Browsable(false)]
+		[XmlIgnore()]
+		public Series<double> Line4
+		{
+			get { return Values[3]; }
+		}
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Line1Value", GroupName = "NinjaScriptParameters", Order = 0)]
-        public double Line1Value
-        { get; set; }
-		
+		public double Line1Value
+		{ get; set; }
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Line2Value", GroupName = "NinjaScriptParameters", Order = 1)]
-        public double Line2Value
-        { get; set; }
-		
+		public double Line2Value
+		{ get; set; }
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Line3Value", GroupName = "NinjaScriptParameters", Order = 2)]
-        public double Line3Value
-        { get; set; }
-		
+		public double Line3Value
+		{ get; set; }
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Line4Value", GroupName = "NinjaScriptParameters", Order = 3)]
-        public double Line4Value
-        { get; set; }
+		public double Line4Value
+		{ get; set; }
 		#endregion
 	}
 }

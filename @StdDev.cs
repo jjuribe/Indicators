@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,9 +28,9 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// Standard Deviation is a statistical measure of volatility. 
-	/// Standard Deviation is typically used as a component of other indicators, 
-	/// rather than as a stand-alone indicator. For example, Bollinger Bands are 
+	/// Standard Deviation is a statistical measure of volatility.
+	/// Standard Deviation is typically used as a component of other indicators,
+	/// rather than as a stand-alone indicator. For example, Bollinger Bands are
 	/// calculated by adding a security's Standard Deviation to a moving average.
 	/// </summary>
 	public class StdDev : Indicator

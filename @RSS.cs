@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -38,7 +38,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private SMA				sma;
 		private Series<double>	spread;
 		private Series<double>	rs;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -50,7 +50,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				EMA2						= 40;
 				Length						= 5;
 
-				AddPlot(Brushes.DarkCyan,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRSS);
+				AddPlot(Brushes.DarkCyan,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRSS);
 				AddLine(Brushes.DarkGray,	20,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddLine(Brushes.DarkGray,	80,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
@@ -64,11 +64,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 				sma		= SMA(rs, 5);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			spread[0]	= ema1[0] - ema2[0];
-			rs[0] 		= rsi[0];	
+			rs[0] 		= rsi[0];
 			Value[0] 	= sma[0];
 		}
 
@@ -77,12 +77,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "EMA1", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int EMA1
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "EMA2", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int EMA2
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Length", GroupName = "NinjaScriptParameters", Order = 2)]
 		public int Length

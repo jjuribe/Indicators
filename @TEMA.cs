@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -35,7 +35,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private EMA ema1;
 		private EMA ema2;
 		private EMA ema3;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -52,10 +52,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{
 				ema1 = EMA(Inputs[0], Period);
 				ema2 = EMA(ema1, Period);
-				ema3 = EMA(ema2, Period);	
+				ema3 = EMA(ema2, Period);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			Value[0] = 3 * ema1[0] - 3 * ema2[0] + ema3[0];

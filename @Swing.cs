@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -34,14 +34,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public class Swing : Indicator
 	{
 		private int			constant;
-		private double		currentSwingHigh; 
-		private double		currentSwingLow; 
+		private double		currentSwingHigh;
+		private double		currentSwingLow;
 		private ArrayList	lastHighCache;
 		private double		lastSwingHighValue;
 		private ArrayList	lastLowCache;
 		private double		lastSwingLowValue;
 		private int			saveCurrentBar;
-		
+
 		private Series<double> swingHighSeries;
 		private Series<double> swingHighSwings;
 		private Series<double> swingLowSeries;
@@ -65,8 +65,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			else if (State == State.Configure)
 			{
-				currentSwingHigh	= 0; 
-				currentSwingLow		= 0; 
+				currentSwingHigh	= 0;
+				currentSwingLow		= 0;
 				lastSwingHighValue	= 0;
 				lastSwingLowValue	= 0;
 				saveCurrentBar		= -1;
@@ -83,7 +83,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				swingLowSwings	= new Series<double>(this);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double high0		= (Input is Indicator || Input is Series<double>) ? Input[0] : High[0];
@@ -91,6 +91,26 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double close0		= (Input is Indicator || Input is Series<double>) ? Input[0] : Close[0];
 			double highStrength	= High[Math.Min(Strength, CurrentBar)];
 			double lowStrength	= Low[Math.Min(Strength, CurrentBar)];
+
+			if (BarsArray[0].BarsType.IsRemoveLastBarSupported && CurrentBar < saveCurrentBar)
+			{
+				currentSwingHigh			= SwingHighPlot.IsValidDataPoint(0) ? SwingHighPlot[0] : 0;
+				currentSwingLow				= SwingLowPlot.IsValidDataPoint(0) ? SwingLowPlot[0] : 0;
+				lastSwingHighValue			= swingHighSeries[0];
+				lastSwingLowValue			= swingLowSeries[0];
+				swingHighSeries[Strength]	= 0;
+				swingLowSeries[Strength]	= 0;
+
+				lastHighCache.Clear();
+				lastLowCache.Clear();
+				for (int barsBack = Math.Min(CurrentBar, constant) - 1; barsBack >= 0; barsBack--)
+				{
+					lastHighCache.Add((Input is Indicator || Input is Series<double>) ? Input[barsBack] : High[barsBack]);
+					lastLowCache.Add((Input is Indicator || Input is Series<double>) ? Input[barsBack] : Low[barsBack]);
+				}
+				saveCurrentBar = CurrentBar;
+				return;
+			}
 
 			if (saveCurrentBar != CurrentBar)
 			{
@@ -122,7 +142,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					swingHighSwings[Strength] = isSwingHigh ? swingHighCandidateValue : 0.0;
 					if (isSwingHigh)
 						lastSwingHighValue = swingHighCandidateValue;
-		
+
 					if (isSwingHigh)
 					{
 						currentSwingHigh = swingHighCandidateValue;
@@ -135,7 +155,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 						SwingHighPlot[0] = close0;
 						SwingHighPlot.Reset();
 					}
-					else 
+					else
 						SwingHighPlot[0] = currentSwingHigh;
 
 					if (isSwingHigh)
@@ -143,8 +163,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 						for (int i=0; i<=Strength; i++)
 							swingHighSeries[i] = lastSwingHighValue;
 					}
-					else 
-					{ 
+					else
+					{
 						swingHighSeries[0] = lastSwingHighValue;
 					}
 				}
@@ -186,7 +206,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 							swingLowSeries[i] = lastSwingLowValue;
 					}
 					else
-					{ 
+					{
 						swingLowSeries[0] = lastSwingLowValue;
 					}
 				}
@@ -242,7 +262,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// <param name="instance"></param>
 		/// <param name="lookBackPeriod"></param>
 		/// <returns></returns>
-		public int SwingLowBar(int barsAgo, int instance, int lookBackPeriod) 
+		public int SwingLowBar(int barsAgo, int instance, int lookBackPeriod)
 		{
 			if (instance < 1)
 				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingLowBarInstanceGreaterEqual, GetType().Name, instance));
@@ -258,20 +278,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if (idx < 0)
 					return -1;
 				if (idx >= swingLowSwings.Count)
-					continue;				
+					continue;
 
 				if (swingLowSwings.GetValueAt(idx).Equals(0.0))
 					continue;
 
 				if (instance == 1) // 1-based, < to be save
-					return CurrentBar - idx;	
+					return CurrentBar - idx;
 
 				instance--;
 			}
-	
+
 			return -1;
 		}
-		
+
 		/// <summary>
 		/// Returns the number of bars ago a swing high occurred. Returns a value of -1 if a swing high is not found within the look back period.
 		/// </summary>
@@ -279,7 +299,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// <param name="instance"></param>
 		/// <param name="lookBackPeriod"></param>
 		/// <returns></returns>
-		public int SwingHighBar(int barsAgo, int instance, int lookBackPeriod) 
+		public int SwingHighBar(int barsAgo, int instance, int lookBackPeriod)
 		{
 			if (instance < 1)
 				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingHighBarInstanceGreaterEqual, GetType().Name, instance));
@@ -295,27 +315,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if (idx < 0)
 					return -1;
 				if (idx >= swingHighSwings.Count)
-					continue;				
+					continue;
 
-				if (swingHighSwings.GetValueAt(idx).Equals(0.0))			
+				if (swingHighSwings.GetValueAt(idx).Equals(0.0))
 					continue;
 
 				if (instance <= 1) // 1-based, < to be save
-					return CurrentBar - idx;	
+					return CurrentBar - idx;
 
 				instance--;
 			}
 
 			return -1;
 		}
-        #endregion
-		
+		#endregion
+
 		#region Properties
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Strength", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Strength
 		{ get; set; }
-		
+
 		/// <summary>
 		/// Gets the high swings.
 		/// </summary>
@@ -324,21 +344,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public Series<double> SwingHigh
 		{
 			get
-			{	
+			{
 				Update();
 				return swingHighSeries;
 			}
 		}
-		
+
 		private Series<double> SwingHighPlot
 		{
 			get
 			{
 				Update();
-				return Values[0]; 
+				return Values[0];
 			}
 		}
-		
+
 		/// <summary>
 		/// Gets the low swings.
 		/// </summary>
@@ -346,19 +366,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[XmlIgnore()]
 		public Series<double> SwingLow
 		{
-			get 
-			{ 
+			get
+			{
 				Update();
-				return swingLowSeries; 
+				return swingLowSeries;
 			}
 		}
 
 		private Series<double> SwingLowPlot
 		{
-			get 
+			get
 			{
 				Update();
-				return Values[1]; 
+				return Values[1];
 			}
 		}
 		#endregion

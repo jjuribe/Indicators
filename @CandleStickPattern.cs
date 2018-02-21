@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -24,7 +24,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class CandlestickPattern : Indicator
@@ -174,7 +174,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 						if (CurrentBar < 1 || (TrendStrength > 0 && !upTrend))
 							return;
 
-						if ((High[0] <= Close[1]) && (Low[0] >= Open[1]) && Open[0] <= Close[1] && Close[0] >= Open[1] 
+						if ((High[0] <= Close[1]) && (Low[0] >= Open[1]) && Open[0] <= Close[1] && Close[0] >= Open[1]
 							&& ((Close[0] >= Open[0] && Close[0] <= Open[0] + TickSize) || (Close[0] <= Open[0] && Close[0] >= Open[0] - TickSize)))
 						{
 							BarBrush		= downColor;
@@ -279,7 +279,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 						if (CurrentBar < 1 || (TrendStrength > 0 && !downTrend))
 							return;
 
-						if ((High[0] <= Open[1]) && (Low[0] >= Close[1]) && Open[0] >= Close[1] && Close[0] <= Open[1] 
+						if ((High[0] <= Open[1]) && (Low[0] >= Close[1]) && Open[0] >= Close[1] && Close[0] <= Open[1]
 							&& ((Close[0] >= Open[0] && Close[0] <= Open[0] + TickSize) || (Close[0] <= Open[0] && Close[0] >= Open[0] - TickSize)))
 						{
 							if (ChartBars != null)
@@ -955,7 +955,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				upTrendOccurence++;
 			}
 
-			// Calculate down trend line	
+			// Calculate down trend line
 			int downTrendStartBarsAgo	= 0;
 			int downTrendEndBarsAgo 	= 0;
 			int downTrendOccurence 		= 1;

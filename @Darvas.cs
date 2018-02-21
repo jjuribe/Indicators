@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -24,7 +24,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class Darvas : Indicator
@@ -42,9 +42,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		private int				prevCurrentBar			= -1;
 		private Series<double>	boxBottomSeries;
-		private Series<double>	boxTopSeries;	
-		private Series<double>	currentBarHighSeries;	
-		private Series<double>	currentBarLowSeries;	
+		private Series<double>	boxTopSeries;
+		private Series<double>	currentBarHighSeries;
+		private Series<double>	currentBarLowSeries;
 		private Series<int>		startBarActBoxSeries;
 		private Series<int>		stateSeries;
 
@@ -53,8 +53,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (State == State.SetDefaults)
 			{
 				Description	= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionDarvas;
-				Name		= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameDarvas;		
-				IsOverlay	= true;		
+				Name		= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameDarvas;
+				IsOverlay	= true;
 				Calculate	= Calculate.OnBarClose;
 
 				AddPlot(new Stroke(Brushes.Crimson,		2), PlotStyle.Square, NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);

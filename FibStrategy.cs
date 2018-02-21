@@ -121,12 +121,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 			optimizeRuns( stops: false,  targets: false,  buffer: 0.25 );
 			
 			if ( !inLongTrade ) { longSignal = entrySignal(longEntry: true); }
-			showLongTrades();
-			manageLongTrade();
+			showLongTrades(showCount: false, showMarkers: false);
+			manageLongTrade(showCount: false, showMarkers: false);
 			
 			if ( !inShortTrade ) { shortSignal = entrySignal(longEntry: false); }
-			showShortTrades();
-			manageShortTrade();
+			showShortTrades(showCount: false, showMarkers: false);
+			manageShortTrade(showCount: false, showMarkers: false);
 			/// God I commit this work to you. I pledge none to margarie and 20% to your kingdom
 			/// [X] entry @ fib 	  Trades 52   Win %62  Gains 60
 			/// [X] add 3 trade limit Trades:22   Win %73  Gains:50.0
@@ -142,13 +142,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 		}
 		
-		private void showLongTrades() {
+		private void showLongTrades(bool showCount, bool showMarkers) {
 			if ( tradesToday == 3 ) {return;}
 			if (!inLongTrade  && longSignal) {
+				//Share("EcoMail", "Long NQ");
+				SendMail("3103824522@tmomail.com", "Trade Alert", "Buy NQ");
+				PlaySound(NinjaTrader.Core.Globals.InstallDir + @"\sounds\OrderPending.wav");
 				tradesToday++ ;
 				longEntryActual = longEntryPrice;
-				Draw.ArrowUp(this, "LE"+CurrentBar, true, 0, longEntryActual, Brushes.Lime);
-				Draw.Text(this, "letoday"+CurrentBar, tradesToday.ToString(), 0, Low[0] -2, Brushes.DodgerBlue);
+				if ( showMarkers) { Draw.ArrowUp(this, "LE"+CurrentBar, true, 0, longEntryActual, Brushes.Lime);}
+				if ( showCount ) {Draw.Text(this, "letoday"+CurrentBar, tradesToday.ToString(), 0, Low[0] -2, Brushes.DodgerBlue); }
 				inLongTrade = true;
 				barsSinceEntryL = 0;
 				mpe = 0; mae = 0;
@@ -171,43 +174,46 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 		}
 		
-		private void manageLongTrade() {
+		private void manageLongTrade(bool showCount, bool showMarkers)  {
 			if ( !inLongTrade ) { barsSinceEntryL = 0; return; }
 			if ( barsSinceEntryL >= 1 ) { 
-				Draw.Text(this, "bsel"+CurrentBar, barsSinceEntryL.ToString(), 0, Low[0] -1, Brushes.Cyan);
+				if ( showCount ) { Draw.Text(this, "bsel"+CurrentBar, barsSinceEntryL.ToString(), 0, Low[0] -1, Brushes.Cyan); }
 				var stopPrice = longEntryActual - stopSize;
 				var targetPrice = longEntryActual + targetSize;
 				/// Stopped out
 				if (Low[0] <= stopPrice ) {
 					inLongTrade = false;
-					Draw.Dot(this, "Stop"+CurrentBar, true, 0, stopPrice, Brushes.Crimson);
+					if ( showMarkers) { Draw.Dot(this, "Stop"+CurrentBar, true, 0, stopPrice, Brushes.Crimson); }
 					totalLoss += stopSize;
 					lossCount += 1;
-					calcStats();
+					calcStats(isOn: false);
 					barsSinceEntryL = 0;
 					return;
 				}
 				/// target hit
 				if (High[0] >= targetPrice ) {
 					inLongTrade = false;
-					Draw.Dot(this, "Target"+CurrentBar, true, 0, targetPrice, Brushes.Lime);
+					if ( showMarkers) { Draw.Dot(this, "Target"+CurrentBar, true, 0, targetPrice, Brushes.Lime); }
 					totalGain += targetSize;
 					winCount += 1;
 					barsSinceEntryL = 0;
-					calcStats();
+					calcStats(isOn: false);
 				}
 			}
 			barsSinceEntryL++;
 		}
 		
-		private void showShortTrades() {
+		private void showShortTrades(bool showCount, bool showMarkers) {
 			
 			if ( tradesToday == 3 ) {return;} // same results -  if ( winsToday == 2 ) {return;}
 			if (!inShortTrade  && shortSignal) {
+				//Share("EcoMail", "Short NQ");
+				SendMail("3103824522@tmomail.com", "Trade Alert", "Buy NQ");
+				PlaySound(NinjaTrader.Core.Globals.InstallDir + @"\sounds\OrderPending.wav");
 				tradesToday++ ;
 				shortEntryActual = shortEntryPrice;
-				Draw.ArrowDown(this, "SE"+CurrentBar, true, 0, shortEntryActual, Brushes.Crimson);
-				Draw.Text(this, "sttoday"+CurrentBar, tradesToday.ToString(), 0, High[0] +2, Brushes.Red);
+				if ( showMarkers) { Draw.ArrowDown(this, "SE"+CurrentBar, true, 0, shortEntryActual, Brushes.Crimson); }
+				if ( showCount ) { Draw.Text(this, "sttoday"+CurrentBar, tradesToday.ToString(), 0, High[0] +2, Brushes.Red); }
 				inShortTrade = true;
 				barsSinceEntryS = 0;
 				
@@ -235,10 +241,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 		}
 				
-		private void manageShortTrade() {
+		private void manageShortTrade(bool showCount, bool showMarkers)  {
 			if ( !inShortTrade ) { barsSinceEntryS = 0; return; }
 			if ( barsSinceEntryS >= 1 ) { 
-			Draw.Text(this, "bses"+CurrentBar, barsSinceEntryS.ToString(), 0, High[0] +1, Brushes.Magenta);
+				if ( showCount ) {  Draw.Text(this, "bses"+CurrentBar, barsSinceEntryS.ToString(), 0, High[0] +1, Brushes.Magenta); }
 				var stopPrice = shortEntryActual + stopSize;
 				var targetPrice = shortEntryActual - targetSize;
 				//Draw.Text(this, "StopLine"+CurrentBar, "=", 0, stopPrice);
@@ -247,21 +253,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 				/// Stopped out
 				if (High[0] >= stopPrice ) {
 					inShortTrade = false;
-					Draw.Dot(this, "Stop"+CurrentBar, true, 0, stopPrice, Brushes.Crimson);
+					if ( showMarkers) { Draw.Dot(this, "Stop"+CurrentBar, true, 0, stopPrice, Brushes.Crimson); }
 					totalLoss += stopSize;
 					lossCount += 1;
-					calcStats();
+					calcStats(isOn: false);;
 					barsSinceEntryS = 0;
 					return;
 				}
 				/// target hit
 				if (Low[0] <= targetPrice ) {
 					inShortTrade = false;
-					Draw.Dot(this, "Target"+CurrentBar, true, 0, targetPrice, Brushes.Lime);
+					if ( showMarkers) { Draw.Dot(this, "Target"+CurrentBar, true, 0, targetPrice, Brushes.Lime); }
 					totalGain += targetSize;
 					winCount += 1;
 					barsSinceEntryS = 0;
-					calcStats();
+					calcStats(isOn: false);
 				}
 			}
 			barsSinceEntryS++;
@@ -280,7 +286,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				}
 		}
 		
-		private void calcStats() {
+		private void calcStats(bool isOn) {
+			if ( !isOn ) { return; }
 			var message = "";
 			var screenMessage = "\n";
 			message += daycount.ToString();

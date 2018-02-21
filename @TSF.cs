@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The TSF (Time Series Forecast) calculates probable future values for the price 
+	/// The TSF (Time Series Forecast) calculates probable future values for the price
 	/// by fitting a linear regression line over a given number of price bars and following
 	///  that line forward into the future. A linear regression line is a straight line which
 	///  is as close to all of the given price points as possible. Also see the Linear Regression indicator.
@@ -61,10 +61,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Forecast					= 3;
 
 				AddPlot(Brushes.Goldenrod, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameTSF);
-			}	
+			}
 			else if (State == State.Configure)
 			{
-				avg	= divisor = intercept = myPeriod = priorSumXY 
+				avg	= divisor = intercept = myPeriod = priorSumXY
 					= priorSumY = slope = sumX = sumX2 = sumY = sumXY = 0;
 			}
 			else if (State == State.DataLoaded)
@@ -86,7 +86,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					sumXY += count * Input[count];
 
 				y[0] = Input[0];
-	
+
 				double slope = ((double)Period * sumXY - sumX * SUM(y, Period)[0]) / divisor;
 				double intercept = (SUM(y, Period)[0] - slope * sumX) / Period;
 
@@ -113,17 +113,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Value[0] = CurrentBar == 0 ? input0 : intercept + slope * ((myPeriod - 1) + Forecast);
 			}
 		}
-	
+
 
 		#region Properties
 		[Range(-10, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Forecast", GroupName = "NinjaScriptParameters", Order = 0)]
-		public int Forecast 
+		public int Forecast
 		{ get; set; }
 
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 1)]
-		public int Period 
+		public int Period
 		{ get; set; }
 		#endregion
 	}

@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The MACD (Moving Average Convergence/Divergence) is a trend following momentum indicator 
+	/// The MACD (Moving Average Convergence/Divergence) is a trend following momentum indicator
 	/// that shows the relationship between two moving averages of prices.
 	/// </summary>
 	public class MACD : Indicator
@@ -54,9 +54,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Smooth						= 9;
 
 				AddPlot(Brushes.DarkCyan,									NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameMACD);
-				AddPlot(Brushes.Crimson,								NinjaTrader.Custom.Resource.NinjaScriptIndicatorAvg);
+				AddPlot(Brushes.Crimson,									NinjaTrader.Custom.Resource.NinjaScriptIndicatorAvg);
 				AddPlot(new Stroke(Brushes.DodgerBlue, 2),	PlotStyle.Bar,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorDiff);
-				AddLine(Brushes.DarkGray,				0,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
+				AddLine(Brushes.DarkGray,					0,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
 			}
 			else if (State == State.Configure)
 			{
@@ -79,7 +79,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double input0	= Input[0];
 
 			if (CurrentBar == 0)
-			{	
+			{
 				fastEma[0]		= input0;
 				slowEma[0]		= input0;
 				Value[0]		= 0;
@@ -115,7 +115,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[0]; }
 		}
-		
+
 		[Browsable(false)]
 		[XmlIgnore]
 		public Series<double> Diff

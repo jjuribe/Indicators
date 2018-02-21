@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// This indicator returns 1 when we have n of consecutive bars up, otherwise returns 0. 
-	/// An up bar is defined as a bar where the close is above the open and the bars makes a higher 
+	/// This indicator returns 1 when we have n of consecutive bars up, otherwise returns 0.
+	/// An up bar is defined as a bar where the close is above the open and the bars makes a higher
 	/// high and a higher low. You can adjust the specific requirements with the indicator options.
 	/// </summary>
 	public class NBarsUp : Indicator
@@ -49,7 +49,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(new Stroke(Brushes.DarkCyan, 2), PlotStyle.Bar, NinjaTrader.Custom.Resource.NinjaScriptIndicatorDiff);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar < BarCount)
@@ -71,7 +71,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					if (!(Close[i] > Close[i + 1]))
 						break;
 
-					if (BarUp && !(Close[i] > Open[i])) 
+					if (BarUp && !(Close[i] > Open[i]))
 						break;
 
 					if (HigherHigh && !(High[i] > High[i + 1]))
@@ -85,23 +85,23 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 		}
 
-		
+
 		#region Properties
 		[Range(2, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "BarCount", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int BarCount
 		{ get; set; }
-		
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "BarUp", GroupName = "NinjaScriptParameters", Order = 1)]
 		public bool BarUp
 		{ get; set; }
-		
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "HigherHigh", GroupName = "NinjaScriptParameters", Order = 2)]
 		public bool HigherHigh
 		{ get; set; }
-		
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "HigherLow", GroupName = "NinjaScriptParameters", Order = 3)]
 		public bool HigherLow

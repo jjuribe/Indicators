@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// Indicates the current buying or selling pressure as a perecentage. 
+	/// Indicates the current buying or selling pressure as a perecentage.
 	/// This is a tick by tick indicator. If 'Calculate on bar close' is true, the indicator values will always be 100.
 	/// </summary>
 	public class BuySellPressure : Indicator
@@ -47,8 +47,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Calculate			= Calculate.OnEachTick;
 				DrawOnPricePanel	= false;
 				IsOverlay			= false;
-				
-				AddPlot(Brushes.DarkCyan,	NinjaTrader.Custom.Resource.BuySellPressureBuyPressure);
+
+				AddPlot(Brushes.DarkCyan,			NinjaTrader.Custom.Resource.BuySellPressureBuyPressure);
 				AddPlot(Brushes.Crimson,			NinjaTrader.Custom.Resource.BuySellPressureSellPressure);
 
 				AddLine(Brushes.DimGray,	75,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
@@ -75,7 +75,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				else if (e.Price <= e.Bid)
 				{
-					sells += e.Volume;	
+					sells += e.Volume;
 				}
 			}
 		}
@@ -108,7 +108,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[0]; }
 		}
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> SellPressure

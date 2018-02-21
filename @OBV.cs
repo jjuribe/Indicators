@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,9 +28,9 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// OBV (On Balance Volume) is a running total of volume. It shows if volume is flowing into 
-	/// or out of a security. When the security closes higher than the previous close, all 
-	/// of the day's volume is considered up-volume. When the security closes lower than the 
+	/// OBV (On Balance Volume) is a running total of volume. It shows if volume is flowing into
+	/// or out of a security. When the security closes higher than the previous close, all
+	/// of the day's volume is considered up-volume. When the security closes lower than the
 	/// previous close, all of the day's volume is considered down-volume.
 	/// </summary>
 	public class OBV : Indicator

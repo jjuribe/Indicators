@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The TSI (True Strength Index) is a momentum-based indicator, developed by William Blau. 
-	/// Designed to determine both trend and overbought/oversold conditions, the TSI is 
+	/// The TSI (True Strength Index) is a momentum-based indicator, developed by William Blau.
+	/// Designed to determine both trend and overbought/oversold conditions, the TSI is
 	/// applicable to intraday time frames as well as long term trading.
 	/// </summary>
 	public class TSI : Indicator
@@ -70,7 +70,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				slowEma		= new Series<double>(this);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar == 0)
@@ -96,12 +96,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof (Custom.Resource), Name = "Fast", GroupName = "NinjaScriptParameters", Order = 0)]
-		public int Fast 
+		public int Fast
 		{ get; set; }
 
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Slow", GroupName = "NinjaScriptParameters", Order = 1)]
-		public int Slow 
+		public int Slow
 		{ get; set; }
 		#endregion
 	}

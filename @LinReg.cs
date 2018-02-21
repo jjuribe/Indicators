@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -59,7 +59,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Configure)
 			{
-				avg	= divisor = intercept = myPeriod = priorSumXY 
+				avg	= divisor = intercept = myPeriod = priorSumXY
 					= priorSumY = slope = sumX = sumX2 = sumY = sumXY = 0;
 			}
 			else if (State == State.DataLoaded)

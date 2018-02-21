@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The CMO differs from other momentum oscillators such as Relative Strength Index (RSI) and Stochastics. 
+	/// The CMO differs from other momentum oscillators such as Relative Strength Index (RSI) and Stochastics.
 	/// It uses both up and down days data in the numerator of the calculation to measure momentum directly.
 	/// Primarily used to look for extreme overbought and oversold conditions, CMO can also be used to look for trends.
 	/// </summary>
@@ -38,7 +38,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Series<double>	up;
 		private SUM				sumDown;
 		private SUM				sumUp;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -50,7 +50,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 14;
 
 				AddPlot(Brushes.DodgerBlue, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameCMO);
-			}			
+			}
 			else if (State == State.DataLoaded)
 			{
 				down	= new Series<double>(this);
@@ -59,7 +59,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				sumUp	= SUM(up, Period);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar == 0)

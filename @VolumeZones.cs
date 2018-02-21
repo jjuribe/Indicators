@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -24,7 +24,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class VolumeZones : Indicator
@@ -48,6 +48,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionVolumeZones;
 				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVolumesZones;
 				Calculate					= Calculate.OnBarClose;
+				IsChartOnly					= true;
 				IsOverlay					= true;
 				DisplayInDataBox			= false;
 				PaintPriceMarkers			= false;
@@ -89,26 +90,26 @@ namespace NinjaTrader.NinjaScript.Indicators
 				highPrice	= Math.Max(highPrice, Bars.GetHigh(idx));
 				lowPrice	= Math.Min(lowPrice, Bars.GetLow(idx));
 			}
-			
+
 			int		volumeBarCount	= BarCount;
 			double	priceRange		= highPrice - lowPrice;
 			double	priceBoxSize	= priceRange / volumeBarCount;
 			double	volumeMax		= 0;
-		
+
 			// Pass 1: Fill all VolumeInfo structures with appropriate data
 			for (int i = 0; i < volumeBarCount; i++)
 			{
-				
+
 				double priceUpper = lowPrice + priceBoxSize * (i + 1);
 				double priceLower = lowPrice + priceBoxSize * i;
 
 				double priceVolumeUp   = 0;
 				double priceVolumeDown = 0;
-				
+
 				for (int idx = firstBar; idx <= lastBar; idx++)
 				{
 					double checkPrice;
-					
+
 					PriceSeries series = (Inputs[0] as PriceSeries);
 
 					switch (series.PriceType)
@@ -122,7 +123,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 						case PriceType.Weighted:	checkPrice = (Bars.GetHigh(idx) + Bars.GetLow(idx) + 2 * Bars.GetClose(idx)) / 4; break;
 						default:					checkPrice = Bars.GetClose(idx); break;
 					}
-					
+
 					if (checkPrice >= priceLower && checkPrice < priceUpper)
 					{
 						if (Bars.GetOpen(idx) < Bars.GetClose(idx))
@@ -138,7 +139,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				volumeMax = Math.Max(volumeMax, volumeInfo[i].total);
 			}
-			
+
 			// Pass 2: Paint the volume bars
 			for (int i = 0; i < Math.Min(volumeBarCount, lastBar - firstBar + 1); i++)
 			{
@@ -148,7 +149,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				int		yLower			= Convert.ToInt32(chartScale.GetYByValue(priceLower));
 				int		barWidthUp		= (int)((chartScale.Height / 2) * (volumeInfo[i].up / volumeMax));
 				int		barWidthDown	= (int)((chartScale.Height / 2) * (volumeInfo[i].down / volumeMax));
-					
+
 				SharpDX.RectangleF rect = new SharpDX.RectangleF(ChartPanel.X, yUpper, barWidthUp, Math.Abs(yUpper - yLower));
 				RenderTarget.FillRectangle(rect, brushUp);
 				RenderTarget.DrawRectangle(rect, brushUp);
@@ -196,7 +197,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "DownBarColor", Order = 3, GroupName = "NinjaScriptParameters")]
 		public Brush BarDownBrush
 		{ get; set; }
-		
+
 		[Browsable(false)]
 		public string BarColorDownSerialize
 		{
@@ -210,7 +211,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		[XmlIgnore]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "LineColor", Order = 5, GroupName = "NinjaScriptParameters")]
-		public Brush LineBrush 
+		public Brush LineBrush
 		{ get; set; }
 
 		[Browsable(false)]

@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 
@@ -29,7 +29,7 @@ using SharpDX.Direct2D1;
 using Point = System.Windows.Point;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class TickCounter : Indicator
@@ -55,7 +55,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double periodValue = (BarsPeriod.BarsPeriodType == BarsPeriodType.Tick) ? BarsPeriod.Value : BarsPeriod.BaseBarsPeriodValue;
 			double tickCount = ShowPercent ? CountDown ? (1 - Bars.PercentComplete) * 100 : Bars.PercentComplete * 100 : CountDown ? periodValue - Bars.TickCount : Bars.TickCount;
 
-			string tick1 = (BarsPeriod.BarsPeriodType == BarsPeriodType.Tick || (BarsPeriod.BarsPeriodType == BarsPeriodType.HeikenAshi && BarsPeriod.BaseBarsPeriodType == BarsPeriodType.Tick) ? ((CountDown
+			string tick1 = (BarsPeriod.BarsPeriodType == BarsPeriodType.Tick 
+						|| ((BarsPeriod.BarsPeriodType == BarsPeriodType.HeikenAshi || BarsPeriod.BarsPeriodType == BarsPeriodType.Volumetric) && BarsPeriod.BaseBarsPeriodType == BarsPeriodType.Tick) ? ((CountDown
 										? NinjaTrader.Custom.Resource.TickCounterTicksRemaining + tickCount : NinjaTrader.Custom.Resource.TickCounterTickCount + tickCount) + (ShowPercent ? "%" : ""))
 										: NinjaTrader.Custom.Resource.TickCounterBarError);
 

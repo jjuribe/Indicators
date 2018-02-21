@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// Directional Movement Index. Directional Movement Index is quite similiar 
-	/// to Welles Wilder's Relative Strength Index. The difference is the DMI 
+	/// Directional Movement Index. Directional Movement Index is quite similiar
+	/// to Welles Wilder's Relative Strength Index. The difference is the DMI
 	/// uses variable time periods (from 3 to 30) vs. the RSI's fixed periods.
 	/// </summary>
 	public class DMI : Indicator
@@ -76,7 +76,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Value[0]		= 0;
 			}
 			else
-			{	
+			{
 				double low1				= Low[1];
 				double High1			= High[1];
 				double close1			= Close[1];
@@ -87,10 +87,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				double smaTr0			= smaTr[0];
 				double smaDmMinus0		= smaDmMinus[0];
- 				double smaDmPlus0		= smaDmPlus[0];
+				double smaDmPlus0		= smaDmPlus[0];
 				double diMinus			= (smaTr0 == 0) ? 0 : smaDmMinus0 / smaTr0;
 				double diPlus			= (smaTr0 == 0) ? 0 : smaDmPlus0 / smaTr0;
-			
+
 				Value[0]				= (diPlus + diMinus == 0) ? 0 : (diPlus - diMinus) / (diPlus + diMinus);
 			}
 		}

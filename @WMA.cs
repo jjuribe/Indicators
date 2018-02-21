@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The WMA (Weighted Moving Average) is a Moving Average indicator that shows the average 
-	/// value of a security's price over a period of time with special emphasis on the more recent 
+	/// The WMA (Weighted Moving Average) is a Moving Average indicator that shows the average
+	/// value of a security's price over a period of time with special emphasis on the more recent
 	/// portions of the time period under analysis as opposed to the earlier.
 	/// </summary>
 	public class WMA : Indicator
@@ -44,7 +44,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (State == State.SetDefaults)
 			{
-				
+
 				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionWMA;
 				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameWMA;
 				IsOverlay					= true;

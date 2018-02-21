@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -47,8 +47,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private int				savedCurrentBar;
 		private StdDev			stdDevHigh;
 		private StdDev			stdDevLow;
-		
-		protected override void OnStateChange()	
+
+		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
 			{
@@ -61,7 +61,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(Brushes.Goldenrod,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRVI);
 				AddLine(Brushes.DarkGray,	50,	NinjaTrader.Custom.Resource.RVISignalLine);
 			}
-			
+
 			else if (State == State.Configure)
 			{
 				savedCurrentBar	= -1;
@@ -82,7 +82,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				}
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar == 0)

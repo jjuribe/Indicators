@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Accumulation/Distribution (AD) study attempts to quantify the amount of volume flowing into or 
+	/// The Accumulation/Distribution (AD) study attempts to quantify the amount of volume flowing into or
 	/// out of an instrument by identifying the position of the close of the period in relation to that period's high/low range.
 	/// </summary>
 	public class ADL : Indicator

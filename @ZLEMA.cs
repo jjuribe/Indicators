@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -35,7 +35,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double	k;
 		private int		lag;
 		private double	oneMinusK;
-	
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -55,12 +55,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 				lag			= (int) Math.Ceiling((Period - 1) / 2.0);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar < lag)
 				Value[0] = Input[0];
-			else 
+			else
 				Value[0] = k * (2 * Input[0] - Input[lag]) + oneMinusK * Value[1];
 		}
 

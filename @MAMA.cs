@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,10 +28,10 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The MAMA (MESA Adaptive Moving Average) was developed by John Ehlers. 
-	/// It adapts to price movement in a new and unique way. The adaptation is 
-	/// based on the Hilbert Transform Discriminator. The adavantage of this method 
-	/// features fast attack average and a slow decay average. The MAMA + the FAMA 
+	/// The MAMA (MESA Adaptive Moving Average) was developed by John Ehlers.
+	/// It adapts to price movement in a new and unique way. The adaptation is
+	/// based on the Hilbert Transform Discriminator. The adavantage of this method
+	/// features fast attack average and a slow decay average. The MAMA + the FAMA
 	/// (Following Adaptive Moving Average) lines only cross at major market reversals.
 	/// </summary>
 	public class MAMA : Indicator
@@ -46,7 +46,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Series<double>		q2;
 		private Series<double>	    re;
 		private Series<double>		smooth;
-	
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -57,7 +57,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsOverlay					= true;
 				IsSuspendedWhileInactive	= true;
 				SlowLimit					= 0.05;
-				
+
 				AddPlot(Brushes.Goldenrod,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorDefault);
 				AddPlot(Brushes.DodgerBlue,	NinjaTrader.Custom.Resource.MAMAFAMA);
 			}
@@ -91,13 +91,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 			smooth[0]		= (4 * Median[0] + 3 * Median[1] + 2 * Median[2] + Median[3]) / 10;
 			detrender[0]	= (0.0962 * smooth[0] + 0.5769 * smooth[2]
 								- 0.5769 * smooth[4] - 0.0962 * smooth[6]) * (0.075 * period1 + 0.54);
-			
+
 			// Compute InPhase and Quadrature components
 			q1[0]			= (0.0962 * detrender[0] + 0.5769 * detrender[2]
 								- 0.5769 * detrender[4] - 0.0962 * detrender[6]) * (0.075 * period1 + 0.54);
 			i1[0]			= detrender[3];
 			double i10		= i1[0];
-		
+
 			// Advance the phase of i1 and q1 by 90
 			double jI		= (0.0962 * i10 + 0.5769 * i1[2] - 0.5769 * i1[4] - 0.0962 * i1[6]) * (0.075 * period1 + 0.54);
 			double jQ		= (0.0962 * q1[0] + 0.5769 * q1[2] - 0.5769 * q1[4] - 0.0962 * q1[6]) * (0.075 * period1 + 0.54);

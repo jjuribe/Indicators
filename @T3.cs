@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -33,7 +33,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public class T3 : Indicator
 	{
 		private System.Collections.ArrayList seriesCollection;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -49,7 +49,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(Brushes.DarkCyan, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameT3);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (TCount == 1)
@@ -57,22 +57,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 				CalculateGD(Inputs[0], Values[0]);
 				return;
 			}
-				
+
 			if (seriesCollection == null)
 			{
 				seriesCollection = new System.Collections.ArrayList();
-				for (int i = 0; i < TCount - 1; i++) 
+				for (int i = 0; i < TCount - 1; i++)
 					seriesCollection.Add(new Series<double>(this));
 			}
-			
+
 			CalculateGD(Inputs[0], (Series<double>) seriesCollection[0]);
-			
-			for (int i = 0; i <= seriesCollection.Count - 2; i++) 
+
+			for (int i = 0; i <= seriesCollection.Count - 2; i++)
 				CalculateGD((Series<double>) seriesCollection[i], (Series<double>) seriesCollection[i + 1]);
-			
+
 			CalculateGD((Series<double>) seriesCollection[seriesCollection.Count - 1], Values[0]);
 		}
-		
+
 		private void CalculateGD(ISeries<double> input, Series<double> output)
 		{
 			output[0] = (EMA(input, Period)[0] * (1 + VFactor)) - (EMA(EMA(input, Period), Period)[0] * VFactor);
@@ -83,12 +83,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Period
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "TCount", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int TCount
 		{ get; set; }
-		
+
 		[Range(0, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "VFactor", GroupName = "NinjaScriptParameters", Order = 2)]
 		public double VFactor

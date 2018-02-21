@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,9 +28,9 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// Keltner Channel. The Keltner Channel is a similar indicator to Bollinger Bands. 
+	/// Keltner Channel. The Keltner Channel is a similar indicator to Bollinger Bands.
 	/// Here the midline is a standard moving average with the upper and lower bands offset
-	/// by the SMA of the difference between the high and low of the previous bars. 
+	/// by the SMA of the difference between the high and low of the previous bars.
 	/// The offset multiplier as well as the SMA period is configurable.
 	/// </summary>
 	public class KeltnerChannel : Indicator
@@ -38,7 +38,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Series<double>		diff;
 		private	SMA					smaDiff;
 		private	SMA					smaTypical;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -50,7 +50,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive	= true;
 				OffsetMultiplier			= 1.5;
 
-				AddPlot(Brushes.DarkGray,	NinjaTrader.Custom.Resource.KeltnerChannelMidline);
+				AddPlot(Brushes.DarkGray,		NinjaTrader.Custom.Resource.KeltnerChannelMidline);
 				AddPlot(Brushes.DodgerBlue,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 				AddPlot(Brushes.DodgerBlue,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 			}
@@ -108,7 +108,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[1]; }
 		}
-        #endregion
+		#endregion
 	}
 }
 

@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 // Reference to "Trading with Adaptive Price Zone" article in S&C, September 2006, p. 28 by Lee Leibfarth.
 //
@@ -29,7 +29,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The APZ (Adaptive Prize Zone) forms a steady channel based on double smoothed 
+	/// The APZ (Adaptive Prize Zone) forms a steady channel based on double smoothed
 	/// exponential moving averages around the average price. See S/C, September 2006, p.28.
 	/// </summary>
 	public class APZ : Indicator
@@ -38,7 +38,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private EMA		emaRange;
 		private int		newPeriod;
 		private int		period;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -51,7 +51,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 20;
 
 				AddPlot(Brushes.Crimson, NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
-				AddPlot(Brushes.Crimson, NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);	
+				AddPlot(Brushes.Crimson, NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
 			else if (State == State.DataLoaded)
 			{
@@ -60,7 +60,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				newPeriod	= 0;
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar < Period)
@@ -76,7 +76,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			Lower[0] = emaEMA0 - rangeOffset;
 			Upper[0] = emaEMA0 + rangeOffset;
 		}
-	
+
 		#region Properties
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "BandPct", GroupName = "NinjaScriptParameters", Order = 0)]
@@ -89,19 +89,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[0]; }
 		}
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int Period
 		{
 			get { return period; }
-			set 
+			set
 			{
 				period = value;
-				newPeriod = Convert.ToInt32(Math.Sqrt(Convert.ToDouble(value))); 
+				newPeriod = Convert.ToInt32(Math.Sqrt(Convert.ToDouble(value)));
 			}
 		}
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Upper

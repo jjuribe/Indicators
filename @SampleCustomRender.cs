@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -77,10 +77,10 @@ public class SampleCustomRender : Indicator
 	protected override void OnRender(ChartControl chartControl, ChartScale chartScale)
 	{
 
-		// This sample should be used along side the help guide educational resource on this topic:		
-		// http://www.ninjatrader.com/support/helpGuides/nt8/en-us/?using_sharpdx_for_custom_chart_rendering.htm	
+		// This sample should be used along side the help guide educational resource on this topic:
+		// http://www.ninjatrader.com/support/helpGuides/nt8/en-us/?using_sharpdx_for_custom_chart_rendering.htm
 
-		// Default plotting in base class. Uncomment if indicators holds at least one plot 
+		// Default plotting in base class. Uncomment if indicators holds at least one plot
 		// in this case we would expect NOT to see the SMA plot we have as well in this sample script
 		//base.OnRender(chartControl, chartScale);
 
@@ -91,7 +91,7 @@ public class SampleCustomRender : Indicator
 		SharpDX.Vector2 endPoint;
 
 		// For our custom script, we need a way to determine the Chart's RenderTarget coordinates to draw our custom shapes
-		// This info can be found within the NinjaTrader.Gui.ChartPanel class.  
+		// This info can be found within the NinjaTrader.Gui.ChartPanel class.
 		// You can also use various chartScale and chartControl members to calculate values relative to time and price
 		// However, those concepts will not be discussed or used in this sample
 		// Notes:  RenderTarget is always the full ChartPanel, so we need to be mindful which sub-ChartPanel we're dealing with
@@ -113,7 +113,7 @@ public class SampleCustomRender : Indicator
 
 		// Tip: This check is simply added to prevent the Indicator dialog menu from opening as a user clicks on the chart
 		// The default behavior is to open the Indicator dialog menu if a user double clicks on the indicator
-		// (i.e, the indicator falls within the RenderTarget "hit testing") 
+		// (i.e, the indicator falls within the RenderTarget "hit testing")
 		// You can remove this check if you want the default behavior implemented
 		if (!IsInHitTest)
 		{
@@ -159,9 +159,9 @@ public class SampleCustomRender : Indicator
 			// using the start/end points and areaBrushDx objects defined before
 			RenderTarget.DrawLine(startPoint, endPoint, areaBrushDx, 4);
 
-			// Since rendering occurs in a sequential fashion, after you have executed a command 
-			// you can switch a property of the RenderTarget to meet other requirements  
-			// For example, we can draw a second line now which uses a different AntialiasMode 
+			// Since rendering occurs in a sequential fashion, after you have executed a command
+			// you can switch a property of the RenderTarget to meet other requirements
+			// For example, we can draw a second line now which uses a different AntialiasMode
 			// and the changes render on the chart for both lines from the time they received commands
 			RenderTarget.AntialiasMode = SharpDX.Direct2D1.AntialiasMode.PerPrimitive;
 			RenderTarget.DrawLine(startPoint1, endPoint1, areaBrushDx, 4);
@@ -180,13 +180,13 @@ public class SampleCustomRender : Indicator
 			RenderTarget.DrawRectangle(rect, customDXBrush, 2);
 
 			// Another example is an ellipse which can be used to draw circles
-			// The ellipse center point can be used from the Vectors calculated earlier 
+			// The ellipse center point can be used from the Vectors calculated earlier
 			// The width and height an absolute 100 device pixels
 			// To ensure that pixel coordinates work across all DPI devices, we use the NinjaTrader ChartingExteions methods
 			// Which will convert the "100" value from WPF pixels to Device Pixels both vertically and horizontally
 			int ellipseRadiusY = ChartingExtensions.ConvertToVerticalPixels(100, ChartControl.PresentationSource);
 			int ellipseRadiusX = ChartingExtensions.ConvertToHorizontalPixels(100, ChartControl.PresentationSource);
-			
+
 			SharpDX.Direct2D1.Ellipse ellipse = new SharpDX.Direct2D1.Ellipse(center, ellipseRadiusX, ellipseRadiusY);
 
 			// 1.5 - Complex Brush Types and Shapes
@@ -231,14 +231,14 @@ public class SampleCustomRender : Indicator
 
 			// For rendering custom text to the Chart, there are a few ways you can approach depending on your requirements
 			// The most straight forward way is to "borrow" the existing chartControl font provided as a "SimpleFont" class
-			// Using the chartControl LabelFont, your custom object will also change to the user defined properties allowing 
-			// your object to match different fonts if defined by user.  
+			// Using the chartControl LabelFont, your custom object will also change to the user defined properties allowing
+			// your object to match different fonts if defined by user.
 
 			// The code below will use the chartControl Properties Label Font if it exists,
 			// or fall back to a default property if it cannot obtain that value
 			NinjaTrader.Gui.Tools.SimpleFont simpleFont = chartControl.Properties.LabelFont ??  new NinjaTrader.Gui.Tools.SimpleFont("Arial", 12);
 
-			// the advantage of using a SimpleFont is they are not only very easy to describe 
+			// the advantage of using a SimpleFont is they are not only very easy to describe
 			// but there is also a convenience method which can be used to convert the SimpleFont to a SharpDX.DirectWrite.TextFormat used to render to the chart
 			// Warning:  TextFormat objects must be disposed of after they have been used
 			SharpDX.DirectWrite.TextFormat textFormat1 = simpleFont.ToDirectWriteTextFormat();
@@ -281,7 +281,7 @@ public class SampleCustomRender : Indicator
 			RenderTarget.DrawRectangle(rect1, smallAreaBrushDx, 2);
 
 			// And render the advanced text layout using the DrawTextLayout() method
-			// Note:  When drawing the same text repeatedly, using the DrawTextLayout() method is more efficient than using the DrawText() 
+			// Note:  When drawing the same text repeatedly, using the DrawTextLayout() method is more efficient than using the DrawText()
 			// because the text doesn't need to be formatted and the layout processed with each call
 			RenderTarget.DrawTextLayout(lowerTextPoint, textLayout2, textBrushDx, SharpDX.Direct2D1.DrawTextOptions.NoSnap);
 

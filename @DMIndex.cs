@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -29,7 +29,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
 	/// The Dynamic Momentum Index is a variable term RSI. The RSI term varies
-	///  from 3 to 30. The variable time period makes the RSI more responsive to 
+	///  from 3 to 30. The variable time period makes the RSI more responsive to
 	/// short-term moves. The more volatile the price is, the shorter the time period is.
 	///  It is interpreted in the same way as the RSI, but provides signals earlier.
 	/// </summary>
@@ -37,7 +37,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	{
 		private SMA		sma;
 		private StdDev	stdDev;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -56,7 +56,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				sma			= SMA(stdDev, 10);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar == 0)

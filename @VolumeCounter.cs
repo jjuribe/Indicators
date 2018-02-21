@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using SharpDX.Direct2D1;
 using Point = System.Windows.Point;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class VolumeCounter : Indicator
@@ -42,7 +42,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionVolumeCounter;
 				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVolumeCounter;
 				Calculate					= Calculate.OnEachTick;
-				CountDown					= true;	
+				CountDown					= true;
 				DisplayInDataBox			= false;
 				DrawOnPricePanel			= false;
 				IsChartOnly					= true;
@@ -59,6 +59,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double volumeCount = ShowPercent ? CountDown ? (1 - Bars.PercentComplete) * 100 : Bars.PercentComplete * 100 : CountDown ? BarsPeriod.Value - volume : volume;
 
 			string volume1 = (BarsPeriod.BarsPeriodType == BarsPeriodType.Volume
+						|| ((BarsPeriod.BarsPeriodType == BarsPeriodType.HeikenAshi || BarsPeriod.BarsPeriodType == BarsPeriodType.Volumetric) && BarsPeriod.BaseBarsPeriodType == BarsPeriodType.Volume)
 												? ((CountDown ? NinjaTrader.Custom.Resource.VolumeCounterVolumeRemaining + volumeCount : NinjaTrader.Custom.Resource.VolumeCounterVolumeCount + volumeCount) + (ShowPercent ? "%" : ""))
 												: NinjaTrader.Custom.Resource.VolumeCounterBarError);
 

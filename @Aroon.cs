@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Aroon Indicator was developed by Tushar Chande. Its comprised of two plots one 
-	/// measuring the number of periods since the most recent x-period high (Aroon Up) and the 
+	/// The Aroon Indicator was developed by Tushar Chande. Its comprised of two plots one
+	/// measuring the number of periods since the most recent x-period high (Aroon Up) and the
 	/// other measuring the number of periods since the most recent x-period low (Aroon Down).
 	/// </summary>
 	public class Aroon : Indicator
@@ -49,7 +49,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive	= true;
 				Period						= 14;
 
-				AddPlot(Brushes.DarkCyan,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorUp);
+				AddPlot(Brushes.DarkCyan,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorUp);
 				AddPlot(Brushes.SlateBlue,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorDown);
 				AddLine(Brushes.DarkGray,	30,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddLine(Brushes.DarkGray,	70,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);

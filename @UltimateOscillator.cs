@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -29,8 +29,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
 	/// The Ultimate Oscillator is the weighted sum of three oscillators of different time periods.
-	/// The typical time periods are 7, 14 and 28. The values of the Ultimate Oscillator range 
-	/// from zero to 100. Values over 70 indicate overbought conditions, and values under 30 indicate 
+	/// The typical time periods are 7, 14 and 28. The values of the Ultimate Oscillator range
+	/// from zero to 100. Values over 70 indicate overbought conditions, and values under 30 indicate
 	/// oversold conditions. Also look for agreement/divergence with the price to confirm a trend or signal the end of a trend.
 	/// </summary>
 	public class UltimateOscillator : Indicator
@@ -46,7 +46,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private SUM				sumTrIntermediate;
 		private SUM				sumTrSlow;
 		private Series<double>	trueRange;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -58,7 +58,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Intermediate				= 14;
 				Slow						= 28;
 
-				AddPlot(Brushes.DodgerBlue,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameUltimateOscillator);
+				AddPlot(Brushes.DodgerBlue,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameUltimateOscillator);
 
 				AddLine(Brushes.DarkGray,	30,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorOversold);
 				AddLine(Brushes.DarkGray,	50,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorNeutral);
@@ -82,12 +82,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 				sumTrSlow			= SUM(trueRange, Slow);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar == 0)
 				Value[0] =  0;
-		
+
 			else
 			{
 				double high0	= High[0];
@@ -99,7 +99,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				trueRange[0] 		= Math.Max(Math.Max(high0 - low0, high0 - close1), close1 - low0);
 
 				// Use previous value if we get into trouble
-				if (sumTrFast[0] == 0 || sumTrIntermediate[0] == 0 || sumTrSlow[0] == 0) 
+				if (sumTrFast[0] == 0 || sumTrIntermediate[0] == 0 || sumTrSlow[0] == 0)
 				{
 					Value[0] = Value[1];
 					return;
@@ -117,12 +117,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Fast", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Fast
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Intermediate", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int Intermediate
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Slow", GroupName = "NinjaScriptParameters", Order = 2)]
 		public int Slow

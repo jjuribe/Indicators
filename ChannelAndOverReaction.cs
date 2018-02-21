@@ -84,7 +84,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				//See Help Guide for additional information.
 				IsSuspendedWhileInactive					= true;
 				
-				MaxRisk					= 50;
+				MaxRisk					= 100;
 				Pct						= 3;
 				On = true;
 			}
@@ -95,6 +95,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if (State == State.DataLoaded)
 			{
 				sma0				= SMA(200);
+				
 				ClearOutputWindow(); 
 			}
 		}
@@ -140,12 +141,37 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////		
 		protected double calcInitialStop(int pct, bool isLong) {
 			double result;
+			/// set stop 3% if Nasdaq 5%
+			foreach(Exchange exchange in Bars.Instrument.MasterInstrument.Exchanges)
+				{
+					if (exchange.ToString() != "Default") {
+						//Print(exchange); // Default, Nasdaq, NYSE
+						if (exchange.ToString() == "Nasdaq") {
+							Print("\tListed on Nasdaq, Change stiop to 5%");
+							pct = 5;
+						}
+						
+					}
+				} 
 			double convertedPct = pct * 0.01;
+
 			if (isLong) {
 				result = Close[0] - ( Close[0] * convertedPct);
+				
+				//double target1 = Close[0] + ( Close[0] * convertedPct);
+				Draw.RiskReward(this, "MyRiskReward", true, 0, Close[0], 10, result, 0.5, true);
+				double target2 =  MAX(SMA(10), 20)[0];
+				double sharesText = result - (Instrument.MasterInstrument.PointValue * 0.3);
+				sharesText = MIN(Low, 20)[0];
+				Draw.Line(this, "target2", false, 0, target2, -10, target2, Brushes.Silver, DashStyleHelper.Dash, 3);
+				Draw.Text(this, "shares", sharesFraction.ToString("0"), 0, sharesText, ChartControl.Properties.ChartText);
+				
 			} else {
 				result = Close[0] + ( Close[0] * convertedPct);
 			}
+			
+			
+			
 			return result; 
 		}
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +184,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bool signal = false;		// && High[0] < SMA(10)[0] 
 			if ( Close[0] > Math.Abs(sma0[0]) && WilliamsR(10)[0] < -80 ){
 				//signal = true;
-				Draw.Dot(this, "CH"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.Lime);
+				Draw.Dot(this, "CH"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.DarkGreen);
 				
 				double theStop = calcInitialStop(pct: Pct, isLong: true);
 				shares = calcPositionSize(stopPrice: theStop, isLong: true); 
@@ -241,15 +267,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			
 			return bodyMessage;
-		}		
+		}	
+		
 		protected void setTextBox(string textInBox)
 		{
 			/// show market condition
 			TextFixed myTF = Draw.TextFixed(this, "tradeStat", textInBox, TextPosition.BottomLeft);
-			myTF.TextPosition = TextPosition.BottomLeft;
-			myTF.AreaBrush = Brushes.White;
-			myTF.AreaOpacity = 90;
-			myTF.TextBrush = Brushes.Black;
+			myTF.TextPosition = TextPosition.TopLeft;
+			myTF.AreaBrush = Brushes.Black;
+			myTF.AreaOpacity = 100;
+			myTF.TextBrush = Brushes.LightGray;
 		}
 		
 	

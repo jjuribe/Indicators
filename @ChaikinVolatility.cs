@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -39,7 +39,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (State == State.SetDefaults)
 			{
 				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionChaikinVolatility;
- 				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameChaikinVolatility;
+				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameChaikinVolatility;
 				IsSuspendedWhileInactive	= true;
 				MAPeriod					= 10;
 				ROCPeriod					= 10;
@@ -49,9 +49,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if (State == State.DataLoaded)
 				ema	= EMA(Range(), MAPeriod);
 		}
-		
+
 		protected override void OnBarUpdate()
-		{	
+		{
 			double emaROCPeriod	= ema[Math.Min(CurrentBar, ROCPeriod)];
 			Value[0]			= CurrentBar == 0 ? ema[0] : ((ema[0] - emaROCPeriod) / emaROCPeriod) * 100;
 		}
@@ -61,7 +61,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "MAPeriod", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int MAPeriod
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "ROCPeriod", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int ROCPeriod

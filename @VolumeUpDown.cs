@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -24,7 +24,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class VolumeUpDown : Indicator
@@ -33,16 +33,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (State == State.SetDefaults)
 			{
-				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionVolumeUpDown;
-				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVolumeUpDown;
 				Calculate					= Calculate.OnBarClose;
+				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionVolumeUpDown;
+				DrawOnPricePanel			= false;
 				IsOverlay					= false;
 				IsSuspendedWhileInactive	= true;
-				DrawOnPricePanel			= false;
+				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVolumeUpDown;
 
 				AddPlot(new Stroke(Brushes.DarkCyan, 2),	PlotStyle.Bar,	NinjaTrader.Custom.Resource.VolumeUp);
 				AddPlot(new Stroke(Brushes.Crimson, 2),		PlotStyle.Bar,	NinjaTrader.Custom.Resource.VolumeDown);
-				AddLine(Brushes.DarkGray,				0,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
+				AddLine(Brushes.DarkGray,					0,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
 			}
 			else if (State == State.Historical)
 			{
@@ -51,22 +51,38 @@ namespace NinjaTrader.NinjaScript.Indicators
 					Draw.TextFixed(this, "NinjaScriptInfo", string.Format(NinjaTrader.Custom.Resource.NinjaScriptOnPriceChangeError, Name), TextPosition.BottomRight);
 					Log(string.Format(NinjaTrader.Custom.Resource.NinjaScriptOnPriceChangeError, Name), LogLevel.Error);
 				}
-				}
+			}
 		}
 
 		protected override void OnBarUpdate()
 		{
 			if (Close[0] >= Open[0])
 			{
-				Values[0][0] = Volume[0];
-				Values[1].Reset();
+				UpVolume[0] = Volume[0];
+				DownVolume.Reset();
 			}
 			else
 			{
-				Values[0].Reset();
-				Values[1][0] = Volume[0];
+				UpVolume.Reset();
+				DownVolume[0] = Volume[0];
 			}
 		}
+
+		#region Properties
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<double> DownVolume
+		{
+			get { return Values[1]; }
+		}
+
+		[Browsable(false)]
+		[XmlIgnore]
+		public Series<double> UpVolume
+		{
+			get { return Values[0]; }
+		}
+		#endregion
 	}
 }
 

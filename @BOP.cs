@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -35,7 +35,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	{
 		private Series<double>	bop;
 		private SMA				sma;
-			
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -54,7 +54,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				sma	= SMA(bop, Smooth);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double high0	= High[0];
@@ -62,9 +62,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			if ((high0 - low0).ApproxCompare(0) == 0)
 				bop[0] = 0;
-			else 
+			else
 				bop[0] = (Close[0] - Open[0]) / (high0 - low0);
-			
+
 			Value[0] = sma[0];
 		}
 
@@ -72,7 +72,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Smooth", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Smooth
-		{ get; set; }	
+		{ get; set; }
 		#endregion
 	}
 }

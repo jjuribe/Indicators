@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -24,7 +24,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class BuySellVolume : Indicator
@@ -61,9 +61,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 
 		protected override void OnMarketData(MarketDataEventArgs e)
-		{			
+		{
 			if(e.MarketDataType == MarketDataType.Last)
-			{				
+			{
 				if(e.Price >= e.Ask)
 				{
 					buys += e.Volume;
@@ -72,9 +72,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 				{
 					sells += e.Volume;
 				}
-			}	
+			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar < activeBar || CurrentBar <= BarsRequiredToPlot)

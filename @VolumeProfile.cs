@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -25,7 +25,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class VolumeProfile : Indicator
@@ -42,17 +42,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double			askPrice;
 		private int				barSpacing			= 1;
 		private double			bidPrice;
-		private DateTime        cacheSessionEnd     = Globals.MinDate;
-		private DateTime        currentDate         = Globals.MinDate;
+		private DateTime		cacheSessionEnd	= Globals.MinDate;
+		private DateTime		currentDate		= Globals.MinDate;
 		private bool			drawLines;
 		private List<int>		newSessionBarIdx	= new List<int>();
-		private DateTime        sessionDateTmp      = Globals.MinDate;
+		private DateTime		sessionDateTmp	= Globals.MinDate;
 		private SessionIterator sessionIterator;
-		private int             startIndexOf;
+		private int			startIndexOf;
 		private SessionIterator storedSession;
 
-		private List<Dictionary<double, VolumeInfoItem>>  sortedDicList   = new List<Dictionary<double, VolumeInfoItem>>();		
-		private Dictionary<double, VolumeInfoItem>        cacheDictionary = new Dictionary<double, VolumeInfoItem>();
+		private List<Dictionary<double, VolumeInfoItem>>  sortedDicList   = new List<Dictionary<double, VolumeInfoItem>>();
+		private Dictionary<double, VolumeInfoItem>		cacheDictionary = new Dictionary<double, VolumeInfoItem>();
 		#endregion
 
 		protected override void OnStateChange()
@@ -109,16 +109,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (Bars.Count <= 0)
 				return;
-			
+
 			double			price;
 			long			volume;
 			VolumeInfoItem	volumeInfoItem;
-			DateTime        lastBarTimeStamp = GetLastBarSessionDate(Time[0]);
+			DateTime		lastBarTimeStamp = GetLastBarSessionDate(Time[0]);
 
 			if (lastBarTimeStamp != currentDate)
 			{
 				cacheDictionary = new Dictionary<double, VolumeInfoItem>();
-				sortedDicList.Add(cacheDictionary);                
+				sortedDicList.Add(cacheDictionary);
 			}
 
 			currentDate = lastBarTimeStamp;
@@ -201,7 +201,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{
 				int prevSessionBreakIdx		= newSessionBarIdx[i];
 
-                if (prevSessionBreakIdx <= ChartBars.ToIndex)
+				if (prevSessionBreakIdx <= ChartBars.ToIndex)
 				{
 					startIndexOf		= newSessionBarIdx.IndexOf(prevSessionBreakIdx);
 					firstBarIdxToPaint	= prevSessionBreakIdx;
@@ -256,8 +256,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				// Upper line (only at very top)
 				if (viiPositions == sortedDicList[startIndexOf].Count)
 					RenderTarget.DrawLine(new SharpDX.Vector2(stationaryXpos, yUpper), new SharpDX.Vector2((ChartPanel.X + ChartPanel.W), yUpper), lineBrushDx);
-			}	
-		
+			}
+
 			lineBrushDx.Dispose();
 			upBrush.Dispose();
 			downBrush.Dispose();
@@ -276,7 +276,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "DrawLines", Order = 1, GroupName = "NinjaScriptParameters")]
 		public bool DrawLines
 		{
-			get { return drawLines; } 
+			get { return drawLines; }
 			set { drawLines = value; }
 		}
 

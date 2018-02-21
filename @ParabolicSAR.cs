@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -50,9 +50,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private Series<int> 	reverseBarSeries;
 		private Series<double>	reverseValueSeries;
 		private Series<double> 	todaySARSeries;
-		private Series<double> 	xpSeries;		
-	
-		
+		private Series<double> 	xpSeries;
+
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -68,7 +68,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				AddPlot(new Stroke(Brushes.Goldenrod, 2), PlotStyle.Dot, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameParabolicSAR);
 			}
-			
+
 			else if (State == State.Configure)
 			{
 	 			xp				= 0.0;
@@ -92,16 +92,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 					reverseBarSeries	= new Series<int>(this);
 					reverseValueSeries	= new Series<double>(this);
 					todaySARSeries		= new Series<double>(this);
-					xpSeries			= new Series<double>(this);		
+					xpSeries			= new Series<double>(this);
 				}
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
-			if (CurrentBar < 3) 
+			if (CurrentBar < 3)
 				return;
-			
+
 			if (CurrentBar == 3)
 			{
 				// Determine initial position
@@ -127,7 +127,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			// Reset accelerator increase limiter on new bars
 			if (afIncreased && prevBar != CurrentBar)
 				afIncreased = false;
-			
+
 			// Current event is on a bar not marked as a reversal bar yet
 			if (reverseBar != CurrentBar)
 			{
@@ -146,7 +146,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 							todaySAR = High[x];
 					}
 				}
-				
+
 				// Holding long position
 				if (longPosition)
 				{
@@ -158,14 +158,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 					}
 					else
 						Value[0] = prevSAR;
-					
+
 					if (High[0] > xp)
 					{
 						xp = High[0];
 						AfIncrease();
 					}
 				}
-				
+
 				// Holding short position
 				else if (!longPosition)
 				{
@@ -177,7 +177,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					}
 					else
 						Value[0] = prevSAR;
-					
+
 					if (Low[0] < xp)
 					{
 						xp = Low[0];
@@ -185,7 +185,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					}
 				}
 			}
-			
+
 			// Current event is on the same bar as the reversal bar
 			else
 			{
@@ -194,18 +194,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 					xp = High[0];
 				else if (!longPosition && Low[0] < xp)
 					xp = Low[0];
-				
+
 				Value[0] = prevSAR;
-				
+
 				// SAR = SAR[1] + af * (xp - SAR[1])
 				todaySAR = TodaySAR(longPosition ? Math.Min(reverseValue, Low[0]) : Math.Max(reverseValue, High[0]));
 			}
-			
+
 			prevBar = CurrentBar;
-			
+
 			// Reverse position
 			if ((longPosition && (Low[0] < todaySAR || Low[1] < todaySAR))
-				|| (!longPosition && (High[0] > todaySAR || High[1] > todaySAR))) 
+				|| (!longPosition && (High[0] > todaySAR || High[1] > todaySAR)))
 				Value[0] = Reverse();
 
 			if (BarsArray[0].BarsType.IsRemoveLastBarSupported)
@@ -221,7 +221,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				xpSeries[0]				= xp;
 			}
 		}
-		
+
 		#region Miscellaneous
 		// Only raise accelerator if not raised for current bar yet
 		private void AfIncrease()
@@ -232,7 +232,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				afIncreased = true;
 			}
 		}
-		
+
 		// Additional rule. SAR for today can't be placed inside the bar of day - 1 or day - 2.
 		private double TodaySAR(double todaySAR)
 		{
@@ -250,11 +250,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			return todaySAR;
 		}
-		
+
 		private double Reverse()
 		{
 			double todaySAR = xp;
-				
+
 			if ((longPosition && prevSAR > Low[0]) || (!longPosition && prevSAR < High[0]) || prevBar != CurrentBar)
 			{
 				longPosition = !longPosition;
@@ -280,7 +280,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "AccelerationMax", GroupName = "NinjaScriptParameters", Order = 1)]
 		public double AccelerationMax
 		{ get; set; }
-		
+
 		[Range(0.001, double.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "AccelerationStep", GroupName = "NinjaScriptParameters", Order = 2)]
 		public double AccelerationStep

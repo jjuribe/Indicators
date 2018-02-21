@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -65,30 +65,30 @@ namespace NinjaTrader.NinjaScript.Indicators
 				sum = SUM(diffSeries, Period);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double input0 = Input[0];
 			diffSeries[0] = CurrentBar > 0 ? Math.Abs(input0 - Input[1]) : input0;
 
-            if (CurrentBar < Period)
-            {
-                Value[0] = Input[0];
-                return;
-            }
-
-            double signal = Math.Abs(input0 - Input[Period]);
-			double noise  = sum[0];
-	
-			// Prevent div by zero
-			if (noise == 0) 
+			if (CurrentBar < Period)
 			{
-			    Value[0] = Value[1];
-			    return;
+				Value[0] = Input[0];
+				return;
 			}
 
-            double value1   = Value[1];
-            Value[0]        = value1 + Math.Pow((signal / noise) * (fastCF - slowCF) + slowCF, 2) * (input0 - value1);
+			double signal = Math.Abs(input0 - Input[Period]);
+			double noise  = sum[0];
+
+			// Prevent div by zero
+			if (noise == 0)
+			{
+				Value[0] = Value[1];
+				return;
+			}
+
+			double value1   = Value[1];
+			Value[0]		= value1 + Math.Pow((signal / noise) * (fastCF - slowCF) + slowCF, 2) * (input0 - value1);
 		}
 
 		#region Properties
@@ -96,12 +96,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Fast", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Fast
 		{ get; set; }
-		
+
 		[Range(5, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int Period
 		{ get; set; }
-		
+
 		[Range(1, 125), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Slow", GroupName = "NinjaScriptParameters", Order = 2)]
 		public int Slow

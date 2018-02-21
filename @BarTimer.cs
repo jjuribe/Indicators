@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,24 +28,24 @@ using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
 #endregion
 
-//This namespace holds Indicators in this folder and is required. Do not change it. 
+//This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
 	public class BarTimer : Indicator
-	{	
+	{
 		private string			timeLeft	= string.Empty;
 		private DateTime		now		 	= Core.Globals.Now;
 		private bool			connected,
 								hasRealtimeData;
 		private SessionIterator sessionIterator;
-		
+
 		private System.Windows.Threading.DispatcherTimer timer;
 
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
-			{				
+			{
 				Description 		= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionBarTimer;
 				Name 				= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameBarTimer;
 				Calculate			= Calculate.OnEachTick;
@@ -104,7 +104,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				&& Bars.BarsType.IsIntraday)
 			{
 				connected = true;
-				
+
 				if (DisplayTime() && timer == null)
 				{
 					ChartControl.Dispatcher.InvokeAsync(() =>
@@ -124,16 +124,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 					&& Bars != null
 					&& Bars.Instrument.MarketData != null;
 		}
-		
+
 		private void OnTimerTick(object sender, EventArgs e)
 		{
 			ForceRefresh();
-			
+
 			if (DisplayTime())
 			{
 				if (timer != null && !timer.IsEnabled)
 					timer.IsEnabled = true;
-				
+
 				if (connected)
 				{
 					if (SessionIterator.IsInSession(Now, false, true))
@@ -141,11 +141,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 						if (hasRealtimeData)
 						{
 							TimeSpan barTimeLeft = Bars.GetTime(Bars.Count - 1).Subtract(Now);
-							
+
 							timeLeft = (barTimeLeft.Ticks < 0
 								? "00:00:00"
 								: barTimeLeft.Hours.ToString("00") + ":" + barTimeLeft.Minutes.ToString("00") + ":" + barTimeLeft.Seconds.ToString("00"));
-								
+
 							Draw.TextFixed(this, "NinjaScriptInfo", NinjaTrader.Custom.Resource.BarTimerTimeRemaining + timeLeft, TextPosition.BottomRight);
 						}
 						else
@@ -157,7 +157,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				else
 				{
 					Draw.TextFixed(this, "NinjaScriptInfo", NinjaTrader.Custom.Resource.BarTimerDisconnectedError, TextPosition.BottomRight);
-					
+
 					if (timer != null)
 						timer.IsEnabled = false;
 				}
@@ -166,7 +166,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		private SessionIterator SessionIterator
 		{
-			get 
+			get
 			{
 				if (sessionIterator == null)
 					sessionIterator = new SessionIterator(Bars);

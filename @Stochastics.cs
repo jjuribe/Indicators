@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,10 +28,10 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Stochastic Oscillator is made up of two lines that oscillate between 
-	/// a vertical scale of 0 to 100. The %K is the main line and it is drawn as 
-	/// a solid line. The second is the %D line and is a moving average of %K. 
-	/// The %D line is drawn as a dotted line. Use as a buy/sell signal generator, 
+	/// The Stochastic Oscillator is made up of two lines that oscillate between
+	/// a vertical scale of 0 to 100. The %K is the main line and it is drawn as
+	/// a solid line. The second is the %D line and is a moving average of %K.
+	/// The %D line is drawn as a dotted line. Use as a buy/sell signal generator,
 	/// buying when fast moves above slow and selling when fast moves below slow.
 	/// </summary>
 	public class Stochastics : Indicator
@@ -55,10 +55,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				PeriodK						= 14;
 				Smooth						= 3;
 
-				AddPlot(Brushes.DodgerBlue,				NinjaTrader.Custom.Resource.StochasticsD);
-				AddPlot(Brushes.Goldenrod,				NinjaTrader.Custom.Resource.StochasticsK);
+				AddPlot(Brushes.DodgerBlue,		NinjaTrader.Custom.Resource.StochasticsD);
+				AddPlot(Brushes.Goldenrod,		NinjaTrader.Custom.Resource.StochasticsK);
 
-				AddLine(Brushes.DarkCyan,		20,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+				AddLine(Brushes.DarkCyan,	20,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddLine(Brushes.DarkCyan,	80,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
 			else if (State == State.DataLoaded)
@@ -103,7 +103,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[1]; }
 		}
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "PeriodD", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int PeriodD

@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -56,7 +56,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				AddPlot(new Stroke(Brushes.Goldenrod,	DashStyleHelper.Dash, 2), PlotStyle.Square, NinjaTrader.Custom.Resource.CurrentDayOHLOpen);
 				AddPlot(new Stroke(Brushes.SeaGreen,	DashStyleHelper.Dash, 2), PlotStyle.Square, NinjaTrader.Custom.Resource.CurrentDayOHLHigh);
-				AddPlot(new Stroke(Brushes.Red,		DashStyleHelper.Dash, 2), PlotStyle.Square, NinjaTrader.Custom.Resource.CurrentDayOHLLow);
+				AddPlot(new Stroke(Brushes.Red,			DashStyleHelper.Dash, 2), PlotStyle.Square, NinjaTrader.Custom.Resource.CurrentDayOHLLow);
 			}
 			else if (State == State.Configure)
 			{
@@ -86,15 +86,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bool sameDay = true;
 			if (currentDate != sessionIterator.GetTradingDay(Time[0]) || currentOpen == double.MinValue)
 			{
-				currentOpen 	= Open[0];
-				currentHigh 	= High[0];
+				currentOpen	= Open[0];
+				currentHigh	= High[0];
 				currentLow		= Low[0];
 				sameDay			= false;
 			}
 
-			currentHigh 		= Math.Max(currentHigh, High[0]);
+			currentHigh		= Math.Max(currentHigh, High[0]);
 			currentLow			= Math.Min(currentLow, Low[0]);
-			
+
 			if (ShowOpen)
 			{
 				if (!PlotCurrentValue || !sameDay)
@@ -126,43 +126,43 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 
 		#region Properties
-        [Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
-        [XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
-        public Series<double> CurrentOpen
-        {
-            get { return Values[0]; }
-        }
+		[Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
+		[XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
+		public Series<double> CurrentOpen
+		{
+			get { return Values[0]; }
+		}
 
-        [Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
-        [XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
-        public Series<double> CurrentHigh
-        {
-            get { return Values[1]; }
-        }
+		[Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
+		[XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
+		public Series<double> CurrentHigh
+		{
+			get { return Values[1]; }
+		}
 
-        [Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
-        [XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
-        public Series<double> CurrentLow
-        {
-            get { return Values[2]; }
-        }
+		[Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
+		[XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
+		public Series<double> CurrentLow
+		{
+			get { return Values[2]; }
+		}
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "PlotCurrentValue", GroupName = "NinjaScriptParameters", Order = 0)]
 		public bool PlotCurrentValue
-        { get; set; }
+		{ get; set; }
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "ShowHigh", GroupName = "NinjaScriptParameters", Order = 1)]
-        public bool ShowHigh
-        { get; set; }
+		public bool ShowHigh
+		{ get; set; }
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "ShowLow", GroupName = "NinjaScriptParameters", Order = 2)]
-        public bool ShowLow
-        { get; set; }
+		public bool ShowLow
+		{ get; set; }
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "ShowOpen", GroupName = "NinjaScriptParameters", Order = 3)]
-        public bool ShowOpen
-        { get; set; }
-        #endregion
+		public bool ShowOpen
+		{ get; set; }
+		#endregion
 	}
 }
 

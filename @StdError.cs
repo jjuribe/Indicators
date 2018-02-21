@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -33,7 +33,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public class StdError : Indicator
 	{
 		// Documentation of Linear Regression: http://en.wikipedia.org/wiki/Linear_regression
-		// Documentation of Standard Error: http://tadoc.org/indicator/STDERR.htm 
+		// Documentation of Standard Error: http://tadoc.org/indicator/STDERR.htm
 		private double			avg;
 		private double			divisor;
 		private	double			intercept;
@@ -58,13 +58,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 14;
 				IsOverlay					= true;
 
-				AddPlot(Brushes.Goldenrod,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameLinReg);
+				AddPlot(Brushes.Goldenrod,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameLinReg);
 				AddPlot(Brushes.DarkCyan,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 				AddPlot(Brushes.DarkCyan,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 			}
 			else if (State == State.Configure)
 			{
-				avg	= divisor = intercept = myPeriod = priorSumXY 
+				avg	= divisor = intercept = myPeriod = priorSumXY
 					= priorSumY = slope = sumX = sumX2 = sumY = sumXY = 0;
 			}
 			else if (State == State.DataLoaded)
@@ -151,19 +151,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[2]; }
 		}
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Middle
 		{
 			get { return Values[0]; }
 		}
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Period
 		{ get; set; }
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Upper

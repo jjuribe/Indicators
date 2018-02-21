@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -37,7 +37,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private EMA				ema;
 		private Series<double>	pfeSeries;
 		private Series<double>	singlePfeSeries;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -51,7 +51,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(Brushes.DodgerBlue,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNamePFE);
 				AddLine(Brushes.DarkGray,	0,	NinjaTrader.Custom.Resource.PFEZero);
 			}
-			
+
 			else if (State == State.DataLoaded)
 			{
 				div				= new Series<double>(this);
@@ -60,7 +60,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ema				= EMA(pfeSeries, Smooth);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double input0 = Input[0];
@@ -76,7 +76,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double inputPeriod	= Input[Period];
 
 			singlePfeSeries[0]	= Math.Sqrt(Math.Pow((input1 - input0), 2) + 1);
-			div[0]				= singlePfeSeries[0] + div[1] - singlePfeSeries[Period];	
+			div[0]				= singlePfeSeries[0] + div[1] - singlePfeSeries[Period];
 			pfeSeries[0] 		= (input0 < inputPeriod ? -1 : 1) * (Math.Sqrt(Math.Pow(input0 - inputPeriod, 2) + Math.Pow(Period, 2)) / div[0]);
 			Value[0]			= ema[0];
 		}
@@ -86,7 +86,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Period
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Smooth", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int Smooth

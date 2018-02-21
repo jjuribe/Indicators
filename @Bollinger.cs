@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// Bollinger Bands are plotted at standard deviation levels above and below a moving average. 
-	/// Since standard deviation is a measure of volatility, the bands are self-adjusting: 
+	/// Bollinger Bands are plotted at standard deviation levels above and below a moving average.
+	/// Since standard deviation is a measure of volatility, the bands are self-adjusting:
 	/// widening during volatile markets and contracting during calmer periods.
 	/// </summary>
 	public class Bollinger : Indicator
@@ -76,7 +76,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[2]; }
 		}
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Middle

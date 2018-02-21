@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -53,10 +53,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 14;
 				Smooth						= 3;
 
-				AddPlot(Brushes.DodgerBlue,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRSI);
-				AddPlot(Brushes.Goldenrod,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorAvg);
+				AddPlot(Brushes.DodgerBlue,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRSI);
+				AddPlot(Brushes.Goldenrod,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorAvg);
 
-				AddLine(Brushes.DarkCyan,		30,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+				AddLine(Brushes.DarkCyan,	30,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddLine(Brushes.DarkCyan,	70,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
 			else if (State == State.Configure)
@@ -94,20 +94,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 			down[0]			= Math.Max(input1 - input0, 0);
 			up[0]			= Math.Max(input0 - input1, 0);
 
-			if (CurrentBar + 1 < Period) 
+			if (CurrentBar + 1 < Period)
 			{
 				if (CurrentBar + 1 == Period - 1)
 					Avg[0] = 50;
 				return;
 			}
 
-			if ((CurrentBar + 1) == Period) 
+			if ((CurrentBar + 1) == Period)
 			{
-				// First averages 
+				// First averages
 				avgDown[0]	= smaDown[0];
 				avgUp[0]	= smaUp[0];
-			}  
-			else 
+			}
+			else
 			{
 				// Rest of averages are smoothed
 				avgDown[0]	= (avgDown[1] * constant3 + down[0]) / Period;
@@ -134,15 +134,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[0]; }
 		}
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
-		public int Period 
+		public int Period
 		{ get; set; }
 
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Smooth", GroupName = "NinjaScriptParameters", Order = 1)]
-		public int Smooth 
+		public int Smooth
 		{ get; set; }
 		#endregion
 	}

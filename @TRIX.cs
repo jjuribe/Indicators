@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -29,8 +29,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
 	/// The TRIX (Triple Exponential Average) displays the percentage Rate of Change (ROC)
-	/// of a triple EMA. Trix oscillates above and below the zero value. The indicator 
-	/// applies triple smoothing in an attempt to eliminate insignificant price movements 
+	/// of a triple EMA. Trix oscillates above and below the zero value. The indicator
+	/// applies triple smoothing in an attempt to eliminate insignificant price movements
 	/// within the trend that you're trying to isolate.
 	/// </summary>
 	public class TRIX : Indicator
@@ -48,20 +48,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Period						= 14;
 				SignalPeriod				= 3;
 
-				AddPlot(Brushes.DimGray,			NinjaTrader.Custom.Resource.NinjaScriptIndicatorDefault);
-				AddPlot(Brushes.Crimson,			NinjaTrader.Custom.Resource.TRIXSignal);
+				AddPlot(Brushes.DimGray,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorDefault);
+				AddPlot(Brushes.Crimson,		NinjaTrader.Custom.Resource.TRIXSignal);
 				AddLine(Brushes.DarkGray, 0,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorZeroLine);
 			}
 			else if (State == State.DataLoaded)
 			{
 				emaTriple	= EMA(EMA(EMA(Inputs[0], Period), Period), Period);
-				emaDefault	= EMA(Default, SignalPeriod); 
+				emaDefault	= EMA(Default, SignalPeriod);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
-			if (CurrentBar == 0) 
+			if (CurrentBar == 0)
 			{
 				Value[0] = Input[0];
 				return;
@@ -79,22 +79,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[0]; }
 		}
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
-		public int Period 
+		public int Period
 		{ get; set; }
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> Signal
 		{
 			get { return Values[1]; }
 		}
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "SignalPeriod", GroupName = "NinjaScriptParameters", Order = 1)]
-		public int SignalPeriod 
+		public int SignalPeriod
 		{ get; set; }
 		#endregion
 	}

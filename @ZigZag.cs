@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,21 +28,21 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The ZigZag indicator shows trend lines filtering out changes below a defined level. 
+	/// The ZigZag indicator shows trend lines filtering out changes below a defined level.
 	/// </summary>
 	public class ZigZag : Indicator
 	{
-		private Series<double>		zigZagHighZigZags; 
-		private Series<double>		zigZagLowZigZags; 
-		private Series<double>		zigZagHighSeries; 
+		private Series<double>		zigZagHighZigZags;
+		private Series<double>		zigZagLowZigZags;
+		private Series<double>		zigZagHighSeries;
 		private Series<double>		zigZagLowSeries;
-		
+
 		private double				currentZigZagHigh;
 		private double				currentZigZagLow;
 		private int					lastSwingIdx;
 		private double				lastSwingPrice;
-		private int					trendDir; 
-		
+		private int					trendDir;
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -79,9 +79,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 				zigZagLowSeries		= new Series<double>(this, MaximumBarsLookBack.Infinite);
 			}
 		}
-	
+
 		// Returns the number of bars ago a zig zag low occurred. Returns a value of -1 if a zig zag low is not found within the look back period.
-		public int LowBar(int barsAgo, int instance, int lookBackPeriod) 
+		public int LowBar(int barsAgo, int instance, int lookBackPeriod)
 		{
 			if (instance < 1)
 				throw new Exception(string.Format(NinjaTrader.Custom.Resource.ZigZagLowBarInstanceGreaterEqual, GetType().Name, instance));
@@ -102,16 +102,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 					continue;
 
 				if (instance == 1) // 1-based, < to be save
-					return CurrentBar - idx;	
+					return CurrentBar - idx;
 
 				instance--;
 			}
-	
+
 			return -1;
 		}
 
 		// Returns the number of bars ago a zig zag high occurred. Returns a value of -1 if a zig zag high is not found within the look back period.
-		public int HighBar(int barsAgo, int instance, int lookBackPeriod) 
+		public int HighBar(int barsAgo, int instance, int lookBackPeriod)
 		{
 			if (instance < 1)
 				throw new Exception(string.Format(NinjaTrader.Custom.Resource.ZigZagHighBarInstanceGreaterEqual, GetType().Name, instance));
@@ -175,10 +175,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 											|| (DeviationType == DeviationType.Points && IsPriceGreater(lastSwingPrice - DeviationValue, lowSeries[1]));
 
 			double	saveValue	= 0.0;
-			bool	addHigh		= false; 
-			bool	addLow		= false; 
-			bool	updateHigh	= false; 
-			bool	updateLow	= false; 
+			bool	addHigh		= false;
+			bool	addLow		= false;
+			bool	updateHigh	= false;
+			bool	updateLow	= false;
 
 			zigZagHighZigZags[0]	= 0;
 			zigZagLowZigZags[0]		= 0;
@@ -189,25 +189,25 @@ namespace NinjaTrader.NinjaScript.Indicators
 				zigZagLowSeries[0]	= currentZigZagLow;
 				return;
 			}
-			
+
 			if (trendDir <= 0 && isSwingHigh && isOverHighDeviation)
-			{	
+			{
 				saveValue	= highSeries[1];
 				addHigh		= true;
 				trendDir	= 1;
-			}	
+			}
 			else if (trendDir >= 0 && isSwingLow && isOverLowDeviation)
-			{	
+			{
 				saveValue	= lowSeries[1];
 				addLow		= true;
 				trendDir	= -1;
-			}	
-			else if (trendDir == 1 && isSwingHigh && IsPriceGreater(highSeries[1], lastSwingPrice)) 
+			}
+			else if (trendDir == 1 && isSwingHigh && IsPriceGreater(highSeries[1], lastSwingPrice))
 			{
 				saveValue	= highSeries[1];
 				updateHigh	= true;
 			}
-			else if (trendDir == -1 && isSwingLow && IsPriceGreater(lastSwingPrice, lowSeries[1])) 
+			else if (trendDir == -1 && isSwingLow && IsPriceGreater(lastSwingPrice, lowSeries[1]))
 			{
 				saveValue	= lowSeries[1];
 				updateLow	= true;
@@ -235,7 +235,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					zigZagHighSeries[1]		= currentZigZagHigh;
 					Value[1]				= currentZigZagHigh;
 				}
-				else if (addLow || updateLow) 
+				else if (addLow || updateLow)
 				{
 					zigZagLowZigZags[1]	= saveValue;
 					zigZagLowZigZags[0]	= 0;
@@ -252,7 +252,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			zigZagHighSeries[0]	= currentZigZagHigh;
 			zigZagLowSeries[0]	= currentZigZagLow;
 		}
-		
+
 		#region Properties
 		/// <summary>
 		/// Gets the ZigZag high points.
@@ -261,28 +261,28 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "DeviationType", GroupName = "NinjaScriptParameters", Order = 0)]
 		public DeviationType DeviationType
 		{ get; set; }
-		
+
 		[Range(0, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "DeviationValue", GroupName = "NinjaScriptParameters", Order = 1)]
 		public double DeviationValue
 		{ get; set; }
-		
+
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "UseHighLow", GroupName = "NinjaScriptParameters", Order = 2)]
 		public bool UseHighLow
 		{ get; set; }
-		
+
 		[Browsable(false)]
 		[XmlIgnore()]
 		public Series<double> ZigZagHigh
 		{
 			get
-			{	
+			{
 				Update();
 				return zigZagHighSeries;
 			}
 		}
-				
+
 		/// <summary>
 		/// Gets the ZigZag low points.
 		/// </summary>
@@ -290,14 +290,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[XmlIgnore()]
 		public Series<double> ZigZagLow
 		{
-			get 
-			{ 
+			get
+			{
 				Update();
-				return zigZagLowSeries; 
+				return zigZagLowSeries;
 			}
 		}
 		#endregion
-		
+
 		#region Miscellaneous
 		private bool IsPriceGreater(double a, double b)
 		{
@@ -313,9 +313,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			for (int seriesCount = 0; seriesCount < Values.Length; seriesCount++)
 			{
-				for (int idx = ChartBars.FromIndex; idx <= ChartBars.ToIndex; idx++)
+				for (int idx = ChartBars.FromIndex - Displacement; idx <= ChartBars.ToIndex + Displacement; idx++)
 				{
-					if (idx > Bars.Count - 1 - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 1 : 0)) continue;
+					if (idx < 0 || idx > Bars.Count - 1 - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 1 : 0))
+						continue;
 					if (zigZagHighZigZags.IsValidDataPointAt(idx) && zigZagHighZigZags.GetValueAt(idx) != 0)
 						MaxValue = Math.Max(MaxValue, zigZagHighZigZags.GetValueAt(idx));
 					if (zigZagLowZigZags.IsValidDataPointAt(idx) && zigZagLowZigZags.GetValueAt(idx) != 0)
@@ -326,49 +327,56 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override Point[] OnGetSelectionPoints(ChartControl chartControl, ChartScale chartScale)
 		{
-			if (!IsSelected || Count == 0 || Plots[0].Brush.IsTransparent()) 
+			if (!IsSelected || Count == 0 || Plots[0].Brush.IsTransparent())
 				return new System.Windows.Point[0];
+
 			List<System.Windows.Point> points = new List<System.Windows.Point>();
 
 			int lastIndex	= Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? ChartBars.ToIndex - 1 : ChartBars.ToIndex - 2;
 
-			for (int i = Math.Max(0, ChartBars.FromIndex - Displacement); i <= Math.Max(lastIndex, Math.Min(lastIndex - Displacement, lastIndex)); i++)
+			for (int i = Math.Max(0, ChartBars.FromIndex - Displacement); i <= Math.Max(lastIndex, Math.Min(Bars.Count - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 2 : 1), lastIndex - Displacement)); i++)
 			{
-				int x = Displacement != 0 ? chartControl.GetXByTime(ChartBars.GetTimeByBarIdx(chartControl, i + Displacement)) : chartControl.GetXByBarIndex(ChartBars, i);
+				int x = (chartControl.BarSpacingType == BarSpacingType.TimeBased || chartControl.BarSpacingType == BarSpacingType.EquidistantMulti && i + Displacement >= ChartBars.Count
+					? chartControl.GetXByTime(ChartBars.GetTimeByBarIdx(chartControl, i + Displacement))
+					: chartControl.GetXByBarIndex(ChartBars, i + Displacement));
 
 				if (Value.IsValidDataPointAt(i))
 					points.Add(new System.Windows.Point(x, chartScale.GetYByValue(Value.GetValueAt(i))));
 			}
 			return points.ToArray();
 		}
-		
+
 		protected override void OnRender(Gui.Chart.ChartControl chartControl, Gui.Chart.ChartScale chartScale)
 		{
 			if (Bars == null || chartControl == null)
 				return;
+
 			IsValidDataPointAt(Bars.Count - 1 - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 1 : 0)); // Make sure indicator is calculated until last (existing) bar
 			int preDiff = 1;
-			for (int i = ChartBars.FromIndex - 1; i >= BarsRequiredToPlot; i--)
+			for (int i = ChartBars.FromIndex - 1; i >= 0; i--)
 			{
-				if (i < 0)
+				if (i - Displacement < 0 || i - Displacement > Bars.Count - 1 - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 1 : 0))
 					break;
 
-				bool isHigh	= zigZagHighZigZags.IsValidDataPointAt(i) && zigZagHighZigZags.GetValueAt(i) > 0;
-				bool isLow	= zigZagLowZigZags.IsValidDataPointAt(i) && zigZagLowZigZags.GetValueAt(i) > 0;
-				
+				bool isHigh	= zigZagHighZigZags.IsValidDataPointAt(i - Displacement) && zigZagHighZigZags.GetValueAt(i - Displacement) > 0;
+				bool isLow	= zigZagLowZigZags.IsValidDataPointAt(i - Displacement) && zigZagLowZigZags.GetValueAt(i - Displacement) > 0;
+
 				if (isHigh || isLow)
 					break;
 
 				preDiff++;
 			}
+
+			preDiff -= (Displacement < 0 ? Displacement : 0 - Displacement);
+
 			int postDiff = 0;
 			for (int i = ChartBars.ToIndex; i <= zigZagHighZigZags.Count; i++)
 			{
-				if (i > Bars.Count - 1 - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 1 : 0))
+				if (i - Displacement < 0 || i - Displacement > Bars.Count - 1 - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 1 : 0))
 					break;
 
-				bool isHigh	= zigZagHighZigZags.IsValidDataPointAt(i) && zigZagHighZigZags.GetValueAt(i) > 0;
-				bool isLow	= zigZagLowZigZags.IsValidDataPointAt(i) && zigZagLowZigZags.GetValueAt(i) > 0;
+				bool isHigh	= zigZagHighZigZags.IsValidDataPointAt(i - Displacement) && zigZagHighZigZags.GetValueAt(i - Displacement) > 0;
+				bool isLow	= zigZagLowZigZags.IsValidDataPointAt(i - Displacement) && zigZagLowZigZags.GetValueAt(i - Displacement) > 0;
 
 				if (isHigh || isLow)
 					break;
@@ -376,14 +384,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 				postDiff++;
 			}
 
-			int		lastIdx		= -1; 
-			double	lastValue	= -1; 
+			postDiff += (Displacement < 0 ? 0 - Displacement : Displacement);
+
+			int		lastIdx		= -1;
+			double	lastValue	= -1;
 			SharpDX.Direct2D1.PathGeometry	g		= null;
 			SharpDX.Direct2D1.GeometrySink	sink	= null;
 
 			for (int idx = ChartBars.FromIndex - preDiff; idx <= ChartBars.ToIndex + postDiff; idx++)
 			{
-				if (idx - Displacement < 0 || idx - Displacement > Bars.Count - 1  - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 1 : 0) || idx - Displacement < BarsRequiredToPlot)
+				if (idx < 0 || idx > Bars.Count - (Calculate == NinjaTrader.NinjaScript.Calculate.OnBarClose ? 2 : 1) || idx < Math.Max(BarsRequiredToPlot - Displacement, Displacement))
 					continue;
 
 				bool isHigh	= zigZagHighZigZags.IsValidDataPointAt(idx) && zigZagHighZigZags.GetValueAt(idx) > 0;
@@ -391,16 +401,20 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				if (!isHigh && !isLow)
 					continue;
-					
+
 				double value = isHigh ? zigZagHighZigZags.GetValueAt(idx) : zigZagLowZigZags.GetValueAt(idx);
 				if (lastValue >= 0)
-				{	
-					float x1	= chartControl.GetXByBarIndex(ChartBars, idx);
+				{
+					float x1	= (chartControl.BarSpacingType == BarSpacingType.TimeBased || chartControl.BarSpacingType == BarSpacingType.EquidistantMulti && idx + Displacement >= ChartBars.Count
+						? chartControl.GetXByTime(ChartBars.GetTimeByBarIdx(chartControl, idx + Displacement))
+						: chartControl.GetXByBarIndex(ChartBars, idx + Displacement));
 					float y1	= chartScale.GetYByValue(value);
 
 					if (sink == null)
 					{
-						float x0	= chartControl.GetXByBarIndex(ChartBars, lastIdx);
+						float x0	= (chartControl.BarSpacingType == BarSpacingType.TimeBased || chartControl.BarSpacingType == BarSpacingType.EquidistantMulti && lastIdx + Displacement >= ChartBars.Count
+						? chartControl.GetXByTime(ChartBars.GetTimeByBarIdx(chartControl, lastIdx + Displacement))
+						: chartControl.GetXByBarIndex(ChartBars, lastIdx + Displacement));
 						float y0	= chartScale.GetYByValue(lastValue);
 						g			= new SharpDX.Direct2D1.PathGeometry(Core.Globals.D2DFactory);
 						sink		= g.Open();
@@ -410,8 +424,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				}
 
 				// Save as previous point
-				lastIdx		= idx; 
-				lastValue	= value; 
+				lastIdx		= idx;
+				lastValue	= value;
 			}
 
 			if (sink != null)

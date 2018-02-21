@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,13 +28,13 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The StochRSI is an oscillator similar in computation to the stochastic measure, 
-	/// except instead of price values as input, the StochRSI uses RSI values. 
-	/// The StochRSI computes the current position of the RSI relative to the high and 
-	/// low RSI values over a specified number of days. The intent of this measure, 
-	/// designed by Tushard Chande and Stanley Kroll, is to provide further information 
-	/// about the overbought/oversold nature of the RSI. The StochRSI ranges between 0.0 and 1.0. 
-	/// Values above 0.8 are generally seen to identify overbought levels and values below 0.2 are 
+	/// The StochRSI is an oscillator similar in computation to the stochastic measure,
+	/// except instead of price values as input, the StochRSI uses RSI values.
+	/// The StochRSI computes the current position of the RSI relative to the high and
+	/// low RSI values over a specified number of days. The intent of this measure,
+	/// designed by Tushard Chande and Stanley Kroll, is to provide further information
+	/// about the overbought/oversold nature of the RSI. The StochRSI ranges between 0.0 and 1.0.
+	/// Values above 0.8 are generally seen to identify overbought levels and values below 0.2 are
 	/// considered to indicate oversold conditions.
 	/// </summary>
 	public class StochRSI : Indicator
@@ -66,7 +66,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				max = MAX(rsi, Period);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double rsi0 = rsi[0];

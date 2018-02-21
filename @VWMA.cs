@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -30,7 +30,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	/// <summary>
 	/// The VWMA (Volume-Weighted Moving Average) returns the volume-weighted moving average
 	/// for the specified price series and period. VWMA is similar to a Simple Moving Average
-	/// (SMA), but each bar of data is weighted by the bar's Volume. VWMA places more significance 
+	/// (SMA), but each bar of data is weighted by the bar's Volume. VWMA places more significance
 	/// on the days with the largest volume and the least for the days with lowest volume for the period specified.
 	/// </summary>
 	public class VWMA : Indicator

@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,8 +28,8 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Average Directional Index measures the strength of a prevailing trend as well as whether movement 
-	/// exists in the market. The ADX is measured on a scale of 0  100. A low ADX value (generally less than 20) 
+	/// The Average Directional Index measures the strength of a prevailing trend as well as whether movement
+	/// exists in the market. The ADX is measured on a scale of 0  100. A low ADX value (generally less than 20)
 	/// can indicate a non-trending market with low volumes whereas a cross above 20 may indicate the start of
 	///  a trend (either up or down). If the ADX is over 40 and begins to fall, it can indicate the slowdown of a current trend.
 	/// </summary>
@@ -51,8 +51,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive	= true;
 				Period						= 14;
 
-				AddPlot(Brushes.DarkCyan,				NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameADX);
-				AddLine(Brushes.SlateBlue,		25,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
+				AddPlot(Brushes.DarkCyan,		NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameADX);
+				AddLine(Brushes.SlateBlue,	25,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorLower);
 				AddLine(Brushes.Goldenrod,	75,	NinjaTrader.Custom.Resource.NinjaScriptIndicatorUpper);
 			}
 			else if (State == State.DataLoaded)
@@ -65,12 +65,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tr			= new Series<double>(this);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			double high0	= High[0];
 			double low0		= Low[0];
-			
+
 			if (CurrentBar == 0)
 			{
 				tr[0]				= high0 - low0;
@@ -102,12 +102,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 					double sumTr1		= sumTr[1];
 					double sumDmPlus1	= sumDmPlus[1];
 					double sumDmMinus1	= sumDmMinus[1];
-						
+
 					sumTr[0]			= sumTr1 - sumTr1 / Period + tr[0];
 					sumDmPlus[0]		= sumDmPlus1 - sumDmPlus1 / Period + dmPlus[0];
 					sumDmMinus[0]		= sumDmMinus1 - sumDmMinus1 / Period + dmMinus[0];
 				}
-				
+
 				double sumTr0		= sumTr[0];
 				double diPlus		= 100 * (sumTr0.ApproxCompare(0) == 0 ? 0 : sumDmPlus[0] / sumTr[0]);
 				double diMinus		= 100 * (sumTr0.ApproxCompare(0) == 0 ? 0 : sumDmMinus[0] / sumTr[0]);

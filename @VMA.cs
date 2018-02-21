@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -29,19 +29,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
 	/// The VMA (Variable Moving Average, also known as VIDYA or Variable Index Dynamic Average)
-	///  is an exponential moving average that automatically adjusts the smoothing weight based 
-	/// on the volatility of the data series. VMA solves a problem with most moving averages. 
+	///  is an exponential moving average that automatically adjusts the smoothing weight based
+	/// on the volatility of the data series. VMA solves a problem with most moving averages.
 	/// In times of low volatility, such as when the price is trending, the moving average time
-	///  period should be shorter to be sensitive to the inevitable break in the trend. Whereas, 
-	/// in more volatile non-trending times, the moving average time period should be longer to 
-	/// filter out the choppiness. VIDYA uses the CMO indicator for it's internal volatility calculations. 
+	///  period should be shorter to be sensitive to the inevitable break in the trend. Whereas,
+	/// in more volatile non-trending times, the moving average time period should be longer to
+	/// filter out the choppiness. VIDYA uses the CMO indicator for it's internal volatility calculations.
 	/// Both the VMA and the CMO period are adjustable.
 	/// </summary>
 	public class VMA : Indicator
 	{
 		private CMO		cmo;
 		private double	sc;	//Smoothing Constant
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -64,10 +64,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				cmo = CMO(Inputs[0], VolatilityPeriod);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
-			if (CurrentBar == 0) 
+			if (CurrentBar == 0)
 			{
 				Value[0] = Input[0];
 				return;
@@ -83,7 +83,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int Period
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "VolatilityPeriod", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int VolatilityPeriod

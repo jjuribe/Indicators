@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -334,7 +334,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				RenderTarget.DrawLine(startPoint.ToVector2(), endPoint.ToVector2(), plot.BrushDX, plot.Width, plot.StrokeStyle);
 
 				// Draw pivot text
-				TextLayout textLayout = new TextLayout(Globals.DirectWriteFactory, plot.Name, textFormat, 20, textFormat.FontSize);
+				TextLayout textLayout = new TextLayout(Globals.DirectWriteFactory, plot.Name, textFormat, ChartPanel.W, textFormat.FontSize);
 				RenderTarget.DrawTextLayout(startPoint.ToVector2(), textLayout, plot.BrushDX);
 				textLayout.Dispose();
 			}
@@ -360,7 +360,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 
 		[NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "HLCCalculationMode", Description = "Approach for calculation the prior day HLC values.", GroupName = "NinjaScriptParameters", Order = 1)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "HLCCalculationMode", GroupName = "NinjaScriptParameters", Order = 1)]
 		[RefreshProperties(RefreshProperties.All)] // Update UI when value is changed
 		public HLCCalculationMode PriorDayHlc
 		{

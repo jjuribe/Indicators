@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,11 +28,11 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Volume Oscillator measures volume by calculating the difference of a fast and 
-	/// a slow moving average of volume. The Volume Oscillator can provide insight into the 
-	/// strength or weakness of a price trend. A positive value suggests there is enough 
-	/// market support to continue driving price activity in the direction of the current 
-	/// trend. A negative value suggests there is a lack of support, that prices may begin 
+	/// The Volume Oscillator measures volume by calculating the difference of a fast and
+	/// a slow moving average of volume. The Volume Oscillator can provide insight into the
+	/// strength or weakness of a price trend. A positive value suggests there is enough
+	/// market support to continue driving price activity in the direction of the current
+	/// trend. A negative value suggests there is a lack of support, that prices may begin
 	/// to become stagnant or reverse.
 	/// </summary>
 	public class VolumeOscillator : Indicator
@@ -52,7 +52,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Fast						= 12;
 				Slow						= 26;
 
-				AddPlot(new Stroke(Brushes.DodgerBlue, 2), PlotStyle.Bar, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVolumeOscillator); 
+				AddPlot(new Stroke(Brushes.DodgerBlue, 2), PlotStyle.Bar, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameVolumeOscillator);
 			}
 			else if (State == State.DataLoaded)
 			{
@@ -68,7 +68,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				}
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			Value[0] = smaFast[0] - smaSlow[0];
@@ -78,13 +78,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof (Custom.Resource), Name = "Fast", GroupName = "NinjaScriptParameters", Order = 0)]
-		public int Fast 
+		public int Fast
 		{ get; set; }
 
 
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof (Custom.Resource), Name = "Slow", GroupName = "NinjaScriptParameters", Order = 1)]
-		public int Slow 
+		public int Slow
 		{ get; set; }
 
 		#endregion

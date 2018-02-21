@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// The Hull Moving Average (HMA) employs weighted MA calculations to offer superior 
+	/// The Hull Moving Average (HMA) employs weighted MA calculations to offer superior
 	/// smoothing, and much less lag, over traditional SMA indicators.
 	/// This indicator is based on the reference article found here:
 	/// http://www.justdata.com.au/Journals/AlanHull/hull_ma.htm
@@ -39,7 +39,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private WMA	wma1;
 		private WMA wma2;
 		private WMA wmaDiffSeries;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -60,7 +60,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				wmaDiffSeries	= WMA(diffSeries, (int) Math.Sqrt(Period));
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			diffSeries[0]	= 2 * wma1[0] - wma2[0];

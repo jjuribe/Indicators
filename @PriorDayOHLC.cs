@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -58,9 +58,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ShowHigh					= true;
 				ShowOpen					= true;
 
-				AddPlot(new Stroke(Brushes.SteelBlue,		DashStyleHelper.Dash,	2),	PlotStyle.Hash, NinjaTrader.Custom.Resource.PriorDayOHLCOpen);
-				AddPlot(new Stroke(Brushes.DarkCyan,								2),	PlotStyle.Hash, NinjaTrader.Custom.Resource.PriorDayOHLCHigh);
-				AddPlot(new Stroke(Brushes.Crimson,									2),	PlotStyle.Hash, NinjaTrader.Custom.Resource.PriorDayOHLCLow);
+				AddPlot(new Stroke(Brushes.SteelBlue,	DashStyleHelper.Dash,	2),	PlotStyle.Hash, NinjaTrader.Custom.Resource.PriorDayOHLCOpen);
+				AddPlot(new Stroke(Brushes.DarkCyan,							2),	PlotStyle.Hash, NinjaTrader.Custom.Resource.PriorDayOHLCHigh);
+				AddPlot(new Stroke(Brushes.Crimson,								2),	PlotStyle.Hash, NinjaTrader.Custom.Resource.PriorDayOHLCLow);
 				AddPlot(new Stroke(Brushes.SlateBlue,	DashStyleHelper.Dash,	2),	PlotStyle.Hash, NinjaTrader.Custom.Resource.PriorDayOHLCClose);
 			}
 			else if (State == State.Configure)
@@ -109,7 +109,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if (ShowHigh)	PriorHigh[0]	= priorDayHigh;
 				if (ShowLow)	PriorLow[0]		= priorDayLow;
 				if (ShowClose)	PriorClose[0]	= priorDayClose;
-				
+
 				// Initilize the current day settings to the new days data
 				currentOpen 	=	Open[0];
 				currentHigh 	=	High[0];
@@ -140,22 +140,22 @@ namespace NinjaTrader.NinjaScript.Indicators
 			get { return Values[0]; }
 		}
 
-		[Browsable(false)]	
-		[XmlIgnore()]		
+		[Browsable(false)]
+		[XmlIgnore()]
 		public Series<double> PriorHigh
 		{
 			get { return Values[1]; }
 		}
 
-		[Browsable(false)]	
-		[XmlIgnore()]		
+		[Browsable(false)]
+		[XmlIgnore()]
 		public Series<double> PriorLow
 		{
 			get { return Values[2]; }
 		}
 
-		[Browsable(false)]	
-		[XmlIgnore()]		
+		[Browsable(false)]
+		[XmlIgnore()]
 		public Series<double> PriorClose
 		{
 			get { return Values[3]; }

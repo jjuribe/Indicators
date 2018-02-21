@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -57,7 +57,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				AddPlot(Brushes.Goldenrod, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameLinRegIntercept);
 			}
 			else if (State == State.Configure)
-			{	
+			{
 				avg	= divisor = myPeriod = priorSumXY = priorSumY = slope = sumX = sumX2 = sumY = sumXY = 0;
 			}
 			else if (State == State.DataLoaded)
@@ -100,7 +100,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Value[0] = CurrentBar == 0 ? input0 : (sum[0] - slope * sumX) / myPeriod;
 			}
 		}
-		
+
 		#region Properties
 		[Range(2, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Period", GroupName = "NinjaScriptParameters", Order = 0)]

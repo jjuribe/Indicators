@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2017, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2018, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -28,7 +28,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	/// <summary>
-	/// RIND (Range Indicator) compares the intraday range (high - low) to the 
+	/// RIND (Range Indicator) compares the intraday range (high - low) to the
 	/// inter-day (close - previous close) range. When the intraday range is greater
 	/// than the inter-day range, the Range Indicator will be a high value. This
 	/// signals an end to the current trend. When the Range Indicator is at a low
@@ -41,7 +41,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private MAX				max;
 		private Series<double>	stochRange;
 		private Series<double>	val1;
-		
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -55,7 +55,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				AddPlot(Brushes.DarkCyan, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameRIND);
 			}
-			
+
 			else if (State == State.DataLoaded)
 			{
 				stochRange 	= new Series<double>(this);
@@ -65,7 +65,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				max			= MAX(val1, PeriodQ);
 			}
 		}
-		
+
 		protected override void OnBarUpdate()
 		{
 			if (CurrentBar == 0)
@@ -102,7 +102,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(ResourceType = typeof(Custom.Resource), Name = "PeriodQ", GroupName = "NinjaScriptParameters", Order = 0)]
 		public int PeriodQ
 		{ get; set; }
-		
+
 		[Range(1, int.MaxValue), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Smooth", GroupName = "NinjaScriptParameters", Order = 1)]
 		public int Smooth
