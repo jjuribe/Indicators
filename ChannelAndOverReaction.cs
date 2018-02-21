@@ -48,9 +48,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		/// stops
 		private double 	stopLine;
-		private double 	trailStop;
+		private double 	trailStop = 0.0;
 		private double  lossInPonts;
 		private bool	autoStop = true;
+		private double  entryBarnum;
+		private double  stopDistance;
 		
 		///  indicators
 		private MarketCondition MarketCondition1;
@@ -65,6 +67,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public string textForBox;
 		public string textForBoxToAdd;
 		public string entryType;
+		
+		Gui.Chart.Chart myChart;
+		Gui.Chart.ChartTrader chartTrader;
 		
 		protected override void OnStateChange()
 		{
@@ -117,6 +122,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 			textForBox = textForBox + textForBoxToAdd;
 			setTextBox( textInBox: textForBox);
 			
+			if (Low[0] > Low[1]) {
+				double newStop =  Low[0] - stopDistance;
+				if (newStop > trailStop) {
+					trailStop = newStop;
+				}
+			}
+			Draw.TriangleUp(this,"trailStop"+CurrentBar.ToString(), false, 0, trailStop, Brushes.DimGray);
+			
+			
 		}
 		
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,23 +163,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 						if (exchange.ToString() == "Nasdaq") {
 							Print("\tListed on Nasdaq, Change stiop to 5%");
 							pct = 5;
-						}
-						
+						}						
 					}
 				} 
 			double convertedPct = pct * 0.01;
 
 			if (isLong) {
-				result = Close[0] - ( Close[0] * convertedPct);
-				
-				//double target1 = Close[0] + ( Close[0] * convertedPct);
-				Draw.RiskReward(this, "MyRiskReward", true, 0, Close[0], 10, result, 0.5, true);
-				double target2 =  MAX(SMA(10), 20)[0];
-				double sharesText = result - (Instrument.MasterInstrument.PointValue * 0.3);
-				sharesText = MIN(Low, 20)[0];
-				Draw.Line(this, "target2", false, 0, target2, -10, target2, Brushes.Silver, DashStyleHelper.Dash, 3);
-				Draw.Text(this, "shares", sharesFraction.ToString("0"), 0, sharesText, ChartControl.Properties.ChartText);
-				
+				stopDistance =  Close[0] * convertedPct;
+				result = Close[0] - stopDistance;
+				drawStopTarget(stop: result );
+				///sendSharesToCT(stops: result, targets: 22.2 );
+				trailStop = result;
+				entryBarnum = CurrentBar;
 			} else {
 				result = Close[0] + ( Close[0] * convertedPct);
 			}
@@ -173,6 +182,41 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			
 			return result; 
+		}
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 							Send Shares to Chart Trader
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		protected void sendSharesToCT(double stops, double targets)
+		{
+			//find chart trader from myChart's Chart Control by its Automation ID: "ChartWindowChartTrader"
+			  chartTrader = Window.GetWindow(myChart.ActiveChartControl.Parent).FindFirst("ChartWindowChartTraderControl") as Gui.Chart.ChartTrader;
+			 //chartTrader.SetCurrentValue(order
+			  if (chartTrader == null)
+			  {
+			      return;
+			  }
+			/// Here is an example of changing a stop:
+			///AtmStrategyChangeStopTarget(0, stops, "Stop1", atmStrategyId);
+			/// Here is an example of changing a profit target:
+			///AtmStrategyChangeStopTarget(targets, 0, "Target1", atmStrategyId);
+			
+		}
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 							Show Stop Target Size On Chart
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		protected void drawStopTarget(double stop)
+		{
+			double result = stop;
+			Draw.RiskReward(this, "MyRiskReward", true, 0, Close[0], 10, result, 0.5, true);
+			double target2 =  MAX(SMA(10), 20)[0];
+			double sharesText = result - (Instrument.MasterInstrument.PointValue * 0.3);
+			sharesText = MIN(Low, 20)[0];
+			Draw.Line(this, "target2", false, 0, target2, -10, target2, Brushes.Silver, DashStyleHelper.Dash, 3);
+			Draw.Text(this, "shares", sharesFraction.ToString("0"), 0, sharesText, ChartControl.Properties.ChartText);
 		}
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
@@ -196,6 +240,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			return signal;
 		}
+		
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
 		/// 									Overreaction Long
