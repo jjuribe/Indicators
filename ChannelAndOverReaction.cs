@@ -228,7 +228,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bool signal = false;		// && High[0] < SMA(10)[0] 
 			if ( Close[0] > Math.Abs(sma0[0]) && WilliamsR(10)[0] < -80 ){
 				//signal = true;
-				Draw.Dot(this, "CH"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.DarkGreen);
+				//Draw.Dot(this, "CH"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.DarkGreen);
 				
 				double theStop = calcInitialStop(pct: Pct, isLong: true);
 				shares = calcPositionSize(stopPrice: theStop, isLong: true); 
@@ -236,6 +236,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				textForBox = popuateStatsTextBox( entryType: entryType, shares: shares, maxLoss: MaxRisk , stopPrice: theStop);
 				Print(Time[0].ToShortDateString() +"\n"+ textForBox);
 				Draw.Text(this, "stop"+CurrentBar, "-", 0, theStop);
+				Draw.ArrowUp(this, "entryArruw"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.DodgerBlue);
 			}
 			
 			return signal;
@@ -253,7 +254,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if ((Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && Close[0] < ( SMA(10)[0]- ATR(14)[1])) ||
 				(Close[0] > Math.Abs(sma0[0])  && High[0] < SMA(10)[0] && Close[0] < ( SMA(10)[0]- onePercent )) ){
 				signal = true;
-				Draw.Dot(this, "ORl"+CurrentBar, true, 0, Low[0] - (TickSize * 60), Brushes.Cyan);
+				Draw.Dot(this, "ORl"+CurrentBar, true, 0, MIN(Low,20)[0]- (TickSize * 60), Brushes.DodgerBlue);
 					
 				double theStop = calcInitialStop(pct: Pct, isLong: true);
 				shares = calcPositionSize(stopPrice: theStop, isLong: true); 
@@ -320,7 +321,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			TextFixed myTF = Draw.TextFixed(this, "tradeStat", textInBox, TextPosition.BottomLeft);
 			myTF.TextPosition = TextPosition.TopLeft;
 			myTF.AreaBrush = Brushes.Black;
-			myTF.AreaOpacity = 100;
+			myTF.AreaOpacity = 30;
 			myTF.TextBrush = Brushes.LightGray;
 		}
 		

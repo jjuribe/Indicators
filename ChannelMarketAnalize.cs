@@ -53,12 +53,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
-			if (CurrentBar < 200 )
+			if (CurrentBar < 1 )
 				Value[0] = 0;
 			else
 			{
 				Value[0] = entryConditionsChannel(); 
-				//Value[0] = 100;
 			}
 		}
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,15 +69,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			Double signal = 0;		// && High[0] < SMA(10)[0] 
 			if ( Close[0] > Math.Abs(SMA(200)[0]) && Close[0] < Math.Abs(SMA(10)[0]) && WilliamsR(10)[0] < -80 ) { //  
-				//signal = true;
-				//Draw.Dot(this, "CH"+CurrentBar, true, 0, Low[0] - (TickSize * 20), Brushes.DarkGreen);
 				signal = 1;
-				//double theStop = calcInitialStop(pct: Pct, isLong: true);
-				//shares = calcPositionSize(stopPrice: theStop, isLong: true); 
-				//entryType = "Channel";
-				//textForBox = popuateStatsTextBox( entryType: entryType, shares: shares, maxLoss: MaxRisk , stopPrice: theStop);
-				//Print(Time[0].ToShortDateString() +"\n"+ textForBox);
-				//Draw.Text(this, "stop"+CurrentBar, "-", 0, theStop);
 			} else {
 				signal = 0;
 			}
