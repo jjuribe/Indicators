@@ -33,6 +33,24 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 		private string[] fileNames;
 		
+		private struct PriceData
+		{
+			/// Date, Ticker, profit, exit name, profit factor, Consecutive losers, largest loser, largest winner, profit per month
+			public  string 	date 	{ get; set; }
+			public  string 	ticker 	{ get; set; }
+			public  double 	profit 	{ get; set; }
+			public  string 	exitName 	{ get; set; }
+			public  double 	profitFactor 	{ get; set; }
+			
+			public  double 	consecutiveLosers 	{ get; set; }
+			public  double 	largestLoser 	{ get; set; }
+			public  double 	largestWinner 	{ get; set; }
+			public  double 	profitPerMonth 	{ get; set; }
+		}
+		
+		private PriceData priceData = new PriceData{};
+		private List<PriceData> myList = new List<PriceData>();
+		
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -61,15 +79,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ClearOutputWindow(); 
 				fileNames = getTickerNames();
 				loopThrough(files: fileNames);
-				
-				
 			}
 		}
 
 		protected override void OnBarUpdate()
 		{
-			//getTickerNames();
-			//loadCSV(ticker: "AAPL");
 		}
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
@@ -95,7 +109,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			
 			var dateTime = DateTime.Today.ToString("MM_dd_yyyy") ;
 			var filePath = systemPath+ @"\Channel"+"_"+ dateTime;
-			
 			// Put all file names in root directory into array.
 	        string[] array1 = Directory.GetFiles(filePath);
 			return array1;
