@@ -85,6 +85,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected override void OnBarUpdate()
 		{
 		}
+		
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 									Create Struct from line
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		private void createStructFrom(string eachLine) {
+			
+			
+		}
+	
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
 		/// 									Get files in folder
@@ -141,6 +152,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					line = sr.ReadLine();
 				}
 
+				createStructFrom(eachLine:line);
 				//close the file
 				sr.Close();
 				Console.ReadLine();
