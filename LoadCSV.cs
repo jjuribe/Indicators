@@ -21,6 +21,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 using System.IO;
 using System.Windows.Forms;
+//using System.Xml.Linq;
 
 #endregion
 
@@ -53,10 +54,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 			public  double 	largestLoser 	{ get; set; }
 			public  double 	largestWinner 	{ get; set; }
 			public  double 	profitPerMonth 	{ get; set; }
-		}
+		};
 		
 		private TradeResults tradeResults = new TradeResults{};
 		private List<TradeResults> allTradeResults = new List<TradeResults>();
+		
+		TradeResults[] arr = new TradeResults[]{};
+		
 		private int  fileCount;
 		private int  filesParsedCount;
 		
@@ -87,12 +91,46 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{				
 				ClearOutputWindow(); 
 				fileNames = getFileNames();
-				readAllofThe(files: fileNames);
+				readAllofThe(files: fileNames, debug: false);
 			}
 		}
 
 		protected override void OnBarUpdate()
 		{
+		}
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 	
+		/// 									Filter Struct
+		/// 
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		private void ListFiltering(List<TradeResults> allStructs)
+		{
+
+		    Print("List Filtering");
+
+			var results = allStructs.Where(o => o.ticker.Contains("AAPL") && o.profit > 0.0);
+			foreach ( var thing in results ) {
+				Print(thing.ticker);	
+			}
+			
+//			var results =   from myobject in myobjects 
+//                where myobject.description == "test"
+//                select myobject;
+			
+
+//		    Print("");
+//		    //Lambda Filter Method
+//		    Print("List Filter Lambda Way");
+//		    foreach (var tradeResult in allStructs.Where(tradeResult => (tradeResult.ticker == "MSFT"))) // && tradeResult. < 30))) //.Where is an extension method
+//		        Print(tradeResult.ticker + " is " ); //+ p.Age);
+
+//		    Console.WriteLine("");
+//		    //LINQ Query Method
+//		    Console.WriteLine("List Filter LINQ Way:");
+//		    foreach (var v in from p in PersonList
+//		                      where p.Gender == "M" && p.Age < 30
+//		                      select new { p.Name, p.Age })
+//		        Console.WriteLine(v.Name + " is " + v.Age);
 		}
 		
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,26 +159,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 					columns[11] +"\t"+ 	// LW
 					columns[12] +"\t"); } // monthlyProfit
 				
-				/*
-				/// Trade Count, Date In, Date Out, Ticker, profit, cumProfit,
-			public  int 	tradeNum 	{ get; set; }
-			public  string 	dateEntry 	{ get; set; }
-			public  string 	dateExit 	{ get; set; }
-			public  string 	ticker 	{ get; set; }
-			public  double 	profit 	{ get; set; }
-			public  double 	cumProfit 	{ get; set; }
-			
-			/// exit name, profit factor, winPct, Consecutive losers, 
-			public  string 	exitName 	{ get; set; }
-			public  double 	profitFactor 	{ get; set; }
-			public  double 	winPct 	{ get; set; }
-			public  int 	consecutiveLosers 	{ get; set; }
-			
-			/// largest loser, largest winner, profit per month
-			public  double 	largestLoser 	{ get; set; }
-			public  double 	largestWinner 	{ get; set; }
-			public  double 	profitPerMonth 	{ get; set; }
-				*/
 				tradeResults.tradeNum = Convert.ToInt16(columns[0]);
 				tradeResults.dateEntry = columns[1];
 				tradeResults.dateExit = columns[2];
@@ -158,7 +176,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				tradeResults.profitPerMonth = Convert.ToDouble( columns[12]);
 				
 				allTradeResults.Add(tradeResults);
-				
+				//arr.Append(tradeResults);
 			}
 			
 			filesParsedCount += 1;
@@ -166,15 +184,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			///show struct array when filished
 			if ( filesParsedCount == fileCount ) {
 				Print("\n"+ filesParsedCount + " of " + fileCount + " ticker backtest files parsed\n");
-				Print("\nFinished with allTradeResults...");
+				Print("\nFinished with creating Structs...");
 				foreach (TradeResults thing in allTradeResults) {	
-					Print(thing.tradeNum +" \t\t\t"+ thing.dateEntry +"\t\t\t"+ thing.dateExit +" \t\t\t"+ thing.ticker +"\t\t\t"+ thing.profit + "\t\t\t"+ thing.cumProfit +
+					if ( debug ) { Print(thing.tradeNum +" \t\t\t"+ thing.dateEntry +"\t\t\t"+ thing.dateExit +" \t\t\t"+ thing.ticker +"\t\t\t"+ thing.profit + "\t\t\t"+ thing.cumProfit +
 					" \t\t\t"+ thing.exitName +"\t\t\t"+ thing.profitFactor +" \t\t\t"+ thing.winPct +"\t\t\t"+ thing.consecutiveLosers +
 					"\t\t\t"+ thing.largestLoser +" \t\t\t"+ thing.largestWinner +"\t\t\t"+ thing.profitPerMonth
-					
-					);
+					); }
 				}
+				ListFiltering(allStructs: allTradeResults);
 			}
+			
 		}
 	
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,19 +201,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 									Get files in folder
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		private void readAllofThe(string[] files) {
-			
-			Print("--- Files: ---");
+		private void readAllofThe(string[] files, bool debug) {
+			Print("--- Got "  +  files.Length.ToString() + " CSV Files: ---");
 			foreach (string name in fileNames)
 	        {
-	            Print(name);
-				readAllLinesFrom(filePath: name, debug: false);
+	            if ( debug ) { Print(name); }
+				readAllLinesFrom(filePath: name, debug: debug);
 	        }
 		}
 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
-		/// 									Get files in folder
+		/// 									Get file names
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		private string[] getFileNames() {
@@ -216,15 +234,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			try 
 			{
 				string[] oneFile = System.IO.File.ReadAllLines(filePath);
+				
 				createStructFrom(oneFile: oneFile, debug: false);
 			}
 			catch(Exception e)
 			{
-				Print("Exception: " + e.Message);
+				Print("\nALERT !!! readAllLinesFrom() Exception: " + e.Message);
 			}
 			finally 
 			{
-				Print("Executing finally block.");
+				if ( debug ) { Print("Executing finally block."); }
 				
 			}
 			
