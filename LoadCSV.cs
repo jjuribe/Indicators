@@ -33,23 +33,25 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 		private string[] fileNames;
 		
-		private struct PriceData
+		private struct TradeResults
 		{
 			/// Date, Ticker, profit, exit name, profit factor, Consecutive losers, largest loser, largest winner, profit per month
 			public  string 	date 	{ get; set; }
 			public  string 	ticker 	{ get; set; }
 			public  double 	profit 	{ get; set; }
-			public  string 	exitName 	{ get; set; }
-			public  double 	profitFactor 	{ get; set; }
+//			public  string 	exitName 	{ get; set; }
+//			public  double 	profitFactor 	{ get; set; }
 			
-			public  double 	consecutiveLosers 	{ get; set; }
-			public  double 	largestLoser 	{ get; set; }
-			public  double 	largestWinner 	{ get; set; }
-			public  double 	profitPerMonth 	{ get; set; }
+//			public  double 	consecutiveLosers 	{ get; set; }
+//			public  double 	largestLoser 	{ get; set; }
+//			public  double 	largestWinner 	{ get; set; }
+//			public  double 	profitPerMonth 	{ get; set; }
 		}
 		
-		private PriceData priceData = new PriceData{};
-		private List<PriceData> myList = new List<PriceData>();
+		private TradeResults tradeResults = new TradeResults{};
+		private List<TradeResults> allTradeResults = new List<TradeResults>();
+		private int  fileCount;
+		private int  filesParsedCount;
 		
 		protected override void OnStateChange()
 		{
@@ -77,8 +79,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if (State == State.DataLoaded)
 			{				
 				ClearOutputWindow(); 
-				fileNames = getTickerNames();
-				loopThrough(files: fileNames);
+				fileNames = getFileNames();
+				readAllofThe(files: fileNames);
 			}
 		}
 
@@ -91,9 +93,29 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 									Create Struct from line
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		private void createStructFrom(string eachLine) {
+		private void createStructFrom(string[] oneFile, bool debug) {
+
+			foreach (String rows in oneFile) {		
+				//Print(lines);
+				var columns = rows.Split(',');
+				if ( debug ) { Print(columns[0] +"\t"+ columns[1] +"\t"+ columns[2] +"\t"); }
+				tradeResults.date = columns[0];
+				tradeResults.ticker = columns[1];
+				tradeResults.profit = Convert.ToDouble( columns[2]);
+				allTradeResults.Add(tradeResults);
+				
+			}
 			
+			filesParsedCount += 1;
 			
+			///show struct array when filished
+			if ( filesParsedCount == fileCount ) {
+				Print("\n"+ filesParsedCount + " of " + fileCount + " ticker backtest files parsed\n");
+				Print("\nFinished with allTradeResults...");
+				foreach (TradeResults thing in allTradeResults) {	
+					Print(thing.date +" \t\t\t"+ thing.ticker +"\t\t\t"+ thing.profit);
+				}
+			}
 		}
 	
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,13 +123,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 									Get files in folder
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		private void loopThrough(string[] files) {
+		private void readAllofThe(string[] files) {
 			
 			Print("--- Files: ---");
 			foreach (string name in fileNames)
 	        {
 	            Print(name);
-				loadTickersFrom(filePath: name);
+				readAllLinesFrom(filePath: name, debug: false);
 	        }
 		}
 
@@ -116,54 +138,35 @@ namespace NinjaTrader.NinjaScript.Indicators
 		/// 									Get files in folder
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		private string[] getTickerNames() {
+		private string[] getFileNames() {
 			
 			var dateTime = DateTime.Today.ToString("MM_dd_yyyy") ;
 			var filePath = systemPath+ @"\Channel"+"_"+ dateTime;
 			// Put all file names in root directory into array.
 	        string[] array1 = Directory.GetFiles(filePath);
+			fileCount = array1.Length; 
 			return array1;
 		}
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 	
-		/// 									CSV Import
+		/// 									Read entire CSV 
 		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		private void loadTickersFrom(string filePath) {
+		private void readAllLinesFrom(string filePath, bool debug) {
 			
-			//var dateTime = DateTime.Today.ToString("MM_dd_yyyy") ;
-			//var filePath = systemPath+ @"\Channel"+"_"+ dateTime + @"\"+  ticker  + ".csv";
-			
-			String line;
 			try 
 			{
-				//Pass the file path and file name to the StreamReader constructor
-				StreamReader sr = new StreamReader(filePath);
-
-				//Read the first line of text
-				line = sr.ReadLine();
-
-				//Continue to read until you reach end of file
-				while (line != null) 
-				{
-					//write the lie to console window
-					Print(line);
-					//Read the next line
-					line = sr.ReadLine();
-				}
-
-				createStructFrom(eachLine:line);
-				//close the file
-				sr.Close();
-				Console.ReadLine();
-				}
+				string[] oneFile = System.IO.File.ReadAllLines(filePath);
+				createStructFrom(oneFile: oneFile, debug: false);
+			}
 			catch(Exception e)
 			{
 				Print("Exception: " + e.Message);
 			}
-			   finally 
+			finally 
 			{
 				Print("Executing finally block.");
+				
 			}
 			
 		}
