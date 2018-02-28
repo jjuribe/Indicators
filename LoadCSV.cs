@@ -56,11 +56,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			public  double 	profitPerMonth 	{ get; set; }
 		};
 		
-		private TradeResults tradeResults = new TradeResults{};
+		
 		private List<TradeResults> allTradeResults = new List<TradeResults>();
-		
-		TradeResults[] arr = new TradeResults[]{};
-		
 		private int  fileCount;
 		private int  filesParsedCount;
 		
@@ -107,40 +104,99 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 
 		    Print("List Filtering");
-
-			var results = allStructs.Where(o => o.ticker.Contains("AAPL") && o.profit > 0.0);
-			foreach ( var thing in results ) {
-				Print(thing.ticker);	
-			}
 			
-//			var results =   from myobject in myobjects 
-//                where myobject.description == "test"
-//                select myobject;
+			/// get a list of tickers in struct array
+			List<string> tickers = getPTickersFrom(allStructs: allStructs, debug: true);
+			
+			/// get a list of all profit fact0rs
+//			List<double> allPF = new List<double>();
+//			foreach ( var symbol in tickers ) {
+//				allPF.Add(getProfitFactor(allStructs: allStructs, ticker: symbol, debug: true));
+//			}
+
+			/// private List<TradeResults> allTradeResults = new List<TradeResults>();
+
+//			/// get an average of the pf averages
+//			List<double> avgPF = new List<double>();
+//		    foreach ( var list in allPF ) {
+//				/// show PF
+//				Print("Profit factor array (sum, avg, min, max) \t " + list);
+//				avgPF.Add(list.Item2);
+//				/// show profit
+//			}
+//			var avg = allPF.Average();
+//			Print("the avg profit factor is " + avg);
+			
+			
+			
+			
 			
 
-//		    Print("");
-//		    //Lambda Filter Method
-//		    Print("List Filter Lambda Way");
-//		    foreach (var tradeResult in allStructs.Where(tradeResult => (tradeResult.ticker == "MSFT"))) // && tradeResult. < 30))) //.Where is an extension method
-//		        Print(tradeResult.ticker + " is " ); //+ p.Age);
-
-//		    Console.WriteLine("");
-//		    //LINQ Query Method
-//		    Console.WriteLine("List Filter LINQ Way:");
-//		    foreach (var v in from p in PersonList
-//		                      where p.Gender == "M" && p.Age < 30
-//		                      select new { p.Name, p.Age })
-//		        Console.WriteLine(v.Name + " is " + v.Age);
 		}
 		
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
-		/// 	
+		/// 									Get Tickers fromStruct Array
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		private List<string> getPTickersFrom(List<TradeResults> allStructs, bool debug) {
+			
+			Print("\nGet Ticker Names" );
+			List<string> tickerItems = new List<string>();
+			foreach ( var thing in allStructs ) {
+				tickerItems.Add(thing.ticker);
+			}
+			
+			List<string> noDupestickerItems = tickerItems.Distinct().ToList();
+			if ( debug ) {
+				foreach ( var ticker in noDupestickerItems ) {
+					Print(ticker);
+				}
+			}
+			return noDupestickerItems;
+		}
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 									Get Profit Factor
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		private double getProfitFactor(List<TradeResults> allStructs, string ticker , bool debug) {
+			
+			var tickerFilter = allStructs.Where(o => o.ticker.Contains(ticker));
+			List<double> itemsPF = new List<double>();
+			
+			
+			
+			Print("\nArray of  PF for " + ticker );
+			foreach ( var thing in tickerFilter ) {
+				itemsPF.Add(thing.profitFactor);
+				Print(thing.profitFactor);
+			}
+			Print("");
+			Print("last profit factor " + itemsPF.Last() );
+			
+			return  itemsPF.Last();
+		}
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		/// 									Get Min max avg
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
+		private Tuple<double, double, double, double> getAvgMinMax(List<double>  items, string ticker , bool debug) {
+			// This will give you a double[3] array with the items of the list.
+			double[] itemsArray = items.ToArray();
+			var sum = itemsArray.Sum();
+			var avg = itemsArray.Average();
+			var min = itemsArray.Min();
+			var max = itemsArray.Max();
+			
+			if ( debug ) {
+				Print(ticker + "\tSum " + sum.ToString("0.0") + "\tAvg " + avg.ToString("0.0") + "\tMin " + min.ToString("0.0") + "\t Max " + max.ToString("0.0"));
+			}
+			return new Tuple<double, double, double, double>(sum, avg, min, max);
+		}
+		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 									Create Struct from line
-		/// 
 		/// ////////////////////////////////////////////////////////////////////////////////////////////////
 		private void createStructFrom(string[] oneFile, bool debug) {
 
-			foreach (String rows in oneFile) {		
+			foreach (String rows in oneFile) {	
+				
+				TradeResults tradeResults = new TradeResults{};
 				//Print(rows);
 				/// Trade Count, Date In, Date Out, Ticker, lastProfitCurrency, cumProfit, exit name, profit factor, winPct Consecutive losers, largest loser, largest winner, profit per month
 				var columns = rows.Split(',');
@@ -246,7 +302,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 				if ( debug ) { Print("Executing finally block."); }
 				
 			}
-			
 		}
 		
 		#region Properties
