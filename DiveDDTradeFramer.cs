@@ -39,7 +39,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public string entryType = "5DD Mechanical Entry";
 		public double shares;
 		public double reward;
-		public double maxRisk = 50;
+		public double maxRisk = 100;
 		public double rR;
 		public double risk;
 		public int space = 20;
@@ -195,8 +195,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			/// show market condition
 			TextFixed myTF = Draw.TextFixed(this, "tradeStat", textInBox, TextPosition.BottomLeft);
 			myTF.TextPosition = TextPosition.BottomLeft;
-			myTF.AreaBrush = Brushes.White;
-			myTF.AreaOpacity = 90;
+			myTF.AreaBrush = Brushes.Black;
+			myTF.AreaOpacity = 80;
 			myTF.TextBrush = Brushes.Black;
 		}
 		
