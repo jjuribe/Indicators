@@ -41,8 +41,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 	
 		private SwingData swingData = new SwingData{};
-		private RSI			Rsi1;
-		private	Bollinger	Bollinger1;
+		//private RSI			Rsi1;
+		//private	Bollinger	Bollinger1;
 		private double swingPct			= 0.005;	
 		/// <summary>
 		///  vars for public access
@@ -87,8 +87,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if(State == State.DataLoaded)
 			  {
 				  ClearOutputWindow();     
-				  Rsi1					= RSI(14, 1);
-				  Bollinger1			= Bollinger(2, 20);	
+				  //Rsi1					= RSI(14, 1);
+				  //Bollinger1			= Bollinger(2, 20);	
 			  } 
 		}
 
@@ -117,14 +117,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 			int upCount = 0;
 			int dnCount = 0;
 			int result = 0;
-			
+			double upper = Bollinger(2, 20).Upper[0];	
+			double lower = Bollinger(2, 20).Lower[0];	
+			double  Rsi1	= RSI(14, 1)[0];
 			/// rsi section
-			if ( Rsi1[0]> 70 ) { upCount ++;}		
-			if ( Rsi1[0] < 30 ) {	dnCount ++;} 
+			if ( Rsi1> 70 ) { upCount ++;}		
+			if ( Rsi1 < 30 ) {	dnCount ++;} 
 
 			/// bollinger section			
-			if ( High[0] > Bollinger1.Upper[0] ) {	upCount ++; }	
-			if ( Low[0] <  Bollinger1.Lower[0] ) {	dnCount ++; }
+			if ( High[0] > upper ) {	upCount ++; }	
+			if ( Low[0] <  lower ) {	dnCount ++; }
 				
 			/// highest high section
 			if (High[0] >= MAX(High, 20)[1] ) { upCount ++;}
