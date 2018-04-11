@@ -65,38 +65,41 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
-			// if not 60 min multiply spacer by 7 
-			
+			//if (IsRising(SMA(20)))
+			/// set up line length for the chart type
 			if ( CurrentBar < 20 ) {
+				if (BarsPeriod.BarsPeriodType == BarsPeriodType.Minute && BarsPeriod.Value >= 60)
+			    {
+			        lineLength = 70;
+			    }
+				if (BarsPeriod.BarsPeriodType == BarsPeriodType.Minute && BarsPeriod.Value <= 30)
+			    {
+			        lineLength = 100;
+			    }
 				return;
 			}
 
+			/// only print 1 bar per day
 			if (today == ToDay(Time[0])) {
 				return;
 			}
 			
-			Print(String.Format("{0} is being used as the input series", Instrument.FullName));
-			Print(Bars.ToChartString());
-			Print(Bars.TotalTicks);
-			
-			
-			lineLength = 70;
-		    int lowestBar = LowestBar(Low, 20);
-		    double lowestPrice = Low[lowestBar];
-			lowestPrice = lowestPrice - (lowestPrice * 0.01);
-			
-			int highestBar = HighestBar(High, 20);
-		    double highestPrice = High[highestBar];
-			highestPrice = highestPrice + (highestPrice * 0.01);
-			
+			/// lower band
 			for (int i = 0; i < lowArray.Length; i++) {
 	            if ( ToDay(Time[0]) == lowArray[i] ) {
+					int lowestBar = LowestBar(Low, 20);
+				    double lowestPrice = Low[lowestBar];
+					lowestPrice = lowestPrice - (lowestPrice * 0.01);
 					Draw.Line(this, "bottom" + CurrentBar, true, lineLength, lowestPrice, -lineLength, lowestPrice, Brushes.DodgerBlue, DashStyleHelper.Solid, 4);
 				}
 	        }
 			
+			/// upper band
 			for (int i = 0; i < highArray.Length; i++) {
 	            if ( ToDay(Time[0]) == highArray[i] ) {
+					int highestBar = HighestBar(High, 20);
+				    double highestPrice = High[highestBar];
+					highestPrice = highestPrice + (highestPrice * 0.01);
 					Draw.Line(this, "top" + CurrentBar, true, lineLength, highestPrice, -lineLength, highestPrice, Brushes.Crimson, DashStyleHelper.Solid, 4);
 				}
 	        }
