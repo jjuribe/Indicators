@@ -29,6 +29,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private StdDev					stdDev;
 		private double iBrushOpacity = 0.5;
  		private Brush iBrushBackUp = new SolidColorBrush(Colors.DarkGoldenrod);
+		private Series<double> vMAseries;
 		
 		protected override void OnStateChange()
 		{
@@ -46,26 +47,28 @@ namespace NinjaTrader.NinjaScript.Indicators
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
 				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
 				//See Help Guide for additional information.
-				IsSuspendedWhileInactive					= true;
+				IsSuspendedWhileInactive	= true;
 				VwmaAverage					= 42;
 				RangeLength					= 100;
-				SmoothLength					= 100;
+				SmoothLength				= 100;
 				
-				BandOne					= 1;
-				BandTwo					= 2;
-				BandThree					= 3;
+				BandOne					= 2;
+				BandTwo					= 3.5;
+				BandThree				= 7;
 				
-				AddPlot(new Stroke(Brushes.Gold, DashStyleHelper.Solid, 2f), PlotStyle.Line, "Vwma");
-				AddPlot(Brushes.Crimson, "UpperBandOne");
-				AddPlot(Brushes.Crimson, "UpperBandTwo");
-				AddPlot(Brushes.Crimson, "UpperBandThree");
-				AddPlot(Brushes.DodgerBlue, "LowerBandOne");
-				AddPlot(Brushes.DodgerBlue, "LowerBandTwo");
-				AddPlot(Brushes.DodgerBlue, "LowerBandThree");
+				AddPlot(new Stroke(Brushes.Gold, DashStyleHelper.Solid, 5f), PlotStyle.Line, "Vwma"); //0
+				AddPlot(new Stroke(Brushes.DarkGoldenrod, DashStyleHelper.Dash, 2f), PlotStyle.Line, "UpperBandOne");
+				AddPlot(new Stroke(Brushes.Red, DashStyleHelper.Dash, 2f), PlotStyle.Line, "UpperBandTwo");
+				AddPlot(new Stroke(Brushes.Red, DashStyleHelper.Dash, 1f), PlotStyle.Line, "UpperBandThree");
+				AddPlot(new Stroke(Brushes.DarkGoldenrod, DashStyleHelper.Dash, 2f), PlotStyle.Line, "LowerBandOne");
+				AddPlot(new Stroke(Brushes.DodgerBlue, DashStyleHelper.Dash, 2f), PlotStyle.Line, "LowerBandTwo");
+				AddPlot(new Stroke(Brushes.DodgerBlue, DashStyleHelper.Dash, 1f), PlotStyle.Line, "LowerBandThree");
 			}
 			else if (State == State.DataLoaded)
 			{
+				ClearOutputWindow(); 
 				stdDev	= StdDev(VwmaAverage);
+				vMAseries = new Series<double>(this, MaximumBarsLookBack.Infinite); 
 			}
 		}
 
@@ -81,13 +84,35 @@ namespace NinjaTrader.NinjaScript.Indicators
 			UpperBandTwo[0]		= sma0 + ( smoothRange * BandTwo );
 			UpperBandOne[0]		= sma0 + ( smoothRange * BandOne );
 			Vwma[0]				= sma0;
+			vMAseries[0]  = sma0;
 			LowerBandOne[0]		= sma0 - ( smoothRange * BandOne);
 			LowerBandTwo[0]		= sma0 - ( smoothRange * BandTwo);
 			LowerBandThree[0]	= sma0 - ( smoothRange * BandThree);
-			//PlotBrushes[0][0] = Color.FromArgb(10, Color.Red);
-//			iBrushBackUp.Opacity = iBrushOpacity;
-//			PlotBrushes[0][0] = iBrushBackUp;
 			
+			var pct = 0.01;
+			var lookBack = 20;
+			var vmaPriorUpper = vMAseries[lookBack] + (vMAseries[lookBack]  * pct) ;
+			var vmaPriorLower = vMAseries[lookBack] - (vMAseries[lookBack]  * pct) ;
+			
+			/// sideways concentrate on swing
+			if ( vMAseries[0] <= vmaPriorUpper && vMAseries[0] >= vmaPriorLower ) {
+				PlotBrushes[0][0] = Brushes.DarkGoldenrod;
+			}
+			
+			/// bullish concentrate on buying
+			if ( vMAseries[0] > vmaPriorUpper ) {
+				PlotBrushes[0][0] = Brushes.DodgerBlue;
+				PlotBrushes[1][0] = Brushes.Gray;
+				PlotBrushes[2][0] = Brushes.Gray;
+			}
+			
+			/// bearish concentrate on selling
+			if ( vMAseries[0] < vmaPriorLower ) {
+				PlotBrushes[0][0] = Brushes.Red;
+				PlotBrushes[4][0] = Brushes.Gray;
+				PlotBrushes[5][0] = Brushes.Gray;
+			}
+
 		}
 
 		#region Properties

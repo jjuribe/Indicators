@@ -65,7 +65,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		protected override void OnBarUpdate()
 		{
-			//if (IsRising(SMA(20)))
+			
 			/// set up line length for the chart type
 			if ( CurrentBar < 20 ) {
 				if (BarsPeriod.BarsPeriodType == BarsPeriodType.Minute && BarsPeriod.Value >= 60)
