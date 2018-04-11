@@ -41,8 +41,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 	
 		private SwingData swingData = new SwingData{};
-		//private RSI			Rsi1;
-		//private	Bollinger	Bollinger1;
 		private double swingPct			= 0.005;	
 		/// <summary>
 		///  vars for public access
@@ -75,7 +73,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				PlotCount					= true;
 				ColorBars					= true;
 				MinBarsToLastSwing			= 70;
-				SwingPct					= 0.005;
+				SwingPct					= 0.04;
 				MinPlotCount				= 1;
 				
 				AddPlot(new Stroke(Brushes.Red, 2), PlotStyle.Dot, "LastHigh");
@@ -87,8 +85,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if(State == State.DataLoaded)
 			  {
 				  ClearOutputWindow();     
-				  //Rsi1					= RSI(14, 1);
-				  //Bollinger1			= Bollinger(2, 20);	
 			  } 
 		}
 
