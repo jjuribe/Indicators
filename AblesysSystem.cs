@@ -26,11 +26,29 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class AblesysSystem : Indicator
 	{
-		///  T! 
+		///  T1
 		private int	myperiod	= 27;
-		private Series<double> myDataSeries; 
+		private Series<double> trendOneDataSeries; 
 		private int risk=3;
 		public int trend = 0;
+		///  T2
+		private Series<double> TrueRange;
+		private Series<double>  Sideside;
+		private int risk2 = 4;
+		private int period= 12;
+		private double atrtimes = 2;
+		private int counter1= 0;
+		private int counter2= 0;
+		private int sideside= 1;
+		private int once;
+		
+		
+		// Background Brushes
+		 private double iBrushOpacity = 0.1;
+		 private Brush iBrushBackUp = new SolidColorBrush(Colors.Blue);
+		 private Brush iBrushBackDown = new SolidColorBrush(Colors.Red);
+		
+			private double dotplot = double.NaN;
 		
 		protected override void OnStateChange()
 		{
@@ -52,25 +70,49 @@ namespace NinjaTrader.NinjaScript.Indicators
 				PaintBar					= false;
 				ShowArrow					= true;
 				ShowStripe					= true;
+				
+				AddPlot(new Stroke(Brushes.Blue, 2), PlotStyle.Dot, "ATR Trailing Up");
+				AddPlot(new Stroke(Brushes.Red, 2), PlotStyle.Dot, "ATR Trailing Dn");
 			}
 			else if (State == State.Configure)
 			{
-				myDataSeries = new Series<double>(this, MaximumBarsLookBack.Infinite);
+				trendOneDataSeries = new Series<double>(this, MaximumBarsLookBack.Infinite);
+				TrueRange = new Series<double>(this, MaximumBarsLookBack.Infinite);
+				Sideside = new Series<double>(this, MaximumBarsLookBack.Infinite);
+				// opacity right after OK or APPLY)
+				 iBrushBackUp.Opacity = iBrushOpacity;
+				 iBrushBackUp.Freeze();
+				 iBrushBackDown.Opacity = iBrushOpacity;
+				 iBrushBackDown.Freeze();
+			}
+			else if(State == State.DataLoaded)
+			{
+				ClearOutputWindow();
 			}
 		}
 
 		protected override void OnBarUpdate()
 		{
+			if (CurrentBar <20) { return; }
 			var trendOne = setTrendOne();
-			Print(trendOne);
+			var trendTwo = setTrendTwo();
+			if (trendOne == 1 && trendTwo == 1) {
+				BackBrush = iBrushBackUp;
+				//BackBrushesAll[1] = Brushes.Gold;
+			}
+			if (trendOne == -1 && trendTwo == -1) {
+				BackBrush = iBrushBackDown;
+				//BackBrushesAll[1] = Brushes.Gold;
+			}
+			// Print(trendOne);
 		}
 		
 		public int setTrendOne() {
 			
-			myDataSeries[0] = (-100 * (MAX(High, myperiod)[0] - Close[0]) / (MAX(High, myperiod)[0] - MIN(Low, myperiod)[0] == 0 ? 1 : MAX(High, myperiod)[0] - MIN(Low, myperiod)[0]));
+			trendOneDataSeries[0] = (-100 * (MAX(High, myperiod)[0] - Close[0]) / (MAX(High, myperiod)[0] - MIN(Low, myperiod)[0] == 0 ? 1 : MAX(High, myperiod)[0] - MIN(Low, myperiod)[0]));
 			
 			/// Uptrend
-			if (myDataSeries[0] >= -33+risk)
+			if (trendOneDataSeries[0] >= -33+risk)
 			{
 				trend = 1;
 				if ( PaintBar ) {
@@ -85,7 +127,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	
 			}
 			else   /// downtrend
-			if (myDataSeries[0] <= -67-risk) {
+			if (trendOneDataSeries[0] <= -67-risk) {
 				if ( PaintBar ) {
 					CandleOutlineBrush  = Brushes.Crimson;
 					if(Open[0]<Close[0] ) {
@@ -111,6 +153,107 @@ namespace NinjaTrader.NinjaScript.Indicators
 			return trend ;
 		}
 		
+		public int setTrendTwo() {
+
+			double truerange;
+			double updotplot;
+			double lowdotplot;
+			
+			if (CurrentBar == 21)
+			{
+				TrueRange[0] = ((High[0] - Low[0]));
+			}
+			else
+			{
+				truerange = (High[0] - Low[0]);
+				truerange = Math.Max (Math.Abs ((Low[0] - Close[1])), Math.Max (truerange, Math.Abs ((High[0] - Close[1]))));
+				TrueRange[0] = truerange;
+			}
+
+			double AtrValue = SMA(TrueRange,period)[1];//
+			double Acelfactor =( ( atrtimes+0.1*risk2) * AtrValue);
+			double Sigclose;
+			
+			if (sideside == 1)
+			{
+				Sigclose = High[1];
+				updotplot = (Sigclose - Acelfactor);
+				
+				if (double.IsNaN (dotplot) || (updotplot >= dotplot))
+				{
+					dotplot = Bars.Instrument.MasterInstrument.RoundToTickSize( updotplot);
+				}
+			}
+			else if (sideside == -1)
+			{
+				Sigclose = Low[1];
+				lowdotplot = (Sigclose + Acelfactor);
+				
+				if (double.IsNaN (dotplot) || (lowdotplot <= dotplot))
+				{
+					dotplot =Bars.Instrument.MasterInstrument.RoundToTickSize( lowdotplot);
+				}
+			}
+			counter1++;
+			counter2++;
+			
+			
+			if (! double.IsNaN (dotplot))
+			{
+				if (sideside != 1)
+				{
+					if ((sideside == -1) && (Close[0] > dotplot))			// was high
+					{
+						sideside = 1;
+						counter2 = 0;
+						dotplot = Bars.Instrument.MasterInstrument.RoundToTickSize((High[0] - Acelfactor));
+					}
+				}
+				else if (Close[0] < dotplot)								// was low
+				{
+					sideside = -1;
+					counter2 = 0;
+					dotplot = Bars.Instrument.MasterInstrument.RoundToTickSize((Low[0] + Acelfactor));
+				}
+			}
+			Sideside[0] = sideside;
+			if(Sideside[0]!=Sideside[1])
+			{
+				once=0;
+			}
+			if (sideside == 1)
+			{
+				if(once==1)
+				{
+					Upper[0] = dotplot;
+					Lower.Reset ();
+				}
+				if(once==0)
+				{
+					//DrawArrowUp("arrow" + CurrentBar, true, 0,  dotplot, Color.Blue);
+				}
+				once=1;
+			}
+			
+			if (sideside == -1)
+			{
+				if(once==1)
+				{
+					Lower[0] = dotplot;
+					Upper.Reset ();
+				}
+				if(once==0)
+				{
+					//DrawArrowDown("arrow" + CurrentBar, true, 0,  dotplot, Color.Red);
+				}
+				once=1;
+			}	
+			
+			// Draw.Text(this, "MyText"+CurrentBar, sideside.ToString(), 0, High[0] + 100 * TickSize, Brushes.Blue);
+			return sideside;
+			
+		}
+		
 		
 
 		#region Properties
@@ -128,6 +271,52 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[Display(Name="ShowStripe", Order=3, GroupName="Parameters")]
 		public bool ShowStripe
 		{ get; set; }
+		
+		/// T2
+		[Browsable(false)]
+		[XmlIgnore()]
+		public  Series<double> Lower
+		{
+			get { return Values[1]; }
+		}
+		
+		[Browsable(false)]
+		[XmlIgnore()]
+		public  Series<double> Upper
+		{
+			get { return Values[0]; }
+		}
+			
+		[Description("Number of ATR Multipliers")]
+    	[Category("Parameters")]
+		//[Gui.Design.DisplayNameAttribute("Number of ATR (Ex. 3 Time ATR) ")]
+		[Display(Name = "Number of ATR (Ex. 3 Time ATR)?", Description = "Number of ATR Multipliers", Order = 1, GroupName = "1. Parameters")]
+		public double NumberOfAtrs
+		{
+			get	{	return atrtimes;}
+			set	{	atrtimes = Math.Max (1, value);	}
+		}
+	
+		[Description("Period")]
+    	[Category("Parameters")]
+		//[Gui.Design.DisplayNameAttribute("Periods")]
+		[Display(Name = "Period", Description = "Period", Order = 2, GroupName = "1. Parameters")]
+		public int Period
+		{
+			get	{	return period;}	
+			set	{	period = Math.Max(0, value);}
+		}
+
+		[Description("Risk ranges from 1-10, default is 3.")]
+    	[Category("Parameters")]
+		//[Gui.Design.DisplayNameAttribute("Risk")]
+		[Display(Name = "Risk 2", Description = "Risk ranges from 1-10, default is 3.", Order = 3, GroupName = "1. Parameters")]
+		public int Risk2
+		{
+			get	{	return risk2;}	
+			set	{	risk2 = Math.Max(1, value);}
+		}
+			
 		#endregion
 
 	}
