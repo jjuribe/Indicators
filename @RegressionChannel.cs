@@ -172,7 +172,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			ChartPanel panel = chartControl.ChartPanels[ChartPanel.PanelIndex];
 
-			int idx = Input.Count - 1 - (Calculate == Calculate.OnBarClose ? 1 : 0) - Displacement;
+			int idx = BarsArray[0].Count - 1 - (Calculate == Calculate.OnBarClose ? 1 : 0) - Displacement;
 			double intercept = interceptSeries.GetValueAt(idx);
 			double slope = slopeSeries.GetValueAt(idx);
 			double stdDev = stdDeviationSeries.GetValueAt(idx);

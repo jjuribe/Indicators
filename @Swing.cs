@@ -213,7 +213,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				saveCurrentBar = CurrentBar;
 			}
-			else
+			else if (CurrentBar >= constant - 1)
 			{
 				if (high0 > highStrength && swingHighSwings[Strength] > 0.0)
 				{

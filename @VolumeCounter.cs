@@ -34,7 +34,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public class VolumeCounter : Indicator
 	{
 		private long volume;
-
+		private bool isVolume, isVolumeBase;
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -50,18 +50,32 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsSuspendedWhileInactive	= true;
 				ShowPercent					= true;
 			}
+			else if(State == State.DataLoaded)
+			{
+				isVolume 		= BarsPeriod.BarsPeriodType == BarsPeriodType.Volume;
+				isVolumeBase 	= (BarsPeriod.BarsPeriodType == BarsPeriodType.HeikenAshi || BarsPeriod.BarsPeriodType == BarsPeriodType.Volumetric) && BarsPeriod.BaseBarsPeriodType == BarsPeriodType.Volume;
+			}
 		}
 
 		protected override void OnBarUpdate()
 		{
 			volume = (long)Volume[0];
 
-			double volumeCount = ShowPercent ? CountDown ? (1 - Bars.PercentComplete) * 100 : Bars.PercentComplete * 100 : CountDown ? BarsPeriod.Value - volume : volume;
+			double volumeCount = ShowPercent
+				? CountDown
+					? (1 - Bars.PercentComplete) * 100
+					: Bars.PercentComplete * 100
+				: CountDown
+					? (isVolumeBase
+						? BarsPeriod.BaseBarsPeriodValue
+						: BarsPeriod.Value) - volume
+					: volume;
 
-			string volume1 = (BarsPeriod.BarsPeriodType == BarsPeriodType.Volume
-						|| ((BarsPeriod.BarsPeriodType == BarsPeriodType.HeikenAshi || BarsPeriod.BarsPeriodType == BarsPeriodType.Volumetric) && BarsPeriod.BaseBarsPeriodType == BarsPeriodType.Volume)
-												? ((CountDown ? NinjaTrader.Custom.Resource.VolumeCounterVolumeRemaining + volumeCount : NinjaTrader.Custom.Resource.VolumeCounterVolumeCount + volumeCount) + (ShowPercent ? "%" : ""))
-												: NinjaTrader.Custom.Resource.VolumeCounterBarError);
+			string volume1 = (isVolume || isVolumeBase)
+				? ((CountDown
+					? NinjaTrader.Custom.Resource.VolumeCounterVolumeRemaining + volumeCount
+					: NinjaTrader.Custom.Resource.VolumeCounterVolumeCount + volumeCount) + (ShowPercent ? "%" : ""))
+				: NinjaTrader.Custom.Resource.VolumeCounterBarError;
 
 			Draw.TextFixed(this, "NinjaScriptInfo", volume1, TextPosition.BottomRight);
 		}

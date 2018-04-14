@@ -36,6 +36,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private double					currentOpen			=	double.MinValue;
 		private double					currentHigh			=	double.MinValue;
 		private double					currentLow			=	double.MaxValue;
+		private DateTime				lastDate			= 	Core.Globals.MinDate;
 		private Data.SessionIterator	sessionIterator;
 
 		protected override void OnStateChange()
@@ -48,7 +49,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 				DrawOnPricePanel			= false;
 				IsOverlay					= true;
 				IsSuspendedWhileInactive	= true;
-				PlotCurrentValue			= false;
 				ShowLow						= true;
 				ShowHigh					= true;
 				ShowOpen					= true;
@@ -64,6 +64,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				currentOpen			= double.MinValue;
 				currentHigh			= double.MinValue;
 				currentLow			= double.MaxValue;
+				lastDate			= Core.Globals.MinDate;
 			}
 			else if (State == State.DataLoaded)
 			{
@@ -83,46 +84,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (!Bars.BarsType.IsIntraday) return;
 
-			bool sameDay = true;
-			if (currentDate != sessionIterator.GetTradingDay(Time[0]) || currentOpen == double.MinValue)
+			lastDate 		= currentDate;
+			currentDate 	= sessionIterator.GetTradingDay(Time[0]);
+			
+			if (lastDate != currentDate || currentOpen == double.MinValue)
 			{
-				currentOpen	= Open[0];
-				currentHigh	= High[0];
+				currentOpen		= Open[0];
+				currentHigh		= High[0];
 				currentLow		= Low[0];
-				sameDay			= false;
 			}
 
-			currentHigh		= Math.Max(currentHigh, High[0]);
+			currentHigh			= Math.Max(currentHigh, High[0]);
 			currentLow			= Math.Min(currentLow, Low[0]);
 
 			if (ShowOpen)
-			{
-				if (!PlotCurrentValue || !sameDay)
-					CurrentOpen[0] = currentOpen;
-				else
-					for (int idx = 0; idx < CurrentBar - 1; idx++)
-						CurrentOpen[idx] = currentOpen;
-			}
+				CurrentOpen[0] = currentOpen;
 
 			if (ShowHigh)
-			{
-				if (!PlotCurrentValue || currentHigh != High[0])
-					CurrentHigh[0] = currentHigh;
-				else
-					for (int idx = 0; idx < CurrentBar - 1; idx++)
-						CurrentHigh[idx] = currentHigh;
-			}
+				CurrentHigh[0] = currentHigh;
 
 			if (ShowLow)
-			{
-				if (!PlotCurrentValue || currentLow != Low[0])
-					CurrentLow[0] = currentLow;
-				else
-					for (int idx = 0; idx < CurrentBar - 1; idx++)
-						CurrentLow[idx] = currentLow;
-			}
-
-			currentDate = sessionIterator.GetTradingDay(Time[0]);
+				CurrentLow[0] = currentLow;
 		}
 
 		#region Properties
@@ -146,10 +128,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			get { return Values[2]; }
 		}
-
-		[Display(ResourceType = typeof(Custom.Resource), Name = "PlotCurrentValue", GroupName = "NinjaScriptParameters", Order = 0)]
-		public bool PlotCurrentValue
-		{ get; set; }
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "ShowHigh", GroupName = "NinjaScriptParameters", Order = 1)]
 		public bool ShowHigh

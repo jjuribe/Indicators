@@ -60,7 +60,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 										? NinjaTrader.Custom.Resource.TickCounterTicksRemaining + tickCount : NinjaTrader.Custom.Resource.TickCounterTickCount + tickCount) + (ShowPercent ? "%" : ""))
 										: NinjaTrader.Custom.Resource.TickCounterBarError);
 
-			Draw.TextFixed(this, "NinjaScriptInfo", tick1, TextPosition.BottomRight);
+			Draw.TextFixed(this, "NinjaScriptInfo", tick1, TextPosition.BottomRight, ChartControl.Properties.ChartText, ChartControl.Properties.LabelFont, Brushes.Transparent, Brushes.Transparent, 0);
 		}
 
 		#region Properties

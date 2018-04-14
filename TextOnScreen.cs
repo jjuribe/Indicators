@@ -84,7 +84,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			
 			Draw.TextFixed(this, "myTextFixed", 
-				"\nTrade Rules\n\n1. DCE Close to apex\n2. CCI Signal\n3. Heinkin Ashi reverse color\n4. DCE will loose sync and flattens out\n    This will require a judgement call\n", 
+				"\nTrade Rules\n\n1. DCE Close to apex\n2. CCI Signal\n3. Heinkin Ashi reverse color\n\nDiscretion\n1. DCE will loose sync and flatten out\n    This will require a judgement call\n2. No entry if candle tail != color change\n", 
 				position, ColorForText, 
   				ChartControl.Properties.LabelFont, Brushes.Gray, Brushes.Transparent, Opacity);
 		}
